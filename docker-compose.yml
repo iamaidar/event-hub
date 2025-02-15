@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # --- Postgres ---
+  db:
+    image: postgres:14-alpine
+    container_name: eventhub_db
+    environment:
+      POSTGRES_USER: eventhub_user
+      POSTGRES_PASSWORD: eventhub_password
+      POSTGRES_DB: eventhub_db
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+  # --- Backend (NestJS) в режиме разработки ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eventhub_backend_dev
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: nest_user
+      DATABASE_PASSWORD: nest_password
+      DATABASE_NAME: nest_db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  # --- Frontend (React) в режиме разработки ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eventhub_frontend_dev
+    environment:
+      - PORT=5173
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
