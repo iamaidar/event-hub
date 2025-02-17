@@ -25,9 +25,9 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_USER: nest_user
-      DATABASE_PASSWORD: nest_password
-      DATABASE_NAME: nest_db
+      DATABASE_USER: eventhub_user
+      DATABASE_PASSWORD: eventhub_password
+      DATABASE_NAME: eventhub_db
     volumes:
       - ./backend:/app
       - /app/node_modules
