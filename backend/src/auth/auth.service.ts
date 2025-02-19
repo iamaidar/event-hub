@@ -4,7 +4,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { AuthDto } from './dto';
+import { SignInDto, SignupDto } from './dto';
 import * as argon from 'argon2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
@@ -28,7 +28,7 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signup(dto: AuthDto) {
+  async signup(dto: SignupDto) {
     const hash = await argon.hash(dto.password);
 
     const userRole = await this.roleRepository.findOne({
@@ -60,7 +60,7 @@ export class AuthService {
     return { msg: 'error' };
   }
 
-  async signin(dto: AuthDto) {
+  async signin(dto: SignInDto) {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
     });
