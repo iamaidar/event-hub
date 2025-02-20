@@ -57,7 +57,7 @@ export class AuthService {
       throw error;
     }
 
-    return { msg: 'error' };
+    return { code: 400, message: 'Something went wrong' };
   }
 
   async signin(dto: SignInDto) {
@@ -76,10 +76,7 @@ export class AuthService {
     return this.signToken(user.id, user.email);
   }
 
-  async signToken(
-    userId: number,
-    email: string,
-  ): Promise<{ access_token: string }> {
+  async signToken(userId: number, email: string): Promise<any> {
     const payload = {
       sub: userId,
       email,
@@ -93,7 +90,10 @@ export class AuthService {
     });
 
     return {
-      access_token: token,
+      statusCode: 200,
+      data: {
+        access_token: token,
+      },
     };
   }
 }
