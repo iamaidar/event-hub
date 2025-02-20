@@ -8,7 +8,6 @@ COPY package*.json ./
 # Копируем исходный код
 COPY . .
 
-# Открываем порт (соответствует переменной PORT)
 EXPOSE 5173
 
 # Запускаем dev-сервер React (create-react-app по умолчанию использует react-scripts start)
