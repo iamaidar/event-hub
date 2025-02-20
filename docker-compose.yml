@@ -30,7 +30,7 @@ services:
       DATABASE_NAME: eventhub_db
     volumes:
       - ./backend:/app
-      - /app/node_modules
+      - ./backend/node_modules:/app/node_modules
     ports:
       - "3000:3000"
     depends_on:
@@ -48,7 +48,7 @@ services:
       - PORT=5173
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/node_modules:/app/node_modules
     ports:
       - "5173:5173"
     networks:
