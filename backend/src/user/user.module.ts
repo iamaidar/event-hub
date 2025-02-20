@@ -12,4 +12,3 @@ import { UserController } from './user.controller';
   exports: [TypeOrmModule],
 })
 export class UserModule {}
-
