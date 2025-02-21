@@ -1,104 +1,114 @@
-import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+import React, { useState, useContext } from "react";
+import { register } from "../api/authApi";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const RegistrationForm = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-    const [error, setError] = useState<string>('');
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [successMessage, setSuccessMessage] = useState<string>("");
+    const [registered, setRegistered] = useState<boolean>(false);
+    const authContext = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setSuccessMessage("");
         setLoading(true);
-        setError('');
+
+        if (!username || !email || !password) {
+            setError("Все поля обязательны для заполнения");
+            setLoading(false);
+            return;
+        }
 
         try {
-            const response = await fetch('https://your-api-domain.com/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка регистрации');
+            const response = await register(email, password, username);
+            if (!response.access_token) {
+                throw new Error("Недействительный токен");
             }
 
-            const data = await response.json();
-            console.log('Успешная регистрация', data);
-            // localStorage.setItem('token', data.token);
-            // navigate('/dashboard');
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message);
+            authContext?.login(response.access_token);
+            setSuccessMessage("Регистрация успешна! Перенаправление...");
+            setRegistered(true);
+            setTimeout(() => {
+                navigate("/dashboard");
+            }, 2000);
+        } catch (error: any) {
+            console.error("Ошибка регистрации:", error);
+            if (error.response) {
+                setError(error.response.data.message || "Ошибка сервера");
+            } else if (error.request) {
+                setError("Сервер не отвечает. Попробуйте позже.");
             } else {
-                setError('Unknown error occurred');
+                setError("Произошла неизвестная ошибка");
             }
         } finally {
             setLoading(false);
         }
     };
 
-    // Example useEffect hook with proper dependency array
-    useEffect(() => {
-        // Some initialization logic
-        console.log('Component mounted or dependency changed');
-    }, []); // Empty dependency array means this runs once after initial render
-
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center">Регистрация</h2>
-                {error && <p className="text-red-500 mb-4">{error}</p>}
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="name" className="block text-gray-700">Имя</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block text-gray-700">Пароль</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
-                    >
-                        {loading ? 'Регистрация...' : 'Зарегистрироваться'}
-                    </button>
-                </form>
-            </div>
+        <div className="flex justify-center items-center min-h-screen bg-gray-100">
+            {registered ? (
+                <div className="bg-white p-8 rounded-lg shadow-lg w-96 flex flex-col items-center">
+                    <div className="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
+                    <p className="text-center text-blue-500 mt-4">Регистрация успешна! Перенаправление...</p>
+                </div>
+            ) : (
+                <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+                    <h2 className="text-2xl font-bold text-center mb-4">Регистрация</h2>
+                    {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+                    {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-gray-700">Имя пользователя</label>
+                            <input
+                                type="text"
+                                placeholder="Введите имя пользователя"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700">Email</label>
+                            <input
+                                type="email"
+                                placeholder="Введите email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                required
+
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700">Пароль</label>
+                            <input
+                                type="password"
+                                placeholder="Введите пароль"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition"
+                        >
+                            {loading ? "Регистрация..." : "Зарегистрироваться"}
+                        </button>
+                    </form>
+                </div>
+            )}
         </div>
     );
 };

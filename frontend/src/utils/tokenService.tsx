@@ -1,5 +1,5 @@
-export const setToken = (token : string) => {
-    localStorage.setItem("jwt_token", token);
+export const setToken = (access_token : string) => {
+    localStorage.setItem("jwt_token", access_token);
 };
 
 export const getToken = () => {

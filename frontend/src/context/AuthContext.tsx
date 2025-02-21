@@ -11,7 +11,7 @@ interface User {
 // Определяем тип контекста
 interface AuthContextType {
     user: User | null;
-    login: (token: string) => void;
+    login: (access_token: string) => void;
     logout: () => void;
 }
 
@@ -22,10 +22,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        const token = getToken();
-        if (token) {
+        const access_token = getToken();
+        if (access_token) {
             try {
-                const decoded: User = jwtDecode(token);
+                const decoded: User = jwtDecode(access_token);
 
                 // Проверка срока действия токена
                 if (decoded.exp * 1000 < Date.now()) {
@@ -41,9 +41,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const login = (token: string) => {
-        setToken(token);
-        const decoded: User = jwtDecode(token);
+    const login = (access_token: string) => {
+        setToken(access_token);
+        const decoded: User = jwtDecode(access_token);
         setUser(decoded);
     };
 

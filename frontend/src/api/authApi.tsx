@@ -1,50 +1,49 @@
-import axios from "axios";
-import { getToken } from "../utils/tokenService";
+import { getToken, removeToken } from "../utils/tokenService";
+import api from "./axiosInstance.tsx";
 
-const api = axios.create({
-    baseURL: "http://localhost:3000",
-    timeout: 10000, // 10 секунд
-    headers: {
-        "Content-Type": "application/json",
-    },
-    withCredentials: true, // Если сервер использует куки для авторизации
-});
+interface AuthResponse {
+    access_token: string;
+}
 
-// Interceptor для установки токена
-api.interceptors.request.use(
-    (config) => {
-        const token = getToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+// export const login = async (): Promise<AuthResponse> => {
+//     return new Promise((resolve) => {
+//         setTimeout(() => {
+//             const fakeToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
+//                 JSON.stringify({ email: "test@example.com", exp: Math.floor(Date.now() / 1000) + 3600 })
+//             )}.signature`;
+//             setToken(fakeToken);
+//             resolve({ token: fakeToken });
+//         }, 1000);
+//     });
+// };
+export const login = async (email: string, password: string): Promise<AuthResponse>  => {
+    const response = await api.post("auth/signin", { email, password });
+    return response.data;
+};
 
-// Interceptor для обработки ошибок
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response) {
-            console.error("Ошибка API:", error.response.data);
-
-            // Обработка истекшего токена (если сервер возвращает 401)
-            if (error.response.status === 401) {
-                console.warn("Токен истёк или недействителен. Необходимо выйти из системы.");
-                // Можно вызвать функцию для выхода пользователя
-                // logoutUser();
+export const register = async (email: string, password: string, username: string): Promise<AuthResponse>  => {
+    const response = await api.post<AuthResponse>("auth/signup", { email, password,username });
+    return response.data;
+};
+//
+// export const getUserProfile = async () => {
+//     const response = await api.get("/profile");
+//     return response.data;
+// };
+export const getUserProfile = async () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const access_token = getToken();
+            if (access_token) {
+                const user = { email: atob(access_token.split(".")[2]) };
+                resolve(user);
+            } else {
+                reject("No token found");
             }
-        } else if (error.request) {
-            console.error("Сервер не отвечает", error.request);
-        } else {
-            console.error("Ошибка запроса:", error.message);
-        }
+        }, 500);
+    });
+};
 
-        return Promise.reject(error);
-    }
-);
-
-export default api;
+export const logout = () => {
+    removeToken();
+};
