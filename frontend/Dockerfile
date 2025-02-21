@@ -4,13 +4,11 @@ WORKDIR /app
 
 # Копируем зависимости
 COPY package*.json ./
-RUN npm install
 
 # Копируем исходный код
 COPY . .
 
-# Открываем порт (соответствует переменной PORT)
-EXPOSE 5432
+EXPOSE 5173
 
 # Запускаем dev-сервер React (create-react-app по умолчанию использует react-scripts start)
 CMD ["npm", "run", "dev"]
