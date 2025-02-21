@@ -1,49 +1,50 @@
-import { setToken, getToken, removeToken } from "../utils/tokenService";
-import api from "./axiosInstance.tsx";
+import axios from "axios";
+import { getToken } from "../utils/tokenService";
 
-interface AuthResponse {
-    token: string;
-}
+const api = axios.create({
+    baseURL: "http://localhost:3000",
+    timeout: 10000, // 10 секунд
+    headers: {
+        "Content-Type": "application/json",
+    },
+    withCredentials: true, // Если сервер использует куки для авторизации
+});
 
-export const login = async (): Promise<AuthResponse> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const fakeToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-                JSON.stringify({ email: "test@example.com", exp: Math.floor(Date.now() / 1000) + 3600 })
-            )}.signature`;
-            setToken(fakeToken);
-            resolve({ token: fakeToken });
-        }, 1000);
-    });
-};
-// export const login = async (email: string, password: string) => {
-//     const response = await api.post("/login", { email, password });
-//     return response.data; // Ожидаем, что сервер вернет { token }
-// };
-//
-export const register = async (email: string, password: string): Promise<AuthResponse>  => {
-    const response = await api.post<AuthResponse>("/register", { email, password });
-    return response.data;
-};
-//
-// export const getUserProfile = async () => {
-//     const response = await api.get("/profile");
-//     return response.data;
-// };
-export const getUserProfile = async () => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const token = getToken();
-            if (token) {
-                const user = { email: atob(token.split(".")[2]) };
-                resolve(user);
-            } else {
-                reject("No token found");
+// Interceptor для установки токена
+api.interceptors.request.use(
+    (config) => {
+        const token = getToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Interceptor для обработки ошибок
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            console.error("Ошибка API:", error.response.data);
+
+            // Обработка истекшего токена (если сервер возвращает 401)
+            if (error.response.status === 401) {
+                console.warn("Токен истёк или недействителен. Необходимо выйти из системы.");
+                // Можно вызвать функцию для выхода пользователя
+                // logoutUser();
             }
-        }, 500);
-    });
-};
+        } else if (error.request) {
+            console.error("Сервер не отвечает", error.request);
+        } else {
+            console.error("Ошибка запроса:", error.message);
+        }
 
-export const logout = () => {
-    removeToken();
-};
+        return Promise.reject(error);
+    }
+);
+
+export default api;

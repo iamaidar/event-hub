@@ -63,7 +63,7 @@ const RegistrationForm = () => {
                             value={formData.name}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
                         />
                     </div>
                     <div className="mb-4">
@@ -75,7 +75,7 @@ const RegistrationForm = () => {
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
                         />
                     </div>
                     <div className="mb-4">
@@ -87,13 +87,13 @@ const RegistrationForm = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-purple-400"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                        className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
                     >
                         {loading ? 'Регистрация...' : 'Зарегистрироваться'}
                     </button>

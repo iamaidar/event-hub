@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
 import PublicRoute from "./routes/PublicRoute.tsx";
 import RegistrationForm from "./pages/RegistrationForm.tsx";
+import Footer from "./components/Footer.tsx";
+import Home from "./pages/Home";
 
 // Компонент для защиты логина (если пользователь авторизован, редирект на /dashboard)
 
@@ -20,9 +22,11 @@ const App = () => {
                         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                         <Route path="/register" element={<PublicRoute><RegistrationForm/></PublicRoute>}></Route>
                         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                        <Route path="/Home" element={<PrivateRoute><Home /></PrivateRoute>}/>
                         <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>
                 </main>
+                <Footer />
             </Router>
         </AuthProvider>
     );
