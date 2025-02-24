@@ -19,10 +19,10 @@ const App = () => {
                 <Header />
                 <main className="min-h-screen bg-gray-100">
                     <Routes>
-                        <Route path="/login" element={<PublicRoute><Login isLogin={false}/></PublicRoute>} />
+                        <Route path="/login" element={<PublicRoute><Login isLogin={true}/></PublicRoute>} />
                         <Route path="/register" element={<PublicRoute><RegistrationForm/></PublicRoute>}></Route>
                         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-                        <Route path="/Home" element={<PrivateRoute><Home /></PrivateRoute>}/>
+                        <Route path="/Home" element={<Home />} />
                         <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>
                 </main>

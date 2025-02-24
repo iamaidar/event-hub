@@ -9,8 +9,8 @@ const Header = () => {
 
     return (
         <header className="bg-[#04092C] text-white py-4 shadow-md">
-            <div className="container mx-auto flex justify-between items-center px-6">
-                <Link to="/Home" className="text-2xl font-bold text-purple-400">
+            <div className="container mx-auto flex justify-between items-center px-50">
+                <Link to="/Home" className="text-3xl font-bold text-purple-400">
                     EVENT<span className="text-white">HUB</span>
                 </Link>
 
@@ -21,7 +21,8 @@ const Header = () => {
                         <Link to="/theater" className="hover:text-gray-300">ТЕАТР</Link>
                         <Link to="/kids" className="hover:text-gray-300">ДЕТЯМ</Link>
                     </div>
-
+                </nav>
+                <nav className="flex items-center space-x-6">
                     <button className="text-white hover:text-gray-300">
                         <ShoppingCart size={24} />
                     </button>
