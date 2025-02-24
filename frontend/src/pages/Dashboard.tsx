@@ -10,7 +10,7 @@ const Dashboard = () => {
             <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
                 <h1 className="text-3xl font-bold mb-4 mystyle">d</h1>
                 <p className="text-gray-600 text-lg mb-4">Вы вошли как:</p>
-                <div className="bg-blue-100 text-blue-600 py-2 px-4 rounded-md font-semibold">
+                <div className="bg-blue-100 text-purple-600 py-2 px-4 rounded-md font-semibold">
                     {authContext?.user?.email}
                 </div>
             </div>
