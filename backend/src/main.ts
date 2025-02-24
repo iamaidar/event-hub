@@ -21,6 +21,12 @@ async function bootstrap() {
       bearerFormat: 'JWT',
     })
     .build();
+  app.enableCors({
+    origin: 'http://localhost:5173', // Explicitly allow frontend URL
+    credentials: true, // Allow cookies & authorization headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
