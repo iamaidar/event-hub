@@ -28,11 +28,11 @@ const RegistrationForm = () => {
 
         try {
             const response = await register(email, password, username);
-            if (!response.access_token) {
+            if (!response.data.access_token) {
                 throw new Error("Недействительный токен");
             }
 
-            authContext?.login(response.access_token);
+            authContext?.login(response.data.access_token);
             setSuccessMessage("Регистрация успешна! Перенаправление...");
             setRegistered(true);
             setTimeout(() => {
@@ -56,8 +56,8 @@ const RegistrationForm = () => {
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
             {registered ? (
                 <div className="bg-white p-8 rounded-lg shadow-lg w-96 flex flex-col items-center">
-                    <div className="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
-                    <p className="text-center text-blue-500 mt-4">Регистрация успешна! Перенаправление...</p>
+                    <div className="loader border-t-4 border-purple-500 rounded-full w-12 h-12 animate-spin"></div>
+                    <p className="text-center text-purple-500 mt-4">Регистрация успешна! Перенаправление...</p>
                 </div>
             ) : (
                 <div className="bg-white p-8 rounded-lg shadow-lg w-96">
@@ -72,7 +72,7 @@ const RegistrationForm = () => {
                                 placeholder="Введите имя пользователя"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
                                 required
                             />
                         </div>
@@ -83,8 +83,9 @@ const RegistrationForm = () => {
                                 placeholder="Введите email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
                                 required
+
 
                             />
                         </div>
@@ -95,14 +96,14 @@ const RegistrationForm = () => {
                                 placeholder="Введите пароль"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
                                 required
                             />
                         </div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition"
+                            className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition"
                         >
                             {loading ? "Регистрация..." : "Зарегистрироваться"}
                         </button>
