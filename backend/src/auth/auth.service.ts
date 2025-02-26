@@ -1,31 +1,28 @@
 import {
   ForbiddenException,
-  HttpException,
-  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { SignInDto, SignupDto } from './dto';
 import * as argon from 'argon2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { Repository, TypeORMError } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Role } from 'src/role/entities/role.entity';
-import { plainToInstance } from 'class-transformer';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config/dist/config.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+      @InjectRepository(User)
+      private userRepository: Repository<User>,
 
-    @InjectRepository(Role)
-    private roleRepository: Repository<Role>,
+      @InjectRepository(Role)
+      private roleRepository: Repository<Role>,
 
-    private jwt: JwtService,
+      private jwt: JwtService,
 
-    private config: ConfigService,
+      private config: ConfigService,
   ) {}
 
   async signup(dto: SignupDto) {
@@ -37,7 +34,7 @@ export class AuthService {
 
     try {
       if (userRole) {
-        const user = await this.userRepository.create({
+        const user = this.userRepository.create({
           username: dto.username,
           email: dto.email,
           password_hash: hash,
@@ -47,6 +44,7 @@ export class AuthService {
 
         await this.userRepository.save(user);
 
+        // Возвращаем только данные для токена
         return this.signToken(user.id, user.email);
       }
     } catch (error) {
@@ -57,7 +55,7 @@ export class AuthService {
       throw error;
     }
 
-    return { code: 400, message: 'Something went wrong' };
+    throw new ForbiddenException('Something went wrong during signup');
   }
 
   async signin(dto: SignInDto) {
@@ -76,24 +74,21 @@ export class AuthService {
     return this.signToken(user.id, user.email);
   }
 
-  async signToken(userId: number, email: string): Promise<any> {
+  async signToken(userId: number, email: string): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
       email,
     };
 
-    const secret = this.config.get('JWT_SECRET');
+    const secret = this.config.get<string>('JWT_SECRET');
 
     const token = await this.jwt.signAsync(payload, {
       expiresIn: '1d',
       secret: secret,
     });
 
-    return {
-      statusCode: 200,
-      data: {
-        access_token: token,
-      },
-    };
+    // Возвращаем «сырые» данные – глобальный интерцептор оформит их в:
+    // { success: true, data: { access_token: token }, message: "OK" }
+    return { access_token: token };
   }
 }
