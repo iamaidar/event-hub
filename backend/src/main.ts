@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { TransformResponseInterceptor } from './common/transform-response.interceptor';
+import {AllExceptionsFilter} from "./common/http-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,6 +12,8 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Event-Hub')
@@ -21,10 +25,17 @@ async function bootstrap() {
       bearerFormat: 'JWT',
     })
     .build();
+  app.enableCors({
+    origin: 'http://localhost:5173', // Explicitly allow frontend URL
+    credentials: true, // Allow cookies & authorization headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }
+
 bootstrap();
