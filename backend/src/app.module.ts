@@ -28,6 +28,7 @@ import { UserSubscription } from './user-subscription/entities/user-subscription
 import { GroupChatMessage } from './group-chat-message/entities/group-chat-message.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ConfigModule } from '@nestjs/config';
     UserSubscriptionModule,
     NotificationModule,
     AuthModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
