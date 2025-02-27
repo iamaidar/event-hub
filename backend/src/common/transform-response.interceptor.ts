@@ -23,7 +23,6 @@ export class TransformResponseInterceptor<T>
                 return {
                     success: true,
                     data,
-                    // message опционально - можно добавлять общий текст или выводить что-то динамическое
                     message: 'OK',
                 };
             }),
