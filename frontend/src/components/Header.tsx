@@ -8,7 +8,7 @@ const Header = () => {
     const authContext = useContext(AuthContext);
 
     return (
-        <header className="bg-[#04092C]  text-white py-4 shadow-md">
+        <header className="bg-[#04092C] text-white py-4 shadow-md">
             <div className="container mx-auto flex justify-between items-center px-50">
                 <Link to="/Home" className="text-3xl font-bold text-purple-400">
                     EVENT<span className="text-white">HUB</span>
@@ -16,10 +16,10 @@ const Header = () => {
 
                 <nav className="flex items-center space-x-6">
                     <div className="hidden md:flex space-x-6 text-sm uppercase">
-                        <Link to="/concerts" className="hover:text-gray-300">КОНЦЕРТЫ</Link>
-                        <Link to="/sports" className="hover:text-gray-300">СПОРТ</Link>
-                        <Link to="/theater" className="hover:text-gray-300">ТЕАТР</Link>
-                        <Link to="/kids" className="hover:text-gray-300">ДЕТЯМ</Link>
+                        <Link to="/concerts" className="hover:text-gray-300 font-bold">КОНЦЕРТЫ</Link>
+                        <Link to="/sports" className="hover:text-gray-300 font-bold">СПОРТ</Link>
+                        <Link to="/theater" className="hover:text-gray-300 font-bold">ТЕАТР</Link>
+                        <Link to="/kids" className="hover:text-gray-300 font-bold">ДЕТЯМ</Link>
                     </div>
                 </nav>
                 <nav className="flex items-center space-x-6">
