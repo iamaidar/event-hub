@@ -1,24 +1,47 @@
-import Card from "../../UI/Card";
-import theater from "../../assets/images/category/theater.png";
-import concert from "../../assets/images/category/concert.png";
-import sport from "../../assets/images/category/sport.png";
-import kids from "../../assets/images/category/kids.png";
+import Card, { CategoryCardProps } from "../../UI/Card";
 import Button from "../../UI/Button.tsx";
+import axios from "axios";
+import { getToken } from "../../utils/tokenService.tsx";
+import { useEffect, useState } from "react";
 
 const CategoryCard = () => {
-    return<div className="mt-8 text-center">
-        <div className="flex justify-between items-center px-6">
-            <h3 className="text-2xl font-bold">Просмотр По Категориям</h3>
-            <Button text="Посмотреть больше" to="/more" variant="outline" />
-        </div>
+  const [categories, setCategories] = useState<CategoryCardProps[]>([]);
 
-        <div className="flex justify-center gap-6 mt-6">
-            <Card title="ТЕАТР" image={theater } link="/theater"/>
-            <Card title="КОНЦЕРТЫ" image={concert} link="/concerts"/>
-            <Card title="СПОРТ" image={sport} link="/sports"/>
-            <Card title="ДЕТЯМ" image={kids} link="/concerts" />
-        </div>
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/categories", {
+        params: {
+          page: 1,
+          limit: 4,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+      })
+      .then((response) => {
+        const categoriesData = response.data.data.data as CategoryCardProps[];
+        setCategories(categoriesData);
+      })
+      .catch((error) => {
+        console.error("Ошибка:", error);
+      });
+  }, []);
+
+  return (
+    <div className="mt-8 text-center">
+      <div className="flex justify-between items-center px-6">
+        <h3 className="text-2xl font-bold">Просмотр По Категориям</h3>
+        <Button text="Посмотреть больше" to="/more" variant="outline" />
+      </div>
+
+      <div className="flex justify-center gap-6 mt-6">
+        {categories.map((category, index) => (
+          <Card key={index} {...category}></Card>
+        ))}
+      </div>
     </div>
+  );
 };
 
 export default CategoryCard;
