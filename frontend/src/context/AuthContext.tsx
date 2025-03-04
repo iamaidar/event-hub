@@ -2,9 +2,10 @@ import { createContext, useState, useEffect, ReactNode } from "react";
 import { getToken, setToken, removeToken } from "../utils/tokenService";
 import {jwtDecode} from "jwt-decode";
 
-// Определяем тип данных пользователя
+// Определяем тип данных пользователя с поддержкой ролей
 interface User {
     email: string;
+    roles: string[]; // добавлено свойство ролей
     exp: number;
 }
 
