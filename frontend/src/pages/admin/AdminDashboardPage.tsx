@@ -1,5 +1,5 @@
 
-const EventPage = () => {
+const AdminDashboardPage = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen">
             <div>1</div>
@@ -7,4 +7,4 @@ const EventPage = () => {
     );
 };
 
-export default EventPage;
+export default AdminDashboardPage;

@@ -1,8 +1,8 @@
 import {
     BrowserRouter as Router,
-        Routes,
-        Route,
-        Navigate,
+    Routes,
+    Route,
+    Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./routes/PrivateRoute";
@@ -16,7 +16,12 @@ import LoginForm from "./pages/LoginForm";
 import SearchResults from "./pages/SearchResults";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import RoleProtectedRoute from "./routes/RoleProtectedRoute.tsx";
-import EventPage from "./pages/admin/EventsPage.tsx";
+
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
+import EventList from "./pages/admin/event/EventList.tsx";
+import EventCreate from "./pages/admin/event/EventCreate.tsx";
+import EventEdit from "./pages/admin/event/EventEdit.tsx";
+import EventDetail from "./pages/admin/event/EventDetail.tsx";
 
 const App = () => {
     return (
@@ -52,15 +57,48 @@ const App = () => {
                         <Route path="/home" element={<Home />} />
                         <Route path="/events" element={<SearchResults />} />
                         <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                        <Route path="*" element={<Navigate to="/login" replace />} />
                         <Route
                             path="/admin"
                             element={
                                 <RoleProtectedRoute requiredRole="admin">
-                                    <EventPage></EventPage>
+                                    <AdminDashboardPage />
                                 </RoleProtectedRoute>
                             }
                         />
+                        {/* CRUD маршруты для управления мероприятиями */}
+                        <Route
+                            path="/admin/events"
+                            element={
+                                <RoleProtectedRoute requiredRole="admin">
+                                    <EventList />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/events/create"
+                            element={
+                                <RoleProtectedRoute requiredRole="admin">
+                                    <EventCreate />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/events/edit/:id"
+                            element={
+                                <RoleProtectedRoute requiredRole="admin">
+                                    <EventEdit />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/events/:id"
+                            element={
+                                <RoleProtectedRoute requiredRole="admin">
+                                    <EventDetail />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>
                 </main>
                 <Footer />
