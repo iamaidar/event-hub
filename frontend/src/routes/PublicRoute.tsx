@@ -1,15 +1,23 @@
-import { ReactNode, useContext } from "react";
 import { Navigate } from "react-router-dom";
+import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 interface PublicRouteProps {
-    children: ReactNode;
+    children: React.ReactNode;
 }
 
 const PublicRoute = ({ children }: PublicRouteProps) => {
     const authContext = useContext(AuthContext);
-    console.log(authContext);
-    return authContext?.user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+
+    if (authContext && authContext.user) {
+        // Редирект в зависимости от роли пользователя
+        // if (authContext.user.role === "admin") {
+            return <Navigate to="/admin" />;
+        // }
+        // return <Navigate to="/dashboard" />;
+    }
+
+    return <>{children}</>;
 };
 
 export default PublicRoute;
