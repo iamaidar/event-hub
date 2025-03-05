@@ -1,20 +1,29 @@
+// src/routes/PublicRoute.tsx
+import { ReactNode, useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 interface PublicRouteProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 const PublicRoute = ({ children }: PublicRouteProps) => {
     const authContext = useContext(AuthContext);
 
     if (authContext && authContext.user) {
-        // Редирект в зависимости от роли пользователя
-        // if (authContext.user.role === "admin") {
-            return <Navigate to="/admin" />;
-        // }
-        // return <Navigate to="/dashboard" />;
+        // Читаем последний посещённый маршрут из localStorage
+        const lastVisitedRoute = localStorage.getItem("lastVisitedRoute");
+        // Список публичных маршрутов, где редирект не требуется (например, логин и регистрация)
+        const publicRoutes = ["/login", "/register"];
+        const defaultRoute = "/dashboard"; // или другой маршрут по умолчанию
+
+        // Если lastVisitedRoute существует и не является публичным, перенаправляем туда,
+        // иначе перенаправляем на defaultRoute
+        const targetRoute =
+            lastVisitedRoute && !publicRoutes.includes(lastVisitedRoute)
+                ? lastVisitedRoute
+                : defaultRoute;
+        return <Navigate to={targetRoute} replace />;
     }
 
     return <>{children}</>;

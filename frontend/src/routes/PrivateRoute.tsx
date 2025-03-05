@@ -2,12 +2,12 @@ import { ReactNode, useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-interface RoleProtectedRouteProps {
+interface PrivateRouteProps {
     children: ReactNode;
     requiredRole: string;
 }
 
-const PrivateRoute = ({ children, requiredRole }: RoleProtectedRouteProps) => {
+const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
     const authContext = useContext(AuthContext);
     const location = useLocation();
 
@@ -15,7 +15,6 @@ const PrivateRoute = ({ children, requiredRole }: RoleProtectedRouteProps) => {
     if (!authContext) {
         return <div>Loading...</div>;
     }
-    console.log(location);
     // Если пользователь не авторизован, перенаправляем на страницу логина и сохраняем текущий маршрут
     if (!authContext.user) {
         return <Navigate to="/login" state={{ from: location }} replace />;

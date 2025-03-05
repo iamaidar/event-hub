@@ -6,6 +6,7 @@ import {
     Navigate,
     useLocation,
 } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
@@ -16,18 +17,23 @@ import Home from "./pages/Home";
 import LoginForm from "./pages/LoginForm";
 import SearchResults from "./pages/SearchResults";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
-
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import EventList from "./pages/admin/event/EventList";
 import EventCreate from "./pages/admin/event/EventCreate";
 import EventEdit from "./pages/admin/event/EventEdit";
 import EventDetail from "./pages/admin/event/EventDetail";
 import PrivateRoute from "./routes/PrivateRoute";
-import AdminLayout from "./layout/AdminLayout.tsx";
+import AdminLayout from "./layout/AdminLayout";
 
 const AppContent = () => {
     const location = useLocation();
-    // Если URL начинается с /admin, то мы в админской части
+
+    useEffect(() => {
+        // Сохраняем текущий путь
+        localStorage.setItem("lastVisitedRoute", location.pathname);
+    }, [location.pathname]);
+
+    // Определяем, находимся ли мы в админской части (без Header/Footer)
     const isAdminRoute = location.pathname.startsWith("/admin");
 
     return (
