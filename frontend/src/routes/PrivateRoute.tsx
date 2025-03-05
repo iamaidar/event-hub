@@ -1,5 +1,5 @@
 import { ReactNode, useContext } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 interface RoleProtectedRouteProps {
@@ -9,19 +9,21 @@ interface RoleProtectedRouteProps {
 
 const PrivateRoute = ({ children, requiredRole }: RoleProtectedRouteProps) => {
     const authContext = useContext(AuthContext);
+    const location = useLocation();
 
-
-    // Если пользователь не авторизован, перенаправляем на страницу логина
-    if (!authContext || !authContext.user) {
-        return <Navigate to="/login" />;
+    // Если состояние загрузки (если оно у вас реализовано), можно показывать спиннер
+    if (!authContext) {
+        return <div>Loading...</div>;
+    }
+    console.log(location);
+    // Если пользователь не авторизован, перенаправляем на страницу логина и сохраняем текущий маршрут
+    if (!authContext.user) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // Для тестовой разработки: всегда назначаем роль "admin"
-    const userRoles = ["admin"];
-
-    // Проверяем наличие требуемой роли
-    if (!userRoles.includes(requiredRole)) {
-        return <Navigate to="/unauthorized" />;
+    // Проверяем наличие требуемой роли у пользователя
+    if (!authContext.hasRole(requiredRole)) {
+        return <Navigate to="/unauthorized" replace />;
     }
 
     return <>{children}</>;

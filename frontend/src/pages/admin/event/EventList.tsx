@@ -1,38 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {EventType ,deleteEvent, fetchEvents} from "../../../api/eventApi.tsx";
+import { fetchPaginatedEvents, deleteEvent, EventType } from "../../../api/eventApi";
 
 const EventList: React.FC = () => {
     const [events, setEvents] = useState<EventType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
 
-    useEffect(() => {
-        fetchEvents()
-            .then((data:EventType[]) => {
-                setEvents(data);
+    const loadEvents = (page: number) => {
+        setLoading(true);
+        fetchPaginatedEvents(page, 10)
+            .then((result) => {
+                console.log(result);
+                setEvents(result.data);
+                setCurrentPage(result.page);
+                setTotalPages(result.totalPages);
                 setLoading(false);
             })
-            .catch((_err) => {
-                setError("Ошибка при загрузке мероприятий");
+            .catch(() => {
+                setError("Error loading events");
                 setLoading(false);
             });
-    }, []);
+    };
+
+    useEffect(() => {
+        loadEvents(currentPage);
+    }, [currentPage]);
+
+    const handlePrev = () => {
+        if (currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+        }
+    };
+
+    const handleNext = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
 
     const handleDelete = (id: number | string) => {
-        if (window.confirm("Вы уверены, что хотите удалить мероприятие?")) {
+        if (window.confirm("Are you sure you want to delete this event?")) {
             deleteEvent(id)
                 .then(() => {
                     setEvents(events.filter((event) => event.id !== id));
                 })
-                .catch((_err) => {
-                    alert("Ошибка при удалении");
+                .catch(() => {
+                    alert("Error deleting event");
                 });
         }
     };
 
     if (loading) {
-        return <div className="container mx-auto px-4 py-8">Загрузка...</div>;
+        return <div className="container mx-auto px-4 py-8">Loading...</div>;
     }
 
     if (error) {
@@ -41,12 +63,12 @@ const EventList: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-4">Мероприятия</h1>
+            <h1 className="text-2xl font-bold mb-4">Events</h1>
             <Link
                 to="/admin/events/create"
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-                Создать мероприятие
+                Create Event
             </Link>
             <ul className="mt-4 space-y-4">
                 {events.map((event) => (
@@ -54,40 +76,60 @@ const EventList: React.FC = () => {
                         <h2 className="text-xl font-semibold">{event.title}</h2>
                         <p>{event.description}</p>
                         <p>
-                            <strong>Дата и время:</strong> {new Date(event.date_time).toLocaleString()}
+                            <strong>Date & Time:</strong>{" "}
+                            {new Date(event.date_time).toLocaleString()}
                         </p>
                         <p>
-                            <strong>Место проведения:</strong> {event.location}
+                            <strong>Location:</strong> {event.location}
                         </p>
                         <p>
-                            <strong>Цена:</strong> {event.price} руб.
+                            <strong>Price:</strong> {event.price} USD
                         </p>
                         <p>
-                            <strong>Статус:</strong> {event.status}
+                            <strong>Status:</strong> {event.status}
                         </p>
                         <div className="mt-2">
                             <Link
                                 to={`/admin/events/${event.id}`}
                                 className="text-green-500 hover:underline mr-2"
                             >
-                                Подробнее
+                                Details
                             </Link>
                             <Link
                                 to={`/admin/events/edit/${event.id}`}
                                 className="text-blue-500 hover:underline mr-2"
                             >
-                                Редактировать
+                                Edit
                             </Link>
                             <button
-                                onClick={() => handleDelete(event.id!)}
+                                onClick={() => handleDelete(event.id)}
                                 className="text-red-500 hover:underline"
                             >
-                                Удалить
+                                Delete
                             </button>
                         </div>
                     </li>
                 ))}
             </ul>
+            <div className="flex items-center justify-center mt-8 space-x-4">
+                <button
+                    onClick={handlePrev}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    onClick={handleNext}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
         </div>
     );
 };

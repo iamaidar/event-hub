@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext.tsx";
 import "../Header.css";
@@ -14,7 +14,7 @@ const AdminHeader = () => {
                 {/* Logo and burger menu button */}
                 <div className="flex justify-between items-center w-full md:w-auto">
                     <Link
-                        to="/admin/events"
+                        to="/admin"
                         className="text-3xl font-bold text-purple-400 flex-grow"
                     >
                         EVENT<span className="text-white">HUB</span>
@@ -31,7 +31,7 @@ const AdminHeader = () => {
 
                 {/* Navigation (desktop) */}
                 <nav className="hidden md:flex items-center space-x-6 text-sm uppercase mx-auto">
-                    <Link to="/events" className="hover:text-gray-300 font-bold">
+                    <Link to="/admin/events" className="hover:text-gray-300 font-bold">
                         EVENTS
                     </Link>
                 </nav>
@@ -74,7 +74,7 @@ const AdminHeader = () => {
             {isMenuOpen && (
                 <div className="md:hidden bg-[#04092C] text-white flex flex-col items-center py-4 space-y-5">
                     <Link
-                        to="/events"
+                        to="/admin/events"
                         className="hover:text-gray-300 font-bold"
                         onClick={() => setIsMenuOpen(false)}
                     >
