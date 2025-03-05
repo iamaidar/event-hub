@@ -1,16 +1,17 @@
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
-import {AuthContext} from "../../context/AuthContext.tsx";
-import '../Header.css';
+import { AuthContext } from "../../context/AuthContext.tsx";
+import "../Header.css";
+
 const AdminHeader = () => {
     const authContext = useContext(AuthContext);
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // Управление мобильным меню
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // Manage mobile menu
 
     return (
         <header className="bg-[#04092C] text-white py-4 shadow-md">
             <div className="md:flex items-center w-full px-4 md:px-8 lg:px-16">
-                {/* Лого и бургер-кнопка */}
+                {/* Logo and burger menu button */}
                 <div className="flex justify-between items-center w-full md:w-auto">
                     <Link
                         to="/admin/events"
@@ -19,7 +20,7 @@ const AdminHeader = () => {
                         EVENT<span className="text-white">HUB</span>
                     </Link>
 
-                    {/* Бургер-кнопка (мобильное меню) */}
+                    {/* Burger menu button (mobile menu) */}
                     <button
                         className="md:hidden text-white"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -28,14 +29,14 @@ const AdminHeader = () => {
                     </button>
                 </div>
 
-                {/* Навигация (десктоп) */}
+                {/* Navigation (desktop) */}
                 <nav className="hidden md:flex items-center space-x-6 text-sm uppercase mx-auto">
                     <Link to="/events" className="hover:text-gray-300 font-bold">
-                        МЕРОПРИЯТИЯ
+                        EVENTS
                     </Link>
                 </nav>
 
-                {/* Корзина и Авторизация */}
+                {/* Cart and Authentication */}
                 <nav className="hidden md:flex items-center space-x-6">
                     <button className="text-white hover:text-gray-300">
                         <ShoppingCart size={24} />
@@ -47,7 +48,7 @@ const AdminHeader = () => {
                                 onClick={authContext.logout}
                                 className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-full transition"
                             >
-                                Выйти
+                                Logout
                             </button>
                         </div>
                     ) : (
@@ -56,20 +57,20 @@ const AdminHeader = () => {
                                 to="/register"
                                 className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-full transition"
                             >
-                                Регистрация
+                                Register
                             </Link>
                             <Link
                                 to="/login"
                                 className="border border-white text-white py-2 px-4 rounded-full hover:bg-white hover:text-black transition"
                             >
-                                Войти
+                                Login
                             </Link>
                         </div>
                     )}
                 </nav>
             </div>
 
-            {/* Мобильное меню (бургер) */}
+            {/* Mobile menu (burger) */}
             {isMenuOpen && (
                 <div className="md:hidden bg-[#04092C] text-white flex flex-col items-center py-4 space-y-5">
                     <Link
@@ -77,9 +78,8 @@ const AdminHeader = () => {
                         className="hover:text-gray-300 font-bold"
                         onClick={() => setIsMenuOpen(false)}
                     >
-                        МЕРОПРИЯТИЯ
+                        EVENTS
                     </Link>
-
 
                     <button
                         className="text-white hover:text-gray-300"
@@ -90,7 +90,7 @@ const AdminHeader = () => {
 
                     {authContext?.user ? (
                         <div className="flex flex-col items-center space-y-2">
-                            <span className="text-sm">Привет, {authContext.user.email}!</span>
+                            <span className="text-sm">Hello, {authContext.user.email}!</span>
                             <button
                                 onClick={() => {
                                     authContext.logout();
@@ -98,7 +98,7 @@ const AdminHeader = () => {
                                 }}
                                 className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-full transition"
                             >
-                                Выйти
+                                Logout
                             </button>
                         </div>
                     ) : (
@@ -108,14 +108,14 @@ const AdminHeader = () => {
                                 className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-full transition"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Регистрация
+                                Register
                             </Link>
                             <Link
                                 to="/login"
                                 className="border border-white text-white py-2 px-4 rounded-full hover:bg-white hover:text-black transition"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Войти
+                                Login
                             </Link>
                         </div>
                     )}
