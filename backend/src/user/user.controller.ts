@@ -1,14 +1,13 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
-import { GetUser } from 'src/auth/decorator';
-import { User } from './entities/user.entity';
+import { Controller, Get, UseGuards } from "@nestjs/common";
+import { UserService } from "./user.service";
+import { JwtGuard } from "src/auth/guard/jwt.guard";
+import { GetUser } from "src/auth/decorator";
+import { User } from "./entities/user.entity";
+import { RolesGuard } from "src/auth/guard/roles.guard";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
-@Controller('user')
+@Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -37,14 +36,22 @@ export class UserController {
   //   return this.userService.remove(+id);
   // }
   @UseGuards(JwtGuard)
-  @Get('me')
-  getMe(@GetUser('') user: User, @GetUser('email') email: string) {
+  @Get("me")
+  getMe(@GetUser("") user: User, @GetUser("email") email: string) {
     return user;
   }
 
   @UseGuards(JwtGuard)
   @Get()
   test() {
-    return 'test';
+    return "test";
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Get("admin")
+  @Roles("admin")
+  @ApiBearerAuth()
+  admin() {
+    return "you are admin";
   }
 }

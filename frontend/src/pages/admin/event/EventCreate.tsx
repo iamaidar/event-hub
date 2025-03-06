@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {createEvent} from "../../../api/eventApi.tsx";
+import EventForm from "../../../components/Admin/EventForm.tsx";
 
 const EventCreate: React.FC = () => {
     const [title, setTitle] = useState("");
@@ -13,6 +14,7 @@ const EventCreate: React.FC = () => {
     const [status, setStatus] = useState("");
     const [isVerified, setIsVerified] = useState(false);
     const navigate = useNavigate();
+    const [imageUrl, setImageUrl] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,6 +44,32 @@ const EventCreate: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            <h1 className="text-2xl font-bold">Create Event</h1>
+
+            <EventForm
+                title={title}
+                setTitle={setTitle}
+                description={description}
+                setDescription={setDescription}
+                dateTime={dateTime}
+                setDateTime={setDateTime}
+                location={location}
+                setLocation={setLocation}
+                categoryName={categoryName}
+                setCategoryName={setCategoryName}
+                price={price}
+                setPrice={(value) => setPrice(Number(value))}
+                totalTickets={totalTickets}
+                setTotalTickets={(value) => setTotalTickets(Number(value))}
+                status={status}
+                setStatus={setStatus}
+                isVerified={isVerified}
+                setIsVerified={setIsVerified}
+                imageUrl={imageUrl}
+                setImageUrl={setImageUrl}
+                onSubmit={handleSubmit}
+                submitButtonText="Create Event"
+            />
             <h1 className="text-2xl font-bold mb-4">Создать мероприятие</h1>
             <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
                 <div>
