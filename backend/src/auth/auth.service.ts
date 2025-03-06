@@ -90,7 +90,8 @@ export class AuthService {
       expiresIn: "7d",
       secret: this.config.get<string>("JWT_REFRESH_SECRET"),
     });
-
+    console.log(access_token);
+    console.log(refresh_token);
     // Возвращаем «сырые» данные – глобальный интерцептор оформит их в:
     // { success: true, data: { access_token, refresh_token }, message: "OK" }
     return { access_token, refresh_token };

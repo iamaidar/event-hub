@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CategoryForm from "../../../components/Admin/CategoryForm.tsx";
+import CategoryForm from "../../../components/admin/CategoryForm.tsx";
 
 const CategoryCreate: React.FC = () => {
     const [name, setName] = useState("");

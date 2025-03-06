@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CategoryForm from "../../../components/Admin/CategoryForm.tsx"; // Убедитесь, что путь правильный
+import CategoryForm from "../../../components/admin/CategoryForm.tsx"; // Убедитесь, что путь правильный
 
 const CategoryEdit: React.FC = () => {
     // Состояния для категории

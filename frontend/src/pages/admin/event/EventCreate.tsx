@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {createEvent} from "../../../api/eventApi.tsx";
-import EventForm from "../../../components/Admin/EventForm.tsx";
+import EventForm from "../../../components/admin/EventForm.tsx";
 
 const EventCreate: React.FC = () => {
     const [title, setTitle] = useState("");

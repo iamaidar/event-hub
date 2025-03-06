@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchPaginatedEvents, deleteEvent, EventType } from "../../../api/eventApi";
+import EventTable from "../../../components/EventTable.tsx";
+import Button from "../../../UI/Button.tsx";
 
 const EventList: React.FC = () => {
     const [events, setEvents] = useState<EventType[]>([]);
@@ -61,12 +63,6 @@ const EventList: React.FC = () => {
         return <div className="container mx-auto px-4 py-8">{error}</div>;
     }
 
-import EventTable from "../../../components/EventTable.tsx";
-import Button from "../../../UI/Button.tsx";
-
-interface EventListProps {}
-
-const EventList: React.FC<EventListProps> = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-4">Events</h1>
@@ -126,7 +122,7 @@ const EventList: React.FC<EventListProps> = () => {
                     Previous
                 </button>
                 <div className="flex space-x-2">
-                    {Array.from({ length: totalPages }, (_, index) => (
+                    {Array.from({length: totalPages}, (_, index) => (
                         <button
                             key={index + 1}
                             onClick={() => setCurrentPage(index + 1)}
@@ -148,16 +144,14 @@ const EventList: React.FC<EventListProps> = () => {
                     Next
                 </button>
             </div>
-        <div className="container mx-auto px-4 py-8 relative">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Events</h1>
-                <Button text="Create Event" to="/admin/events/create" variant="green" />
+            <div className="container mx-auto px-4 py-8 relative">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">Events</h1>
+                    <Button text="Create Event" to="/admin/events/create" variant="green"/>
+                </div>
+
+                <EventTable/>
             </div>
-
-            <EventTable />
-        </div>
-    );
+        </div>);
 };
-
 export default EventList;
-

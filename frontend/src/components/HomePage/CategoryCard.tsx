@@ -1,7 +1,7 @@
 import Card, { CategoryCardProps } from "../../UI/Card";
 import Button from "../../UI/Button.tsx";
 import axios from "axios";
-import { getToken } from "../../utils/tokenService.tsx";
+import { getAccessToken } from "../../utils/tokenService.tsx";
 import { useEffect, useState } from "react";
 
 const CategoryCard = () => {
@@ -16,7 +16,7 @@ const CategoryCard = () => {
         },
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
         },
       })
       .then((response) => {

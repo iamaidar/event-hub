@@ -14,6 +14,7 @@ export interface EventType {
         id: number;
         name: string;
     };
+    image_url: string;
     organizer: {
         id: number;
         username: string;

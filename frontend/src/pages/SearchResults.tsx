@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import EventList from "../components/HomePage/EventList";
 import { EventCardProps } from "../UI/EventCard";
-import { getToken } from "../utils/tokenService";
+import { getAccessToken } from "../utils/tokenService";
 
 const SearchResults = () => {
   const [events, setEvents] = useState<EventCardProps[]>([]);
@@ -25,7 +25,7 @@ const SearchResults = () => {
           },
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${getAccessToken()}`,
           },
         })
         .then((response) => {

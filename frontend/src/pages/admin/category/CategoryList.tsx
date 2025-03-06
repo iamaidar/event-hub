@@ -1,4 +1,4 @@
-import CategoryTable from "../../../components/Admin/CategoryTable.tsx";
+import CategoryTable from "../../../components/admin/CategoryTable.tsx";
 import Button from "../../../UI/Button.tsx";
 
 interface CategoryListProps {}
