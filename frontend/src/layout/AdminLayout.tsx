@@ -4,11 +4,16 @@ import AdminHeader from "../components/admin/AdminHeader.tsx";
 
 const AdminLayout = () => {
     return (
-        <div>
+        <div className="flex flex-col min-h-screen">
+            {/* Фиксированный Header */}
             <AdminHeader />
-            <div className="p-4">
+
+            {/* Контентная область занимает оставшееся пространство */}
+            <main className="flex-grow p-4">
                 <Outlet />
-            </div>
+            </main>
+
+            {/* Фиксированный Footer */}
             <AdminFooter />
         </div>
     );
