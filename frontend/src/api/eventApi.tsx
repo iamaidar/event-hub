@@ -1,6 +1,7 @@
 import api from "./axiosInstance"; // ваш настроенный axios-инстанс
 
 export interface EventType {
+    category: any;
     id: number;
     title: string;
     description?: string;

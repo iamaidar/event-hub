@@ -128,9 +128,11 @@ const EventForm: React.FC<EventFormProps> = ({
                     <label className="block text-gray-700">Category</label>
                     <select
                         value={selectedCategoryId ?? ""}
-                        onChange={(e) =>
-                            setSelectedCategoryId(e.target.value ? Number(e.target.value) : null)
-                        }
+                        onChange={(e) => {
+                            const value = e.target.value ? Number(e.target.value) : null;
+                            console.log("🟡 Selected category:", value);
+                            setSelectedCategoryId(value);
+                        }}
                         className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                     >
                         <option value="">Выберите категорию</option>
@@ -147,7 +149,7 @@ const EventForm: React.FC<EventFormProps> = ({
                         <input
                             type="number"
                             value={price}
-                            onChange={(e) => setPrice(Number(e.target.value))}
+                            onChange={(e) => setPrice(Number(e.target.value) || 0)} // 🛠 Фиксим, чтобы было числом
                             className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                             required
                         />
@@ -179,7 +181,7 @@ const EventForm: React.FC<EventFormProps> = ({
                     <input
                         type="checkbox"
                         checked={isVerified}
-                        onChange={(e) => setIsVerified(e.target.checked)}
+                        onChange={(e) => setIsVerified(e.target.checked)} // 🛠 Передаем true/false
                         className="mr-3"
                     />
                     <span className="text-gray-700">Verified</span>

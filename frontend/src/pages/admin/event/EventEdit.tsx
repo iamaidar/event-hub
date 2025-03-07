@@ -40,26 +40,34 @@ const EventEdit: React.FC = () => {
                     setPrice(data.price);
                     setTotalTickets(data.total_tickets);
                     setStatus(data.status);
-                    setIsVerified(data.is_verified || false);
+                    setIsVerified(Boolean(data.is_verified));
                     setImageUrl(data.image_url || "");
-                    setSelectedCategoryId(data.categoryId ? data.categoryId : null);
+
+                    // 🛠 Если `category` объект, берем `category.id`
+                    const categoryId = data.category?.id ?? null;
+                    console.log("✅ Event category loaded:", categoryId);
+                    setSelectedCategoryId(categoryId);
+
                     setLoading(false);
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.error("❌ Error loading event data:", error);
                     setError("Error loading event data.");
                     setLoading(false);
                 });
         }
 
-        // Fetch available categories
         fetchCategories()
             .then((data) => {
                 setCategories(data);
+                console.log("✅ Categories loaded:", data);
             })
             .catch(() => {
                 setError("Error fetching categories.");
             });
     }, [id]);
+
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,29 +75,32 @@ const EventEdit: React.FC = () => {
         const updatedEvent: any = {
             title,
             description,
-            date_time: dateTime,
+            date_time: new Date(dateTime).toISOString(),
             location,
-            price,
-            total_tickets: totalTickets,
+            price: Number(price), // 🛠 Убедимся, что price - число
+            total_tickets: Number(totalTickets), // 🛠 Убедимся, что total_tickets - число
             status,
-            is_verified: isVerified,
+            is_verified: Boolean(isVerified), // 🛠 Передаем is_verified как true/false
             image_url: imageUrl,
+            categoryId: selectedCategoryId ?? null,
         };
 
-        if (selectedCategoryId) {
-            updatedEvent.categoryId =  selectedCategoryId ;
-        }
+        console.log("🟡 Sending event update:", updatedEvent);
 
         if (id) {
             updateEvent(id, updatedEvent)
                 .then(() => {
+                    console.log("✅ Event updated successfully!");
                     navigate("/admin/events");
                 })
-                .catch(() => {
-                    alert("Error updating event.");
+                .catch((error) => {
+                    console.error("❌ Error updating event:", error.response?.data || error);
+                    alert("Error updating event: " + (error.response?.data?.message.join(", ") || "Unknown error"));
                 });
         }
     };
+
+
 
     if (loading) {
         return <div className="container mx-auto px-4 py-8">Loading...</div>;
