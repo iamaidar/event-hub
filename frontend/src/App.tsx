@@ -1,4 +1,3 @@
-// src/App.tsx
 import {
     BrowserRouter as Router,
     Routes,
@@ -6,8 +5,8 @@ import {
     Navigate,
     useLocation,
 } from "react-router-dom";
-import { useEffect } from "react";
-import { AuthProvider } from "./context/AuthContext";
+import { useContext, useEffect } from "react";
+import { AuthContext, AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
 import PublicRoute from "./routes/PublicRoute";
@@ -24,16 +23,22 @@ import EventEdit from "./pages/admin/event/EventEdit";
 import EventDetail from "./pages/admin/event/EventDetail";
 import PrivateRoute from "./routes/PrivateRoute";
 import AdminLayout from "./layout/AdminLayout";
+import { setupAxiosInterceptors } from "./api/axiosInstance";
 
 const AppContent = () => {
     const location = useLocation();
+    const authContext = useContext(AuthContext);
 
     useEffect(() => {
-        // Сохраняем текущий путь
+        if (authContext) {
+            setupAxiosInterceptors(authContext);
+        }
+    }, [authContext]);
+
+    useEffect(() => {
         localStorage.setItem("lastVisitedRoute", location.pathname);
     }, [location.pathname]);
 
-    // Определяем, находимся ли мы в админской части (без Header/Footer)
     const isAdminRoute = location.pathname.startsWith("/admin");
 
     return (
@@ -45,7 +50,7 @@ const AppContent = () => {
                         path="/login"
                         element={
                             <PublicRoute>
-                                <LoginForm isLogin={true} />
+                                <LoginForm />
                             </PublicRoute>
                         }
                     />
@@ -69,7 +74,7 @@ const AppContent = () => {
                     <Route path="/events" element={<SearchResults />} />
                     <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-                    {/* Админские маршруты с вложенным AdminLayout */}
+                    {/* Админские маршруты */}
                     <Route
                         path="/admin/*"
                         element={

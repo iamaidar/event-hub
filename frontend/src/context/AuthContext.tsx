@@ -1,70 +1,97 @@
-import { createContext, useState, useEffect, ReactNode } from "react";
-import { getToken, setToken, removeToken } from "../utils/tokenService";
+import {
+    createContext,
+    useState,
+    useEffect,
+    ReactNode,
+    useCallback,
+} from "react";
+import { getAccessToken, setAccessToken, setRefreshToken, removeTokens, getRefreshToken } from "../utils/tokenService";
+import { refreshTokenRequest } from "../api/authApi";
 import {jwtDecode} from "jwt-decode";
 
-// Определяем тип данных пользователя с поддержкой ролей
 interface User {
     email: string;
     roles: string[];
     exp: number;
 }
 
-// Определяем тип контекста, добавив метод hasRole
 interface AuthContextType {
     user: User | null;
-    login: (access_token: string) => void;
+    login: (access_token: string, refresh_token: string) => void;
     logout: () => void;
     hasRole: (role: string) => boolean;
+    refresh: () => Promise<void>;
 }
 
-// Создаем контекст с начальным значением null
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
 
+    const decodeAndSetUser = (access_token: string) => {
+        try {
+            const decoded: User = jwtDecode(access_token);
+            setUser(decoded);
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            setUser(null);
+        }
+    };
+
     useEffect(() => {
-        const access_token = getToken();
-        if (access_token) {
+        const token = getAccessToken();
+        if (token) {
             try {
-                const decoded: User = jwtDecode(access_token);
-                decoded.roles = ["admin"];
-                // Проверка срока действия токена
+                const decoded: User = jwtDecode(token);
                 if (decoded.exp * 1000 < Date.now()) {
-                    removeToken();
+                    removeTokens();
                     setUser(null);
                 } else {
                     setUser(decoded);
                 }
             } catch (error) {
-                console.error("Ошибка при декодировании токена:", error);
-                removeToken(); // Удаляем битый токен
+                console.error("Error decoding token:", error);
+                removeTokens();
             }
         }
     }, []);
 
-    const login = (access_token: string) => {
-        setToken(access_token);
-        try {
-            const decoded: User = jwtDecode(access_token);
-            setUser(decoded);
-        } catch (error) {
-            console.error("Ошибка при декодировании токена:", error);
-        }
+    const login = (access_token: string, refresh_token: string) => {
+        setAccessToken(access_token);
+        setRefreshToken(refresh_token);
+        decodeAndSetUser(access_token);
     };
 
     const logout = () => {
-        removeToken();
+        removeTokens();
         setUser(null);
     };
 
-    // Метод для проверки наличия определенной роли
+    const refresh = useCallback(async (): Promise<void> => {
+        const refresh_token = getRefreshToken();
+        if (!refresh_token) {
+            logout();
+            return;
+        }
+        try {
+            const { data } = await refreshTokenRequest(refresh_token);
+            if (data && data.access_token) {
+                setAccessToken(data.access_token);
+                setRefreshToken(data.refresh_token);
+                decodeAndSetUser(data.access_token);
+            }
+        } catch (error) {
+            console.error("Token refresh failed:", error);
+            logout();
+        }
+    }, []);
+
     const hasRole = (role: string): boolean => {
         return user ? user.roles.includes(role) : false;
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, hasRole }}>
+        <AuthContext.Provider value={{ user, login, logout, hasRole, refresh }}>
             {children}
         </AuthContext.Provider>
     );
