@@ -51,8 +51,9 @@ const EventCreate: React.FC = () => {
         };
 
         if (selectedCategoryId) {
-            newEvent.category = { id: selectedCategoryId };
+            newEvent.categoryId =  selectedCategoryId ;
         }
+        console.log(newEvent);
 
         createEvent(newEvent)
             .then(() => {

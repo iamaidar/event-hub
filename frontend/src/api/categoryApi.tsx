@@ -26,8 +26,6 @@ export interface PaginatedCategories {
 // Получение всех категорий (без пагинации)
 export const fetchCategories = async (): Promise<CategoryType[]> => {
     const response = await api.get("/categories/all");
-    console.log("paginatedData", response);
-
     return response.data.data;
 };
 

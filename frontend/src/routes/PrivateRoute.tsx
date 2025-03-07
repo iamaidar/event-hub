@@ -4,10 +4,10 @@ import { AuthContext } from "../context/AuthContext";
 
 interface PrivateRouteProps {
     children: ReactNode;
-    requiredRole: string;
+    requiredRoles: string[];
 }
 
-const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
+const PrivateRoute = ({ children, requiredRoles }: PrivateRouteProps) => {
     const authContext = useContext(AuthContext);
     const location = useLocation();
 
@@ -21,7 +21,7 @@ const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
     }
 
     // Проверяем наличие требуемой роли у пользователя
-    if (!authContext.hasRole(requiredRole)) {
+    if (!authContext.hasRole(requiredRoles)) {
         return <Navigate to="/unauthorized" replace />;
     }
 

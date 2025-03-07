@@ -1,23 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {  fetchEventById, updateEvent } from "../../../api/eventApi.tsx";
+import { fetchEventById, updateEvent } from "../../../api/eventApi.tsx";
+import { fetchCategories } from "../../../api/categoryApi.tsx";
+import EventForm from "../../../components/admin/EventForm.tsx";
+
+interface Category {
+    id: number;
+    name: string;
+}
 
 const EventEdit: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
-    // Поля формы
+    // Form fields
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [dateTime, setDateTime] = useState("");
     const [location, setLocation] = useState("");
-    const [categoryName, setCategoryName] = useState("");
     const [price, setPrice] = useState(0);
     const [totalTickets, setTotalTickets] = useState(0);
     const [status, setStatus] = useState("");
     const [isVerified, setIsVerified] = useState(false);
+    const [imageUrl, setImageUrl] = useState("");
 
     useEffect(() => {
         if (id) {
@@ -27,23 +37,34 @@ const EventEdit: React.FC = () => {
                     setDescription(data.description || "");
                     setDateTime(new Date(data.date_time).toISOString().slice(0, 16));
                     setLocation(data.location);
-                    setCategoryName(data.category ? data.category.name : "");
                     setPrice(data.price);
                     setTotalTickets(data.total_tickets);
                     setStatus(data.status);
                     setIsVerified(data.is_verified || false);
+                    setImageUrl(data.image_url || "");
+                    setSelectedCategoryId(data.category ? data.category.id : null);
                     setLoading(false);
                 })
                 .catch(() => {
-                    setError("Ошибка при загрузке данных мероприятия");
+                    setError("Error loading event data.");
                     setLoading(false);
                 });
         }
+
+        // Fetch available categories
+        fetchCategories()
+            .then((data) => {
+                setCategories(data);
+            })
+            .catch(() => {
+                setError("Error fetching categories.");
+            });
     }, [id]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const updatedEvent = {
+
+        const updatedEvent: any = {
             title,
             description,
             date_time: dateTime,
@@ -52,8 +73,12 @@ const EventEdit: React.FC = () => {
             total_tickets: totalTickets,
             status,
             is_verified: isVerified,
-            ...(categoryName && { category: { id: 0, name: categoryName } }),
+            image_url: imageUrl,
         };
+
+        if (selectedCategoryId) {
+            updatedEvent.category = { id: selectedCategoryId };
+        }
 
         if (id) {
             updateEvent(id, updatedEvent)
@@ -61,13 +86,13 @@ const EventEdit: React.FC = () => {
                     navigate("/admin/events");
                 })
                 .catch(() => {
-                    alert("Ошибка при обновлении мероприятия");
+                    alert("Error updating event.");
                 });
         }
     };
 
     if (loading) {
-        return <div className="container mx-auto px-4 py-8">Загрузка...</div>;
+        return <div className="container mx-auto px-4 py-8">Loading...</div>;
     }
 
     if (error) {
@@ -76,105 +101,32 @@ const EventEdit: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-4">Редактировать мероприятие</h1>
-            <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-                <div>
-                    <label className="block text-gray-700">Название</label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">Описание</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">Дата и время</label>
-                    <input
-                        type="datetime-local"
-                        value={dateTime}
-                        onChange={(e) => setDateTime(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">Место проведения</label>
-                    <input
-                        type="text"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">
-                        Категория (необязательно)
-                    </label>
-                    <input
-                        type="text"
-                        value={categoryName}
-                        onChange={(e) => setCategoryName(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">Цена</label>
-                    <input
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(Number(e.target.value))}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">
-                        Общее количество билетов
-                    </label>
-                    <input
-                        type="number"
-                        value={totalTickets}
-                        onChange={(e) => setTotalTickets(Number(e.target.value))}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700">Статус</label>
-                    <input
-                        type="text"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="w-full border px-3 py-2 rounded"
-                        required
-                    />
-                </div>
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        checked={isVerified}
-                        onChange={(e) => setIsVerified(e.target.checked)}
-                        className="mr-2"
-                    />
-                    <span className="text-gray-700">Проверено</span>
-                </div>
-                <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Сохранить изменения
-                </button>
-            </form>
+            <h1 className="text-2xl font-bold mb-6">Edit Event</h1>
+            <EventForm
+                title={title}
+                setTitle={setTitle}
+                description={description}
+                setDescription={setDescription}
+                dateTime={dateTime}
+                setDateTime={setDateTime}
+                location={location}
+                setLocation={setLocation}
+                price={price}
+                setPrice={(value) => setPrice(Number(value))}
+                totalTickets={totalTickets}
+                setTotalTickets={(value) => setTotalTickets(Number(value))}
+                status={status}
+                setStatus={setStatus}
+                isVerified={isVerified}
+                setIsVerified={setIsVerified}
+                imageUrl={imageUrl}
+                setImageUrl={setImageUrl}
+                onSubmit={handleSubmit}
+                submitButtonText="Save Changes"
+                categories={categories}
+                selectedCategoryId={selectedCategoryId}
+                setSelectedCategoryId={setSelectedCategoryId}
+            />
         </div>
     );
 };

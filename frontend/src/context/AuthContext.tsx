@@ -19,7 +19,7 @@ interface AuthContextType {
     user: User | null;
     login: (access_token: string, refresh_token: string) => void;
     logout: () => void;
-    hasRole: (role: string) => boolean;
+    hasRole: (role: string[]) => boolean;
     refresh: () => Promise<void>;
 }
 
@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
                 const decoded: User = jwtDecode(token);
                 if (decoded.exp * 1000 < Date.now()) {
+                    logout();
                     removeTokens();
                     setUser(null);
                 } else {
@@ -86,8 +87,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const hasRole = (role: string): boolean => {
-        return user ? user.role === role : false;
+    const hasRole = (role: string[]): boolean => {
+        return user ? role.includes(user.role) : false;
     };
 
     return (

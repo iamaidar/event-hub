@@ -10,10 +10,7 @@ export interface EventType {
     total_tickets: number;
     status: string;
     is_verified?: boolean;
-    category?: {
-        id: number;
-        name: string;
-    };
+    categoryId: number;
     image_url: string;
     organizer: {
         id: number;
@@ -62,7 +59,7 @@ export const updateEvent = async (
     id: number | string,
     event: Partial<EventType>
 ): Promise<EventType> => {
-    const response = await api.put(`/events/${id}`, event);
+    const response = await api.patch(`/events/${id}`, event);
     return response.data.data;
 };
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchPaginatedEvents, deleteEvent, EventType } from "../../../api/eventApi";
 import EventTable from "../../../components/EventTable.tsx";
 import Button from "../../../UI/Button.tsx";
@@ -15,7 +14,6 @@ const EventList: React.FC = () => {
         setLoading(true);
         fetchPaginatedEvents(page, 10)
             .then((result) => {
-                console.log(result);
                 setEvents(result.data);
                 setCurrentPage(result.page);
                 setTotalPages(result.totalPages);
@@ -65,54 +63,13 @@ const EventList: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-4">Events</h1>
-            <Link
-                to="/admin/events/create"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-                Create Event
-            </Link>
-            <ul className="mt-4 space-y-4">
-                {events.map((event) => (
-                    <li key={event.id} className="border p-4 rounded">
-                        <h2 className="text-xl font-semibold">{event.title}</h2>
-                        <p>{event.description}</p>
-                        <p>
-                            <strong>Date & Time:</strong>{" "}
-                            {new Date(event.date_time).toLocaleString()}
-                        </p>
-                        <p>
-                            <strong>Location:</strong> {event.location}
-                        </p>
-                        <p>
-                            <strong>Price:</strong> {event.price} USD
-                        </p>
-                        <p>
-                            <strong>Status:</strong> {event.status}
-                        </p>
-                        <div className="mt-2">
-                            <Link
-                                to={`/admin/events/${event.id}`}
-                                className="text-green-500 hover:underline mr-2"
-                            >
-                                Details
-                            </Link>
-                            <Link
-                                to={`/admin/events/edit/${event.id}`}
-                                className="text-blue-500 hover:underline mr-2"
-                            >
-                                Edit
-                            </Link>
-                            <button
-                                onClick={() => handleDelete(event.id)}
-                                className="text-red-500 hover:underline"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Events</h1>
+                <Button text="Create Event" to="/admin/events/create" variant="green" />
+            </div>
+
+            <EventTable events={events} onDelete={handleDelete}></EventTable>
+
             <div className="flex items-center justify-center mt-8 space-x-4">
                 <button
                     onClick={handlePrev}
@@ -122,7 +79,7 @@ const EventList: React.FC = () => {
                     Previous
                 </button>
                 <div className="flex space-x-2">
-                    {Array.from({length: totalPages}, (_, index) => (
+                    {Array.from({ length: totalPages }, (_, index) => (
                         <button
                             key={index + 1}
                             onClick={() => setCurrentPage(index + 1)}
@@ -144,14 +101,8 @@ const EventList: React.FC = () => {
                     Next
                 </button>
             </div>
-            <div className="container mx-auto px-4 py-8 relative">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">Events</h1>
-                    <Button text="Create Event" to="/admin/events/create" variant="green"/>
-                </div>
-
-                <EventTable/>
-            </div>
-        </div>);
+        </div>
+    );
 };
+
 export default EventList;

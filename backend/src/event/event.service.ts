@@ -139,9 +139,11 @@ export class EventService {
 
   async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: Number(id) } });
+    console.log(event);
     if (!event) {
       throw new NotFoundException('Event not found');
     }
+    console.log('Dd');
 
     const { categoryId, date_time, ...rest } = updateEventDto;
     Object.assign(event, rest);

@@ -24,6 +24,10 @@ import EventDetail from "./pages/admin/event/EventDetail";
 import PrivateRoute from "./routes/PrivateRoute";
 import AdminLayout from "./layout/AdminLayout";
 import { setupAxiosInterceptors } from "./api/axiosInstance";
+import CategoryList from "./pages/admin/category/CategoryList.tsx";
+import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
+import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
+import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
 
 const AppContent = () => {
     const location = useLocation();
@@ -65,7 +69,7 @@ const AppContent = () => {
                     <Route
                         path="/dashboard"
                         element={
-                            <PrivateRoute requiredRole="user">
+                            <PrivateRoute requiredRoles={['user']} >
                                 <Dashboard />
                             </PrivateRoute>
                         }
@@ -78,7 +82,7 @@ const AppContent = () => {
                     <Route
                         path="/admin/*"
                         element={
-                            <PrivateRoute requiredRole="admin">
+                            <PrivateRoute requiredRoles={['admin']}>
                                 <AdminLayout />
                             </PrivateRoute>
                         }
@@ -88,6 +92,12 @@ const AppContent = () => {
                         <Route path="events/create" element={<EventCreate />} />
                         <Route path="events/edit/:id" element={<EventEdit />} />
                         <Route path="events/:id" element={<EventDetail />} />
+
+                        <Route path="categories" element={<CategoryList/>}/>
+                        <Route path="categories/create" element={<CategoryCreate/>}/>
+                        <Route path="categories/edit/:id" element={<CategoryEdit/>}/>
+                        <Route path="categories/:id" element={<CategoryDetail/>}/>
+
                     </Route>
 
                     <Route path="*" element={<Navigate to="/login" replace />} />

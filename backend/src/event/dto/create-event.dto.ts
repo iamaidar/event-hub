@@ -24,7 +24,7 @@ export class CreateEventDto {
     @IsNotEmpty()
     location: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     categoryId?: string; // ID категории
 
     @IsNumber()
