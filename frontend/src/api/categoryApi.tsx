@@ -62,7 +62,7 @@ export const updateCategory = async (
     id: number | string,
     category: Partial<CategoryType>
 ): Promise<CategoryType> => {
-    const response = await api.put(`/categories/${id}`, category);
+    const response = await api.patch(`/categories/${id}`, category);
     return response.data.data;
 };
 

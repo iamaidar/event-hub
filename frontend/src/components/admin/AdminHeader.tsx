@@ -34,6 +34,10 @@ const AdminHeader = () => {
                     <Link to="/admin/events" className="hover:text-gray-300 font-bold">
                         EVENTS
                     </Link>
+
+                    <Link to="/admin/categories" className="hover:text-gray-300 font-bold">
+                        CATEGORIES
+                    </Link>
                 </nav>
 
                 {/* Cart and Authentication */}
@@ -79,6 +83,13 @@ const AdminHeader = () => {
                         onClick={() => setIsMenuOpen(false)}
                     >
                         EVENTS
+                    </Link>
+                    <Link
+                        to="/admin/categories"
+                        className="hover:text-gray-300 font-bold"
+                        onClick={() => setIsMenuOpen(false)}
+                    >
+                        CATEGORIES
                     </Link>
 
                     <button
