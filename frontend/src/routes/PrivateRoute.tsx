@@ -1,16 +1,33 @@
-import { ReactNode, useContext } from "react";
-import { Navigate } from "react-router-dom";
+import { ReactNode, useContext, useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 interface PrivateRouteProps {
     children: ReactNode;
+    requiredRoles: string[];
 }
 
-const PrivateRoute = ({ children }: PrivateRouteProps) => {
+const PrivateRoute = ({ children, requiredRoles }: PrivateRouteProps) => {
     const authContext = useContext(AuthContext);
+    const location = useLocation();
+    const [loading, setLoading] = useState(true);
 
-    if (!authContext || !authContext.user) {
-        return <Navigate to="/login" />;
+    useEffect(() => {
+        if (authContext) {
+            setLoading(false);
+        }
+    }, [authContext]);
+
+    if (loading) {
+        return <div>Loading...</div>; // Показываем спиннер, пока загружается `authContext`
+    }
+
+    if (!authContext?.user) {
+        localStorage.setItem("lastVisitedRoute", location.pathname); // Сохраняем маршрут перед редиректом
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+    if (!authContext.hasRole(requiredRoles)) {
+        return <Navigate to="/unauthorized" replace />;
     }
 
     return <>{children}</>;

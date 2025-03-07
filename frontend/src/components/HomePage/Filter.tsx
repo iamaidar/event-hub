@@ -3,7 +3,7 @@ import { Search, Calendar, MapPin } from "lucide-react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { getToken } from "../../utils/tokenService";
+import { getAccessToken } from "../../utils/tokenService";
 import { useNavigate } from "react-router-dom";
 
 export default function Filter() {
@@ -20,7 +20,7 @@ export default function Filter() {
       .get("http://localhost:3000/events/locations", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
         },
       })
       .then((response) => {

@@ -19,6 +19,8 @@ import { FilterEventDto } from './dto/filter-event.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/decorator/public.decorator'
+import {RolesGuard} from "../auth/guard/roles.guard";
+import {Roles} from "../auth/decorator";
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -42,11 +44,12 @@ export class EventController {
     return this.eventService.filterEventsPaginated(filterDto, paginationDto);
   }
 
-  // Защищённый маршрут создания мероприятия
+
+  @Roles('admin','organizer')
   @Post()
   @ApiOperation({ summary: 'Создать мероприятие' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Мероприятие успешно создано.',
   })
   create(@Body() createEventDto: CreateEventDto, @Request() req) {
@@ -78,6 +81,7 @@ export class EventController {
   }
 
   // Защищённый маршрут получения мероприятия по ID
+  @Roles('admin')
   @Get(':id')
   @ApiOperation({ summary: 'Получить мероприятие по ID' })
   @ApiResponse({
@@ -91,17 +95,20 @@ export class EventController {
   // Защищённый маршрут обновления мероприятия
   @Patch(':id')
   @ApiOperation({ summary: 'Обновить мероприятие по ID' })
+  @Roles('admin')
   @ApiResponse({
     status: 200,
     description: 'Мероприятие успешно обновлено.',
   })
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
+    console.log('Dd');
     return this.eventService.update(id, updateEventDto);
   }
 
   // Защищённый маршрут удаления мероприятия
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить мероприятие по ID' })
+  @Roles('admin','organizer')
   @ApiResponse({
     status: 200,
     description: 'Мероприятие успешно удалено.',

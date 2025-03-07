@@ -4,7 +4,7 @@ import EventList from "../components/HomePage/EventList";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { EventCardProps } from "../UI/EventCard";
-import { getToken } from "../utils/tokenService";
+import { getAccessToken } from "../utils/tokenService";
 
 const Home = () => {
   const [events, setEvents] = useState<EventCardProps[]>([]);
@@ -19,7 +19,7 @@ const Home = () => {
         },
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
         },
       })
       .then((response) => {

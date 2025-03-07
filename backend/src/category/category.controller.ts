@@ -16,6 +16,7 @@ import {UpdateCategoryDto} from "./dto/update-category.dto";
 import {PaginationDto} from "../common/dto/pagination.dto";
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Category} from "./entities/category.entity";
+import {Public} from "../auth/decorator";
 
 @ApiTags('Category')
 @ApiBearerAuth() // Если требуется авторизация
@@ -33,11 +34,21 @@ export class CategoryController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Получить все категории c пагинацией' })
   @ApiResponse({ status: 200, description: 'Список категорий.' })
   findAllPaginated(@Query() paginationDto: PaginationDto) {
     return this.categoryService.findAllPaginated(paginationDto);
   }
+
+  @Get('all')
+  @Public()
+  @ApiOperation({ summary: 'Get all categories (Public)' })
+  @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
+  async findAll(): Promise<Category[]> {
+    return this.categoryService.findAll();
+  }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Получить категорию по ID' })

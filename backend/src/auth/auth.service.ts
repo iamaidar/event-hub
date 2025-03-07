@@ -90,7 +90,14 @@ export class AuthService {
       expiresIn: "7d",
       secret: this.config.get<string>("JWT_REFRESH_SECRET"),
     });
+    const hash = await argon.hash(refresh_token);
 
+    // Обновляем пользователя, сохраняя хеш refresh_token
+    await this.userRepository.update(userId, {
+      refresh_token_hash: hash,
+    });
+    console.log(access_token);
+    console.log(refresh_token);
     // Возвращаем «сырые» данные – глобальный интерцептор оформит их в:
     // { success: true, data: { access_token, refresh_token }, message: "OK" }
     return { access_token, refresh_token };

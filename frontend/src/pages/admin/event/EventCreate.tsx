@@ -1,38 +1,72 @@
-import React, { useState } from "react";
-import EventForm from "../../../components/Admin/EventForm.tsx";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { createEvent } from "../../../api/eventApi.tsx";
+import EventForm from "../../../components/admin/EventForm.tsx";
+import { fetchCategories } from "../../../api/categoryApi.tsx";
+
+interface Category {
+    id: number;
+    name: string;
+}
 
 const EventCreate: React.FC = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [dateTime, setDateTime] = useState("");
     const [location, setLocation] = useState("");
-    const [categoryName, setCategoryName] = useState("");
     const [price, setPrice] = useState(0);
     const [totalTickets, setTotalTickets] = useState(0);
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState("Active");
     const [isVerified, setIsVerified] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Fetch categories from the API
+        fetchCategories()
+            .then((data: Category[]) => {
+                setCategories(data);
+            })
+            .catch((err: any) => {
+                console.error("Error fetching categories", err);
+            });
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        alert(`Form submitted (no functionality yet):\n
-            Title: ${title}\n
-            Description: ${description}\n
-            DateTime: ${dateTime}\n
-            Location: ${location}\n
-            Category: ${categoryName}\n
-            Price: ${price}\n
-            Tickets: ${totalTickets}\n
-            Status: ${status}\n
-            Verified: ${isVerified}\n
-            Image URL: ${imageUrl}`
-        );
+
+        const newEvent: any = {
+            title,
+            description,
+            date_time: dateTime,
+            location,
+            price,
+            total_tickets: totalTickets,
+            status,
+            is_verified: isVerified,
+            image_url: imageUrl,
+        };
+
+        if (selectedCategoryId) {
+            newEvent.categoryId =  selectedCategoryId ;
+        }
+        console.log(newEvent);
+
+        createEvent(newEvent)
+            .then(() => {
+                navigate("/admin/events");
+            })
+            .catch((_err) => {
+                alert("Error creating event");
+            });
     };
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold">Create Event</h1>
-
+            <h1 className="text-2xl font-bold mb-6">Create Event</h1>
             <EventForm
                 title={title}
                 setTitle={setTitle}
@@ -42,8 +76,6 @@ const EventCreate: React.FC = () => {
                 setDateTime={setDateTime}
                 location={location}
                 setLocation={setLocation}
-                categoryName={categoryName}
-                setCategoryName={setCategoryName}
                 price={price}
                 setPrice={(value) => setPrice(Number(value))}
                 totalTickets={totalTickets}
@@ -56,9 +88,13 @@ const EventCreate: React.FC = () => {
                 setImageUrl={setImageUrl}
                 onSubmit={handleSubmit}
                 submitButtonText="Create Event"
+                categories={categories}
+                selectedCategoryId={selectedCategoryId}
+                setSelectedCategoryId={setSelectedCategoryId}
             />
         </div>
     );
 };
 
 export default EventCreate;
+
