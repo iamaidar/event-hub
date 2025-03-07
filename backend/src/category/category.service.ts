@@ -1,5 +1,4 @@
-// src/category/category.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
@@ -30,6 +29,12 @@ export class CategoryService {
     }
 
     return this.categoryRepository.save(category);
+  }
+
+  async findAll(): Promise<Category[]> {
+    return this.categoryRepository.find({
+      relations: ['parent', 'children'],
+    });
   }
 
   // Новый метод для получения категорий с пагинацией

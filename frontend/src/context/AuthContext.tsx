@@ -11,7 +11,7 @@ import {jwtDecode} from "jwt-decode";
 
 interface User {
     email: string;
-    roles: string[];
+    role: string;
     exp: number;
 }
 
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const hasRole = (role: string): boolean => {
-        return user ? user.roles.includes(role) : false;
+        return user ? user.role === role : false;
     };
 
     return (

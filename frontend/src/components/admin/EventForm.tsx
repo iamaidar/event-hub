@@ -1,11 +1,15 @@
 import React from "react";
 
+interface Category {
+    id: number;
+    name: string;
+}
+
 interface EventFormProps {
     title: string;
     description: string;
     dateTime: string;
     location: string;
-    categoryName: string;
     price: number;
     totalTickets: number;
     status: string;
@@ -15,7 +19,6 @@ interface EventFormProps {
     setDescription: (value: string) => void;
     setDateTime: (value: string) => void;
     setLocation: (value: string) => void;
-    setCategoryName: (value: string) => void;
     setPrice: (value: number) => void;
     setTotalTickets: (value: number) => void;
     setStatus: (value: string) => void;
@@ -23,6 +26,9 @@ interface EventFormProps {
     setImageUrl: (value: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     submitButtonText: string;
+    categories: Category[];
+    selectedCategoryId: number | null;
+    setSelectedCategoryId: (value: number | null) => void;
 }
 
 const EventForm: React.FC<EventFormProps> = ({
@@ -30,7 +36,6 @@ const EventForm: React.FC<EventFormProps> = ({
                                                  description,
                                                  dateTime,
                                                  location,
-                                                 categoryName,
                                                  price,
                                                  totalTickets,
                                                  status,
@@ -40,7 +45,6 @@ const EventForm: React.FC<EventFormProps> = ({
                                                  setDescription,
                                                  setDateTime,
                                                  setLocation,
-                                                 setCategoryName,
                                                  setPrice,
                                                  setTotalTickets,
                                                  setStatus,
@@ -48,6 +52,9 @@ const EventForm: React.FC<EventFormProps> = ({
                                                  setImageUrl,
                                                  onSubmit,
                                                  submitButtonText,
+                                                 categories,
+                                                 selectedCategoryId,
+                                                 setSelectedCategoryId,
                                              }) => {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -119,12 +126,20 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
                 <div>
                     <label className="block text-gray-700">Category</label>
-                    <input
-                        type="text"
-                        value={categoryName}
-                        onChange={(e) => setCategoryName(e.target.value)}
+                    <select
+                        value={selectedCategoryId ?? ""}
+                        onChange={(e) =>
+                            setSelectedCategoryId(e.target.value ? Number(e.target.value) : null)
+                        }
                         className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
-                    />
+                    >
+                        <option value="">Выберите категорию</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                     <div>

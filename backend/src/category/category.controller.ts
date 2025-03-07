@@ -41,6 +41,15 @@ export class CategoryController {
     return this.categoryService.findAllPaginated(paginationDto);
   }
 
+  @Get('all')
+  @Public()
+  @ApiOperation({ summary: 'Get all categories (Public)' })
+  @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
+  async findAll(): Promise<Category[]> {
+    return this.categoryService.findAll();
+  }
+
+
   @Get(':id')
   @ApiOperation({ summary: 'Получить категорию по ID' })
   @ApiResponse({ status: 200, description: 'Детали категории.' })
