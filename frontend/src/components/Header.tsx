@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import "./Header.css";
-import Filter from "./HomePage/Filter";
+import Filter from "./homepage/Filter";
 
 const Header = () => {
   const authContext = useContext(AuthContext);
