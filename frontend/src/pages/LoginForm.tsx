@@ -12,9 +12,22 @@ const LoginForm = () => {
     const authContext = useContext(AuthContext);
     const navigate = useNavigate();
 
+    // Функция для определения маршрута на основе роли
+    const getRedirectPath = (role: string) => {
+        switch (role) {
+            case "admin":
+                return "/admin";
+            case "user":
+                return "/dashboard";
+            default:
+                return "/dashboard";
+        }
+    };
+
+    // 🔹 Редиректим пользователя после успешного логина
     useEffect(() => {
         if (authContext?.user) {
-            navigate("/dashboard", { replace: true });
+            navigate(getRedirectPath(authContext.user.role), { replace: true });
         }
     }, [authContext?.user, navigate]);
 
@@ -41,9 +54,6 @@ const LoginForm = () => {
                 response.data.refresh_token
             );
             setSuccessMessage("Login successful! Redirecting...");
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 2000);
         } catch (error: any) {
             console.error("Authentication error:", error);
             if (error.response) {

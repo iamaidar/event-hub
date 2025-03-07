@@ -1,5 +1,4 @@
-// src/routes/PublicRoute.tsx
-import { ReactNode, useContext } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
@@ -7,22 +6,44 @@ interface PublicRouteProps {
     children: ReactNode;
 }
 
+// Функция для определения маршрута на основе роли пользователя
+const getRedirectPath = (role: string): string => {
+    switch (role) {
+        case "admin":
+            return "/admin";
+        case "user":
+            return "/dashboard";
+        default:
+            return "/dashboard";
+    }
+};
+
 const PublicRoute = ({ children }: PublicRouteProps) => {
     const authContext = useContext(AuthContext);
+    const [loading, setLoading] = useState(true);
 
-    if (authContext && authContext.user) {
-        // Читаем последний посещённый маршрут из localStorage
-        const lastVisitedRoute = localStorage.getItem("lastVisitedRoute");
-        // Список публичных маршрутов, где редирект не требуется (например, логин и регистрация)
+    useEffect(() => {
+        if (authContext) {
+            setLoading(false);
+        }
+    }, [authContext]);
+
+    if (loading) {
+        return <div>Loading...</div>; // Показываем спиннер, пока загружается `authContext`
+    }
+
+    if (authContext?.user) {
+        console.log("✅ User detected:", authContext.user);
+
+        const lastVisitedRoute = localStorage.getItem("lastVisitedRoute") || "";
         const publicRoutes = ["/login", "/register"];
-        const defaultRoute = "/dashboard"; // или другой маршрут по умолчанию
+        const userRole = authContext.user.role;
+        const roleBasedRedirect = getRedirectPath(userRole);
 
-        // Если lastVisitedRoute существует и не является публичным, перенаправляем туда,
-        // иначе перенаправляем на defaultRoute
-        const targetRoute =
-            lastVisitedRoute && !publicRoutes.includes(lastVisitedRoute)
-                ? lastVisitedRoute
-                : defaultRoute;
+        // Если последний маршрут не публичный, редиректим туда, иначе на страницу по роли
+        const targetRoute = publicRoutes.includes(lastVisitedRoute) ? roleBasedRedirect : lastVisitedRoute;
+
+        console.log("🔄 Redirecting user to:", targetRoute);
         return <Navigate to={targetRoute} replace />;
     }
 

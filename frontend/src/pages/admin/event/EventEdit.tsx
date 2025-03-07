@@ -42,7 +42,7 @@ const EventEdit: React.FC = () => {
                     setStatus(data.status);
                     setIsVerified(data.is_verified || false);
                     setImageUrl(data.image_url || "");
-                    setSelectedCategoryId(data.category ? data.category.id : null);
+                    setSelectedCategoryId(data.categoryId ? data.categoryId : null);
                     setLoading(false);
                 })
                 .catch(() => {
@@ -77,7 +77,7 @@ const EventEdit: React.FC = () => {
         };
 
         if (selectedCategoryId) {
-            updatedEvent.category = { id: selectedCategoryId };
+            updatedEvent.categoryId =  selectedCategoryId ;
         }
 
         if (id) {
