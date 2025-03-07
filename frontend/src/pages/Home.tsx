@@ -1,6 +1,6 @@
-import CategoryCard from "../components/HomePage/CategoryCard";
-import Poster from "../components/HomePage/Poster";
-import EventList from "../components/HomePage/EventList";
+import CategoryCard from "../components/homepage/CategoryCard";
+import Poster from "../components/homepage/Poster";
+import EventList from "../components/homepage/EventList";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { EventCardProps } from "../UI/EventCard";

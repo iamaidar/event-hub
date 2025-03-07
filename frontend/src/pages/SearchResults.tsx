@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
-import EventList from "../components/HomePage/EventList";
+import EventList from "../components/homepage/EventList";
 import { EventCardProps } from "../UI/EventCard";
 import { getAccessToken } from "../utils/tokenService";
 
