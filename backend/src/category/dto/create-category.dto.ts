@@ -14,4 +14,8 @@ export class CreateCategoryDto {
 
     @IsOptional()
     parentId?: string;
+
+    @IsOptional()
+    @IsString()
+    imageBase64?: string;
 }

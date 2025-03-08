@@ -7,8 +7,8 @@ interface CategoryFormProps {
     setDescription: (value: string) => void;
     is_verified: boolean;
     setIsVerified: (value: boolean) => void;
-    imageUrl: string;
-    setImageUrl: (value: string) => void;
+    imageBase64: string | null;
+    setImageBase64: (value: string | null) => void;
     onSubmit: (e: React.FormEvent) => void;
     submitButtonText: string;
 }
@@ -20,19 +20,18 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                                                        setDescription,
                                                        is_verified,
                                                        setIsVerified,
-                                                       imageUrl,
-                                                       setImageUrl,
+                                                       imageBase64,
+                                                       setImageBase64,
                                                        onSubmit,
-                                                       submitButtonText
+                                                       submitButtonText,
                                                    }) => {
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImageUrl(reader.result as string);
-                console.log("✅ Image uploaded:", reader.result);
+                setImageBase64(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -71,18 +70,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                     <input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageChange}
+                        onChange={handleImageUpload}
                         className="w-full border px-4 py-3 rounded-lg bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                     />
-                    {imageUrl && (
-                        <div className="mt-3">
-                            <img
-                                src={imageUrl}
-                                alt="Category Preview"
-                                className="w-32 h-32 object-cover rounded-lg"
-                            />
-                        </div>
-                    )}
+                    {imageBase64 && <img src={imageBase64} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />}
                 </div>
 
                 {/* Verified */}

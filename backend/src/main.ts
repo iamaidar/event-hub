@@ -6,7 +6,9 @@ import { TransformResponseInterceptor } from './common/transform-response.interc
 import {AllExceptionsFilter} from "./common/http-exception.filter";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{
+    logger: ['log', 'error', 'warn', 'debug', 'verbose']
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

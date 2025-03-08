@@ -5,6 +5,7 @@ export interface CategoryType {
     name: string;
     is_verified?: boolean;
     description?: string;
+    image_base64?: string| null;
     parent?: {
         id: number;
         name: string;
