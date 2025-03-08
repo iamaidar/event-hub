@@ -1,4 +1,3 @@
-// src/entities/user.entity.ts
 // src/user/entities/user.entity.ts
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { AppBaseEntity } from "../../common/app-base.entity";
@@ -44,4 +43,11 @@ export class User extends AppBaseEntity {
 
   @Column({ type: "varchar", nullable: true })
   refresh_token_hash?: string;
+
+  @Column({ type: "text", nullable: true })
+  avatar_base64?: string;
+
+  @Column({ type: "varchar", length: 50, nullable: true })
+  avatar_mime_type?: string;
+
 }

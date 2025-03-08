@@ -23,7 +23,7 @@ const EventDetail: React.FC = () => {
     }, [id]);
 
     if (loading) {
-        return <div className="container mx-auto px-4 py-8">Загрузка...</div>;
+        return <div className="container mx-auto px-4 py-8">Loading...</div>;
     }
 
     if (error) {
@@ -33,7 +33,7 @@ const EventDetail: React.FC = () => {
     if (!event) {
         return (
             <div className="container mx-auto px-4 py-8">
-                Мероприятие не найдено.
+                Event not found.
             </div>
         );
     }
@@ -58,10 +58,18 @@ const EventDetail: React.FC = () => {
                     </span>
                     </p>
                     <p><strong>Verified:</strong> {event.is_verified ? "✅ Yes" : "❌ No"}</p>
-                    {event.image_url && (
-                        <p className="border-b pb-2"><strong>Image:</strong>
-                            <img src={event.image_url} alt="Event" className="mt-2 rounded-lg" />
-                        </p>
+                    {event.image_base64 ? (
+                        <img
+                            src={event.image_base64}
+                            alt={event.title}
+                            className="rounded-lg"
+                        />
+                    ) : (
+                        <img
+                            src="https://via.placeholder.com/150"
+                            alt="Placeholder"
+                            className="rounded-lg"
+                        />
                     )}
                 </div>
                 <Link

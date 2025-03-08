@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import {EventType} from "../api/eventApi.tsx";
+import React from "react";
 
 interface EventTableProps {
     events: EventType[];
@@ -34,7 +35,19 @@ const EventTable: React.FC<EventTableProps> = ({ events, onDelete }) => {
                     return (
                         <tr key={event.id} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                             <td className="px-6 py-4">
-                                <img src={event.image_url} alt={event.title} className="w-12 h-12 object-cover rounded-full" />
+                                {event.image_base64 ? (
+                                    <img
+                                        src={event.image_base64}
+                                        alt={event.title}
+                                        className="h-10 w-10 object-cover rounded-full"
+                                    />
+                                ) : (
+                                    <img
+                                        src="https://via.placeholder.com/50"
+                                        alt="Placeholder"
+                                        className="h-10 w-10 object-cover rounded-full"
+                                    />
+                                )}
                             </td>
                             <td className="px-6 py-4">{event.title}</td>
                             <td className="px-6 py-4 text-gray-500">

@@ -8,6 +8,7 @@ const CategoryEdit: React.FC = () => {
     const navigate = useNavigate();
     const [category, setCategory] = useState<CategoryType | null>(null);
     const [loading, setLoading] = useState(true);
+    const [imageBase64, setImageBase64] = useState<string | null>(category?.image_base64 || null);
 
     useEffect(() => {
         if (id) {
@@ -43,12 +44,11 @@ const CategoryEdit: React.FC = () => {
                     setDescription={(description) => setCategory({...category, description})}
                     is_verified={category.is_verified || false}
                     setIsVerified={(is_verified) => setCategory({...category, is_verified})}
+                    imageBase64={imageBase64}
+                    setImageBase64={setImageBase64}
                     onSubmit={handleSubmit}
                     submitButtonText="Save Changes"
-                    imageUrl={""}
-                    setImageUrl={function (): void {
-                    throw new Error("Function not implemented.");
-                }}></CategoryForm>
+                />
             )}
         </div>
     );

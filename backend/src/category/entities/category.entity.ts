@@ -18,5 +18,8 @@ export class Category extends AppBaseEntity {
 
     @OneToMany(() => Category, category => category.parent)
     children: Category[];
+
+    @Column({ type: "text", nullable: true })
+    image_base64?: string;
 }
 

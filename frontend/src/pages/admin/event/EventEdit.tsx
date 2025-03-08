@@ -27,7 +27,7 @@ const EventEdit: React.FC = () => {
     const [totalTickets, setTotalTickets] = useState(0);
     const [status, setStatus] = useState("");
     const [isVerified, setIsVerified] = useState(false);
-    const [imageUrl, setImageUrl] = useState("");
+    const [imageBase64, setImageBase64] = useState<string | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -41,13 +41,9 @@ const EventEdit: React.FC = () => {
                     setTotalTickets(data.total_tickets);
                     setStatus(data.status);
                     setIsVerified(Boolean(data.is_verified));
-                    setImageUrl(data.image_url || "");
-
-                    // 🛠 Если `category` объект, берем `category.id`
+                    setImageBase64(data.image_base64);
                     const categoryId = data.category?.id ?? null;
-                    console.log("✅ Event category loaded:", categoryId);
                     setSelectedCategoryId(categoryId);
-
                     setLoading(false);
                 })
                 .catch((error) => {
@@ -67,8 +63,6 @@ const EventEdit: React.FC = () => {
             });
     }, [id]);
 
-
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -77,11 +71,11 @@ const EventEdit: React.FC = () => {
             description,
             date_time: new Date(dateTime).toISOString(),
             location,
-            price: Number(price), // 🛠 Убедимся, что price - число
-            total_tickets: Number(totalTickets), // 🛠 Убедимся, что total_tickets - число
+            price: Number(price), // Убедимся, что price - число
+            total_tickets: Number(totalTickets), // Убедимся, что total_tickets - число
             status,
-            is_verified: Boolean(isVerified), // 🛠 Передаем is_verified как true/false
-            image_url: imageUrl,
+            is_verified: Boolean(isVerified), // Передаем is_verified как true/false
+            image_base64: imageBase64, // Передаем base64 строку изображения
             categoryId: selectedCategoryId ?? null,
         };
 
@@ -99,8 +93,6 @@ const EventEdit: React.FC = () => {
                 });
         }
     };
-
-
 
     if (loading) {
         return <div className="container mx-auto px-4 py-8">Loading...</div>;
@@ -130,8 +122,8 @@ const EventEdit: React.FC = () => {
                 setStatus={setStatus}
                 isVerified={isVerified}
                 setIsVerified={setIsVerified}
-                imageUrl={imageUrl}
-                setImageUrl={setImageUrl}
+                imageBase64={imageBase64}
+                setImageBase64={setImageBase64}
                 onSubmit={handleSubmit}
                 submitButtonText="Save Changes"
                 categories={categories}

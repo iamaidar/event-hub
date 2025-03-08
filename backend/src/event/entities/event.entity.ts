@@ -36,4 +36,9 @@ export class Event extends AppBaseEntity {
 
     @Column({ type: 'boolean', nullable: true })
     is_verified?: boolean;
+
+    @Column({ type: "text", nullable: true })
+    image_base64?: string;
+
+
 }
