@@ -14,7 +14,6 @@ interface EventFormProps {
     totalTickets: number;
     status: string;
     isVerified: boolean;
-    imageUrl: string;
     setTitle: (value: string) => void;
     setDescription: (value: string) => void;
     setDateTime: (value: string) => void;
@@ -23,12 +22,13 @@ interface EventFormProps {
     setTotalTickets: (value: number) => void;
     setStatus: (value: string) => void;
     setIsVerified: (value: boolean) => void;
-    setImageUrl: (value: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     submitButtonText: string;
     categories: Category[];
     selectedCategoryId: number | null;
     setSelectedCategoryId: (value: number | null) => void;
+    imageBase64: string | null;
+    setImageBase64: (value: string | null) => void;
 }
 
 const EventForm: React.FC<EventFormProps> = ({
@@ -40,7 +40,6 @@ const EventForm: React.FC<EventFormProps> = ({
                                                  totalTickets,
                                                  status,
                                                  isVerified,
-                                                 imageUrl,
                                                  setTitle,
                                                  setDescription,
                                                  setDateTime,
@@ -49,19 +48,21 @@ const EventForm: React.FC<EventFormProps> = ({
                                                  setTotalTickets,
                                                  setStatus,
                                                  setIsVerified,
-                                                 setImageUrl,
                                                  onSubmit,
                                                  submitButtonText,
                                                  categories,
                                                  selectedCategoryId,
                                                  setSelectedCategoryId,
+                                                 imageBase64,
+                                                 setImageBase64,
                                              }) => {
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImageUrl(reader.result as string);
+                console.log("🟢 Загруженный image_base64:", reader.result);
+                setImageBase64(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -85,14 +86,11 @@ const EventForm: React.FC<EventFormProps> = ({
                     <label className="block text-gray-700">Image</label>
                     <input
                         type="file"
-                        onChange={handleImageChange}
-                        className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="w-full border px-4 py-3 rounded-lg bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                     />
-                    {imageUrl && (
-                        <div className="mt-3">
-                            <img src={imageUrl} alt="Event Preview" className="w-32 h-32 object-cover rounded-lg" />
-                        </div>
-                    )}
+                    {imageBase64 && <img src={imageBase64} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />}
                 </div>
                 <div>
                     <label className="block text-gray-700">Description</label>
@@ -135,7 +133,7 @@ const EventForm: React.FC<EventFormProps> = ({
                         }}
                         className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                     >
-                        <option value="">Выберите категорию</option>
+                        <option value="">Choose category</option>
                         {categories.map((category) => (
                             <option key={category.id} value={category.id}>
                                 {category.name}

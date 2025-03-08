@@ -10,6 +10,7 @@ const EventList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
 
+
     const loadEvents = (page: number) => {
         setLoading(true);
         fetchPaginatedEvents(page, 10)

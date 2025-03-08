@@ -11,8 +11,8 @@ export interface EventType {
     total_tickets: number;
     status: string;
     is_verified?: boolean;
-    categoryId: number;
-    image_url: string;
+    categoryId: number|null;
+    image_base64: string| null;
     organizer: {
         id: number;
         username: string;
@@ -32,7 +32,6 @@ export interface PaginatedEvents {
 export const fetchPaginatedEvents = async (page: number = 1, limit: number = 10): Promise<PaginatedEvents> => {
     const response = await api.get("/events", { params: { page, limit } });
     const paginatedData = response.data.data; // Получаем объект с массивом и параметрами пагинации
-    console.log("paginatedData", paginatedData.data);
     return {
         data: paginatedData.data,
         total: paginatedData.total,

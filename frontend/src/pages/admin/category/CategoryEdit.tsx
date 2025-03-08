@@ -8,7 +8,7 @@ const CategoryEdit: React.FC = () => {
     const navigate = useNavigate();
     const [category, setCategory] = useState<CategoryType | null>(null);
     const [loading, setLoading] = useState(true);
-    const [imageBase64, setImageBase64] = useState<string | null>(category?.imageBase64 || null);
+    const [imageBase64, setImageBase64] = useState<string | null>(category?.image_base64 || null);
 
     useEffect(() => {
         if (id) {

@@ -23,7 +23,7 @@ const CategoryDetail: React.FC = () => {
     }, [id]);
 
     if (loading) {
-        return <div className="container mx-auto px-4 py-8">Загрузка...</div>;
+        return <div className="container mx-auto px-4 py-8">Loading...</div>;
     }
 
     if (error) {
@@ -31,7 +31,7 @@ const CategoryDetail: React.FC = () => {
     }
 
     if (!category) {
-        return <div className="container mx-auto px-4 py-8">Категория не найдена.</div>;
+        return <div className="container mx-auto px-4 py-8">Category not found.</div>;
     }
 
     return (

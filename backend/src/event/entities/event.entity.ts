@@ -40,7 +40,5 @@ export class Event extends AppBaseEntity {
     @Column({ type: "text", nullable: true })
     image_base64?: string;
 
-    @Column({ type: "varchar", length: 50, nullable: true })
-    image_mime_type?: string;
 
 }

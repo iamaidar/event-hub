@@ -1,5 +1,5 @@
 // event/event.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {Injectable, NotFoundException, BadRequestException, Logger} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
@@ -36,7 +36,7 @@ export class EventService {
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.category', 'category')
         .leftJoin('event.organizer', 'organizer')
-        .addSelect(['organizer.id', 'organizer.username','organizer.email']);
+        .addSelect(['organizer.id', 'organizer.username', 'organizer.email']);
 
     return PaginationService.paginate(query, paginationDto);
   }
@@ -51,7 +51,6 @@ export class EventService {
     return rawLocations.map(item => item.location);
   }
 
-
   // Фильтрация событий с пагинацией
   async filterEventsPaginated(
       filterDto: FilterEventDto,
@@ -64,13 +63,13 @@ export class EventService {
     totalPages: number;
     nextPage: number | null;
   }> {
-    const { title, categoryId, organizerId, dateFrom, dateTo ,location } = filterDto;
+    const { title, categoryId, organizerId, dateFrom, dateTo, location } = filterDto;
 
     const query = this.eventRepository
         .createQueryBuilder('events') // алиас для events
         .leftJoinAndSelect('events.category', 'categories')
         .leftJoin('events.organizer', 'users')
-        .addSelect(['users.id', 'users.username','users.email']); // алиас для организаторов — "users"
+        .addSelect(['users.id', 'users.username', 'users.email']); // алиас для организаторов — "users"
 
     query.andWhere('events.is_verified = :isVerified', { isVerified: true });
 
@@ -78,11 +77,9 @@ export class EventService {
       query.andWhere('events.title ILIKE :title', { title: `%${title}%` });
     }
     if (categoryId) {
-      // Используем название параметра, совпадающее с условием
       query.andWhere('categories.id = :category_id', { category_id: categoryId });
     }
     if (organizerId) {
-      // Здесь используем алиас "users", который определён выше
       query.andWhere('users.id = :organizer_id', { organizer_id: organizerId });
     }
     if (dateFrom) {
@@ -99,25 +96,55 @@ export class EventService {
   }
 
   async create(createEventDto: CreateEventDto, organizer: User): Promise<Event> {
-    const { categoryId, date_time, ...rest } = createEventDto;
+
+    const { categoryId, date_time, image_base64, price, total_tickets, ...rest } = createEventDto;
+    const logger = new Logger('EventService');
+
+    logger.log('Получены данные для создания события:');
+    logger.log(JSON.stringify({ ...rest}));
+
+    if (image_base64) {
+      logger.log('Проверка формата base64 для изображения...');
+      if (!this.isBase64(image_base64)) {
+        logger.error('Неверный формат base64 для фотографии');
+        throw new BadRequestException('Неверный формат base64 для фотографии');
+      }
+      logger.log('Формат base64 корректный.');
+    }
+
+    const parsedPrice = Number(price);
+    const parsedTickets = Number(total_tickets);
+    logger.log(`Преобразование цены: исходное значение "${price}" -> ${parsedPrice}`);
+    logger.log(`Преобразование total_tickets: исходное значение "${total_tickets}" -> ${parsedTickets}`);
 
     const newEvent = this.eventRepository.create({
       ...rest,
+      price: parsedPrice,
+      total_tickets: parsedTickets,
       date_time: new Date(date_time),
       organizer,
+      image_base64: image_base64,
     });
 
+    logger.log(`Создан объект события до сохранения: ${JSON.stringify(newEvent)}`);
+
     if (categoryId) {
+      logger.log(`Получение категории с id ${categoryId}...`);
       const category = await this.categoryRepository.findOne({
         where: { id: Number(categoryId) },
       });
       if (!category) {
+        logger.error(`Категория с ID ${categoryId} не найдена`);
         throw new NotFoundException(`Category with ID ${categoryId} not found`);
       }
       newEvent.category = category;
+      logger.log(`Категория успешно найдена и установлена: ${JSON.stringify(category)}`);
     }
 
-    return this.eventRepository.save(newEvent);
+    const savedEvent = await this.eventRepository.save(newEvent);
+    logger.log(`Событие успешно сохранено с id ${savedEvent.id}`);
+
+    return savedEvent;
   }
 
   findAll(): Promise<Event[]> {
@@ -139,17 +166,22 @@ export class EventService {
 
   async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: Number(id) } });
-    console.log(event);
     if (!event) {
       throw new NotFoundException('Event not found');
     }
-    console.log('Dd');
 
-    const { categoryId, date_time, ...rest } = updateEventDto;
+    const { categoryId, date_time, image_base64, ...rest } = updateEventDto;
     Object.assign(event, rest);
 
     if (date_time) {
       event.date_time = new Date(date_time);
+    }
+
+    if (image_base64) {
+      if (!this.isBase64(image_base64)) {
+        throw new BadRequestException('Неверный формат base64 для фотографии');
+      }
+      event.image_base64 = image_base64;
     }
 
     if (categoryId) {
@@ -169,5 +201,16 @@ export class EventService {
       throw new NotFoundException('Event not found');
     }
     await this.eventRepository.remove(event);
+  }
+
+  // Вспомогательный метод для проверки корректности строки base64
+  private isBase64(str: string): boolean {
+    try {
+      // Если строка содержит Data URL, извлекаем часть после запятой
+      const base64Str = str.includes(',') ? str.split(',')[1] : str;
+      return Buffer.from(base64Str, 'base64').toString('base64') === base64Str.replace(/[\n\r]/g, '');
+    } catch (error) {
+      return false;
+    }
   }
 }

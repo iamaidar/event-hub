@@ -39,4 +39,8 @@ export class CreateEventDto {
     @IsOptional()
     @IsBoolean()
     is_verified?: boolean;
+
+    @IsOptional()
+    @IsString()
+    image_base64?: string;
 }

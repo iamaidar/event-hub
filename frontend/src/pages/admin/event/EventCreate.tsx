@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createEvent } from "../../../api/eventApi.tsx";
+import {createEvent} from "../../../api/eventApi.tsx";
 import EventForm from "../../../components/admin/EventForm.tsx";
 import { fetchCategories } from "../../../api/categoryApi.tsx";
 
@@ -18,9 +18,9 @@ const EventCreate: React.FC = () => {
     const [totalTickets, setTotalTickets] = useState(0);
     const [status, setStatus] = useState("Active");
     const [isVerified, setIsVerified] = useState(false);
-    const [imageUrl, setImageUrl] = useState("");
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [imageBase64, setImageBase64] = useState<string | null>(null);
 
     const navigate = useNavigate();
 
@@ -47,7 +47,8 @@ const EventCreate: React.FC = () => {
             total_tickets: totalTickets,
             status,
             is_verified: isVerified,
-            image_url: imageUrl,
+            image_base64: imageBase64, // Проверяем, есть ли здесь данные
+            categoryId: selectedCategoryId || null,
         };
 
         if (selectedCategoryId) {
@@ -84,8 +85,8 @@ const EventCreate: React.FC = () => {
                 setStatus={setStatus}
                 isVerified={isVerified}
                 setIsVerified={setIsVerified}
-                imageUrl={imageUrl}
-                setImageUrl={setImageUrl}
+                imageBase64={imageBase64}
+                setImageBase64={setImageBase64}
                 onSubmit={handleSubmit}
                 submitButtonText="Create Event"
                 categories={categories}
