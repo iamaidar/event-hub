@@ -10,9 +10,9 @@ import { JwtStrategy } from './strategy';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Role]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret',
-      signOptions: { expiresIn: '1h' },
-    })
+        secret: process.env.JWT_SECRET || 'super-secret',
+        signOptions: { expiresIn: '1h' },
+      })
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
