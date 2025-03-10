@@ -6,7 +6,6 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import {Review} from "./entities/review.entity";
 import {PaginationDto} from "../common/dto/pagination.dto";
-import {Event} from "../event/entities/event.entity";
 import {PaginationService} from "../common/services/pagination.service";
 
 @Injectable()
@@ -19,7 +18,7 @@ export class ReviewService {
   async create(dto: CreateReviewDto): Promise<Review> {
     const review = this.reviewRepository.create({
       ...dto,
-      is_moderated: false, // Обычные пользователи создают не модерированные отзывы
+      is_moderated: false,
     });
     return this.reviewRepository.save(review);
   }
