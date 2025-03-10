@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { SignInDto, SignupDto } from "./dto";
 import * as argon from "argon2";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -96,8 +100,6 @@ export class AuthService {
     await this.userRepository.update(userId, {
       refresh_token_hash: hash,
     });
-    console.log(access_token);
-    console.log(refresh_token);
     // Возвращаем «сырые» данные – глобальный интерцептор оформит их в:
     // { success: true, data: { access_token, refresh_token }, message: "OK" }
     return { access_token, refresh_token };
@@ -109,24 +111,37 @@ export class AuthService {
     });
   }
 
-  async refreshToken(userId: number, refresh_token: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+  async refreshToken(refresh_token: string) {
+    try {
+      const payload = this.jwt.verify(refresh_token, {
+        secret: this.config.get<string>("JWT_REFRESH_SECRET"),
+      });
 
-    if (!user || !user.refresh_token_hash) {
-      throw new ForbiddenException("Access Denied");
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      if (!user || !user.refresh_token_hash) {
+        throw new ForbiddenException("Access Denied");
+      }
+
+      const refreshMatches = await argon.verify(
+        user.refresh_token_hash,
+        refresh_token,
+      );
+
+      if (!refreshMatches) {
+        throw new ForbiddenException("Access Denied");
+      }
+
+      const tokens = await this.signTokens(user.id, user.email, user.role.name);
+
+      await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+      return tokens;
+    } catch {
+      throw new UnauthorizedException("Invalid refresh token");
     }
-
-    const refreshMatches = await argon.verify(
-      user.refresh_token_hash,
-      refresh_token,
-    );
-
-    if (!refreshMatches) {
-      throw new ForbiddenException("Access Denied");
-    }
-
-    const tokens = await this.signTokens(userId, user.email, user.role.name);
-    await this.updateRefreshToken(userId, tokens.refresh_token);
   }
 
   async logout(userId: number) {
