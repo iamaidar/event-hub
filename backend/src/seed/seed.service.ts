@@ -7,6 +7,7 @@ import { Event } from 'src/event/entities/event.entity';
 import { User } from 'src/user/entities/user.entity';
 import * as argon from 'argon2';
 import { faker } from '@faker-js/faker';
+import {Review} from "../review/entities/review.entity";
 
 @Injectable()
 export class SeedService {
@@ -17,6 +18,8 @@ export class SeedService {
         private readonly eventRepository: Repository<Event>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @InjectRepository(Review)
+        private readonly reviewRepository: Repository<Review>,
     ) {}
 
     // Создаём одного тестового пользователя
@@ -82,10 +85,34 @@ export class SeedService {
         return events;
     }
 
+    // Создаем отзывы для событий
+    async seedReviews(count = 100): Promise<Review[]> {
+        const reviews: Review[] = [];
+        const user = await this.seedUser();
+        const events = await this.eventRepository.find();
+
+        if (events.length === 0) {
+            await this.seedEvents();
+        }
+
+        for (let i = 0; i < count; i++) {
+            const review = this.reviewRepository.create({
+                rating: faker.helpers.rangeToNumber({ min: 1, max: 5 }),
+                comment: faker.lorem.sentence(),
+                is_moderated: faker.datatype.boolean(),
+                user,
+                event: faker.helpers.arrayElement(events),
+            });
+            reviews.push(await this.reviewRepository.save(review));
+        }
+        return reviews;
+    }
+
     async runSeed() {
         await this.seedUser();
         await this.seedCategories();
         await this.seedEvents();
+        await this.seedReviews();
         return 'Seeding completed';
     }
 }
