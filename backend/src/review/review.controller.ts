@@ -1,34 +1,75 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  Req,
+  ForbiddenException
+} from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { JwtGuard } from '../auth/guard';
+import { Roles } from '../auth/decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { Request } from 'express';
 
-@Controller('review')
+
+@Controller("reviews")
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  @Roles("user")
+  @UseGuards(JwtGuard)
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewService.create(createReviewDto);
+  create(@Body() dto: CreateReviewDto, @Req() req: Request) {
+    return this.reviewService.create(dto);
   }
 
   @Get()
-  findAll() {
-    return this.reviewService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.reviewService.findAllPaginated(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reviewService.findOne(+id);
+  @Get(":id")
+  findOne(@Param("id") id: number) {
+    return this.reviewService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewService.update(+id, updateReviewDto);
+  @Roles("admin", "user")
+  @UseGuards(JwtGuard)
+  @Patch(":id")
+  update(
+    @Param("id") id: number,
+    @Body() dto: UpdateReviewDto,
+    @Req() req: Request,
+  ) {
+    if ( !req.user) {
+      throw new ForbiddenException("You can only delete your own reviews");
+    }else if(!req.user['role']){
+      throw new ForbiddenException("You can only delete your own reviews");
+    }
+    const userId = req.user["id"];
+    const isAdmin = req.user["role"]['name'] === "admin";
+    return this.reviewService.update(id, dto, userId, isAdmin);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewService.remove(+id);
+  @Roles("admin", "user")
+  @UseGuards(JwtGuard)
+  @Delete(":id")
+  remove(@Param("id") id: number,@Req() req: Request ) {
+    if ( !req.user) {
+      throw new ForbiddenException("You can only delete your own reviews");
+    }else if(!req.user['role']){
+      throw new ForbiddenException("You can only delete your own reviews");
+    }
+    const userId = req.user["id"];
+    const isAdmin = req.user["role"]['name'] === "admin";
+    return this.reviewService.remove(id, userId, isAdmin);
   }
 }
