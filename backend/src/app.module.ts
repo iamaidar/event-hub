@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 
@@ -33,9 +32,8 @@ import { Order } from "./order/entities/order.entity";
 import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
+import {StatModule} from "./stat/stat.module";
 
-import { JwtGuard } from "./auth/guard/jwt.guard";
-import { RolesGuard } from "./auth/guard/roles.guard";
 
 @Module({
   imports: [
@@ -77,18 +75,9 @@ import { RolesGuard } from "./auth/guard/roles.guard";
     NotificationModule,
     AuthModule,
     SeedModule,
+      StatModule
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtGuard,
-    // },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RolesGuard,
-    // },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
