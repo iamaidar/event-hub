@@ -34,8 +34,6 @@ import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
 
-import { JwtGuard } from "./auth/guard/jwt.guard";
-import { RolesGuard } from "./auth/guard/roles.guard";
 
 @Module({
   imports: [
@@ -79,16 +77,6 @@ import { RolesGuard } from "./auth/guard/roles.guard";
     SeedModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtGuard,
-    // },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RolesGuard,
-    // },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
