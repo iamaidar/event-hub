@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 
@@ -33,6 +32,7 @@ import { Order } from "./order/entities/order.entity";
 import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
+import {StatModule} from "./stat/stat.module";
 
 
 @Module({
@@ -75,6 +75,7 @@ import { UserSubscription } from "./user-subscription/entities/user-subscription
     NotificationModule,
     AuthModule,
     SeedModule,
+      StatModule
   ],
   controllers: [AppController],
   providers: [AppService],
