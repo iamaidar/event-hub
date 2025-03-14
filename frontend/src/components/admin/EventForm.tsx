@@ -171,8 +171,9 @@ const EventForm: React.FC<EventFormProps> = ({
                         className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
                         required
                     >
-                        <option value="Active">Active</option>
-                        <option value="Pending">Pending</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                        <option value="scheduled">Scheduled</option>
                     </select>
                 </div>
                 <div className="flex items-center">
