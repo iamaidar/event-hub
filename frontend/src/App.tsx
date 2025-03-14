@@ -1,9 +1,9 @@
 import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    Navigate,
-    useLocation,
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
@@ -28,94 +28,96 @@ import CategoryList from "./pages/admin/category/CategoryList.tsx";
 import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
 import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
 import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
+import ReviewList from "./pages/admin/review/ReviewList.tsx";
 
 const AppContent = () => {
-    const location = useLocation();
-    const authContext = useContext(AuthContext);
+  const location = useLocation();
+  const authContext = useContext(AuthContext);
 
-    useEffect(() => {
-        if (authContext) {
-            setupAxiosInterceptors(authContext);
-        }
-    }, [authContext]);
+  useEffect(() => {
+    if (authContext) {
+      setupAxiosInterceptors(authContext);
+    }
+  }, [authContext]);
 
-    useEffect(() => {
-        localStorage.setItem("lastVisitedRoute", location.pathname);
-    }, [location.pathname]);
+  useEffect(() => {
+    localStorage.setItem("lastVisitedRoute", location.pathname);
+  }, [location.pathname]);
 
-    const isAdminRoute = location.pathname.startsWith("/admin");
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
-    return (
-        <>
-            {!isAdminRoute && <Header />}
-            <main className="min-h-screen bg-gray-100">
-                <Routes>
-                    <Route
-                        path="/login"
-                        element={
-                            <PublicRoute>
-                                <LoginForm />
-                            </PublicRoute>
-                        }
-                    />
-                    <Route
-                        path="/register"
-                        element={
-                            <PublicRoute>
-                                <RegistrationForm />
-                            </PublicRoute>
-                        }
-                    />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <PrivateRoute requiredRoles={['user']} >
-                                <Dashboard />
-                            </PrivateRoute>
-                        }
-                    />
-                    <Route path="/home" element={<Home />} />
-                    <Route path="/events" element={<SearchResults />} />
-                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+  return (
+    <>
+      {!isAdminRoute && <Header />}
+      <main className="min-h-screen bg-gray-100">
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegistrationForm />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute requiredRoles={["user"]}>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/home" element={<Home />} />
+          <Route path="/events" element={<SearchResults />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-                    {/* Админские маршруты */}
-                    <Route
-                        path="/admin/*"
-                        element={
-                            <PrivateRoute requiredRoles={['admin']}>
-                                <AdminLayout />
-                            </PrivateRoute>
-                        }
-                    >
-                        <Route index element={<AdminDashboardPage />} />
-                        <Route path="events" element={<EventList />} />
-                        <Route path="events/create" element={<EventCreate />} />
-                        <Route path="events/edit/:id" element={<EventEdit />} />
-                        <Route path="events/:id" element={<EventDetail />} />
+          {/* Админские маршруты */}
+          <Route
+            path="/admin/*"
+            element={
+              <PrivateRoute requiredRoles={["admin"]}>
+                <AdminLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="events" element={<EventList />} />
+            <Route path="events/create" element={<EventCreate />} />
+            <Route path="events/edit/:id" element={<EventEdit />} />
+            <Route path="events/:id" element={<EventDetail />} />
 
-                        <Route path="categories" element={<CategoryList/>}/>
-                        <Route path="categories/create" element={<CategoryCreate/>}/>
-                        <Route path="categories/edit/:id" element={<CategoryEdit/>}/>
-                        <Route path="categories/:id" element={<CategoryDetail/>}/>
+            <Route path="categories" element={<CategoryList />} />
+            <Route path="categories/create" element={<CategoryCreate />} />
+            <Route path="categories/edit/:id" element={<CategoryEdit />} />
+            <Route path="categories/:id" element={<CategoryDetail />} />
 
-                    </Route>
+            <Route path="reviews" element={<ReviewList />} />
+          </Route>
 
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>
-            </main>
-            {!isAdminRoute && <Footer />}
-        </>
-    );
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </main>
+      {!isAdminRoute && <Footer />}
+    </>
+  );
 };
 
 const App = () => {
-    return (
-        <AuthProvider>
-            <Router>
-                <AppContent />
-            </Router>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
 };
 
 export default App;
