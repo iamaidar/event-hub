@@ -31,13 +31,13 @@ export class StatService {
 
         // Считаем количество мероприятий по статусу среди верифицированных
         const endedEvents = await this.eventRepository.count({
-            where: { is_verified: true, status: 'ended' },
+            where: { is_verified: true, status: 'completed' },
         });
         const upcomingEvents = await this.eventRepository.count({
-            where: { is_verified: true, status: 'upcoming' },
+            where: { is_verified: true, status: 'scheduled' },
         });
         const canceledEvents = await this.eventRepository.count({
-            where: { is_verified: true, status: 'canceled' },
+            where: { is_verified: true, status: 'cancelled' },
         });
 
         // Считаем общее количество отзывов и пользователей
@@ -158,4 +158,5 @@ export class StatService {
             averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
         };
     }
+
 }
