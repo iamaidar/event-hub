@@ -5,6 +5,7 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity('events')
 export class Event extends AppBaseEntity {
+
     @Column({ type: 'varchar', length: 255 })
     title: string;
 

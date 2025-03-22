@@ -4,6 +4,7 @@ import {ClassSerializerInterceptor, ValidationPipe} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformResponseInterceptor } from './common/transform-response.interceptor';
 import {AllExceptionsFilter} from "./common/http-exception.filter";
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{
@@ -13,6 +14,10 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
     }),
+  );
+  app.use(
+      '/webhook',
+      bodyParser.raw({ type: 'application/json' }),
   );
   app.useGlobalInterceptors(new TransformResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());

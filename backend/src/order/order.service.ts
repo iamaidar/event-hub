@@ -1,26 +1,114 @@
-import { Injectable } from '@nestjs/common';
+// src/order/order.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Order } from './entities/order.entity';
+import { Event } from '../event/entities/event.entity';
+import { User } from '../user/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import {Ticket} from "../ticket/entities/ticket.entity";
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+      @InjectRepository(Order)
+      private readonly orderRepo: Repository<Order>,
+      @InjectRepository(Ticket)
+      private readonly ticketRepo: Repository<Ticket>,
+      @InjectRepository(Event)
+      private readonly eventRepo: Repository<Event>,
+      @InjectRepository(User)
+      private readonly userRepo: Repository<User>,
+  ) {}
+
+  // Этап 1: Создание заказа с статусом "pending"
+  async createOrder(userId: string, dto: CreateOrderDto): Promise<Order> {
+    const { eventId, ticketCount } = dto;
+
+    const user = await this.userRepo.findOneBy({ id: Number(userId) });
+    if (!user) throw new NotFoundException('User not found');
+
+    const event = await this.eventRepo.findOneBy({ id: Number(eventId) });
+    if (!event) throw new NotFoundException('Event not found');
+
+    // Предположим, что мероприятие имеет поле price
+    const pricePerTicket = event.price;
+    const totalAmount = pricePerTicket * ticketCount;
+
+    const order = this.orderRepo.create({
+      user,
+      event,
+      total_amount: totalAmount,
+      status: 'pending', // ожидание оплаты
+      ticket_count: ticketCount,
+    });
+
+    return await this.orderRepo.save(order);
   }
 
-  findAll() {
-    return `This action returns all order`;
+  // Этап 3: Подтверждение оплаты. Вызывается из Stripe webhook.
+  // Здесь мы обновляем статус заказа и генерируем билеты с QR-кодами.
+  async confirmOrder(orderId: string, stripePaymentId: string) {
+    const order = await this.orderRepo.findOneBy({ id: Number(orderId) });
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (order.status === 'confirmed') return; // Уже подтверждён
+
+    order.status = 'confirmed';
+    order.stripe_payment_id = stripePaymentId;
+    await this.orderRepo.save(order);
+
+    // Генерация билетов
+    await this.generateTicketsForOrder(order);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  // Генерация билетов с QR-кодом для заказа
+  async generateTicketsForOrder(order: Order) {
+    const tickets:Ticket[] = [];
+    // Импортируем библиотеки: uuid для генерации кода, qrcode для генерации изображения
+    const { v4: uuid } = await import('uuid');
+    const QRCode = await import('qrcode');
+
+    for (let i = 0; i < order.ticket_count; i++) {
+      const ticketCode = uuid();
+      // Генерируем QR-код (base64 строка)
+      const qrData = await QRCode.toDataURL(ticketCode);
+
+      const ticket = this.ticketRepo.create({
+        order,
+        ticket_code: ticketCode,
+        qr_code_data: qrData,
+      });
+      tickets.push(ticket);
+    }
+
+    await this.ticketRepo.save(tickets);
+    return tickets;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  // Метод для проверки (валидации) билета по QR-коду
+  async validateTicket(ticketCode: string) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { ticket_code: ticketCode },
+      relations: ['order'],
+    });
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+    if (ticket.is_used) {
+      throw new Error('Ticket already used');
+    }
+    // Отмечаем билет как использованный
+    ticket.is_used = true;
+    ticket.used_at = new Date();
+    await this.ticketRepo.save(ticket);
+    return ticket;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  // Метод для получения заказа (например, для оплаты)
+  async getOrderById(orderId: string): Promise<Order> {
+    const order = await this.orderRepo.findOneBy({ id: Number(orderId) });
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
   }
 }

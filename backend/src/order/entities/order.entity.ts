@@ -21,4 +21,7 @@ export class Order extends AppBaseEntity {
     @ManyToOne(() => Event, { nullable: false })
     @JoinColumn({ name: 'event_id' })
     event: Event;
+
+    @Column({ type: 'int', default: 1 })
+    ticket_count: number;
 }
