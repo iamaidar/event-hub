@@ -16,6 +16,8 @@ export interface StatData {
     activeUsersCount: number;
     socialActiveUsersCount: number;
     reviewsByMonth?: number[];
+    allUsersCount: number;
+    allNonAdminUsersCount: number;
 }
 
 export const fetchAdminStats = async (): Promise<StatData> => {
