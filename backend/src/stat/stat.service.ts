@@ -1,4 +1,4 @@
-import {Injectable, Logger} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {Not, Repository} from 'typeorm';
 import { Review } from 'src/review/entities/review.entity';
@@ -36,10 +36,7 @@ export class StatService {
             this.userRepository.count(),
         ]);
 
-        const verifiedEvents = await this.eventRepository.find({
-            where: { is_verified: true },
-        });
-        const verifiedEventIds = verifiedEvents.map(event => event.id);
+
 
       // Отзывы по всем мероприятиям (модерированные / не модерированные)
       const allModeratedReviewCount = await this.reviewRepository.count({
