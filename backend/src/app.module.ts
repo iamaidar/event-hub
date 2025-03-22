@@ -33,8 +33,6 @@ import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
 import { StatModule } from "./stat/stat.module";
-import {APP_GUARD} from "@nestjs/core";
-import {RolesGuard} from "./auth/guard/roles.guard";
 
 @Module({
   imports: [
