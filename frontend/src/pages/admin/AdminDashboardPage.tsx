@@ -52,9 +52,14 @@ export default function AdminDashboardPage() {
     ];
 
     const eventData = [
-        {name: "Ended events", value: stats?.endedEvents ?? 0, color: "#E9D5FF"},
-        {name: "Canceled events", value: stats?.canceledEvents ?? 0, color: "#7B68EE"},
-        {name: "Upcoming events", value: stats?.upcomingEvents ?? 0, color: "#8A2BE2"},
+        { name: "Ended events", value: stats?.endedEvents ?? 0, color: "#E9D5FF" },
+        { name: "Canceled events", value: stats?.canceledEvents ?? 0, color: "#7B68EE" },
+        { name: "Upcoming events", value: stats?.upcomingEvents ?? 0, color: "#9370DB" },
+    ];
+
+    const eventDataStatus = [
+        { name: "Verified events", value: stats?.totalVerifiedEvents ?? 0, color: "#8A2BE2" },
+        { name: "Unverified events", value: stats?.unverifiedEvents ?? 0, color: "#E5E7EB" },
     ];
 
     const reviewData = [
@@ -63,27 +68,52 @@ export default function AdminDashboardPage() {
     ];
 
     return (
-        <div className="grid grid-cols-3 gap-4 px-8">
-            {/* Статистика */}
-            <StatCard
-                title="Users (non-admin / all)"
-                value={[stats?.allNonAdminUsersCount ?? 0, stats?.allUsersCount ?? 0]}
-                backgroundColor="#f0dfff"
-            />
+        <div className="px-8 py-6 space-y-8">
+            {/* 👤 USERS SECTION */}
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCard
+                        title="Users (non-admin / all)"
+                        value={[stats?.allNonAdminUsersCount ?? 0, stats?.allUsersCount ?? 0]}
+                        backgroundColor="#f0dfff"
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <PieChart title="User roles" data={userRolesChartData} />
+                    <PieChart title="User activity" data={userActivityChartData} />
+                    <PieChart title="Social functionality usage" data={socialUsersChartData} />
+                </div>
+            </div>
 
-            <StatCard title="Verified events" value={stats?.totalVerifiedEvents ?? 0} backgroundColor="#E9D5FF"/>
-            <ReviewsCard
-                totalReviews={stats?.totalReviews ?? 0}
-                averageRating={stats?.averageReviewScore ?? 0}
-                backgroundColor="#d6b1fa"
-            />
+            {/* 📅 EVENTS SECTION */}
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCard
+                        title="Events (verified / total)"
+                        value={[stats?.totalVerifiedEvents ?? 0, stats?.totalEvents ?? 0]}
+                        backgroundColor="#E9D5FF"
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <PieChart title="Event statistics" data={eventData} />
+                    <PieChart title="Event status" data={eventDataStatus} />
+                </div>
+            </div>
 
-            {/* Диаграммы */}
-            <PieChart title="User roles" data={userRolesChartData}/>
-            <PieChart title="User activity" data={userActivityChartData}/>
-            <PieChart title="Social functionality usage" data={socialUsersChartData}/>
-            <PieChart title="Event statistics" data={eventData}/>
-            <PieChart title="Review statistics" data={reviewData}/>
+            {/* 📝 REVIEWS SECTION */}
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <ReviewsCard
+                        totalReviews={stats?.totalReviews ?? 0}
+                        averageRating={stats?.averageReviewScore ?? 0}
+                        backgroundColor="#d6b1fa"
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <PieChart title="Review statistics" data={reviewData} />
+                </div>
+            </div>
         </div>
+
     );
 }

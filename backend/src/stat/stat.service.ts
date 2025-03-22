@@ -41,21 +41,22 @@ export class StatService {
         });
         const verifiedEventIds = verifiedEvents.map(event => event.id);
 
-        const reviews = await this.reviewRepository
-            .createQueryBuilder('review')
-            .leftJoin('review.event', 'event')
-            .where('event.id IN (:...ids)', { ids: verifiedEventIds })
-            .getMany();
+      // Отзывы по всем мероприятиям (модерированные / не модерированные)
+      const allModeratedReviewCount = await this.reviewRepository.count({
+        where: { is_moderated: true }
+      });
+      const allUnmoderatedReviewCount = await this.reviewRepository.count({
+        where: { is_moderated: false }
+      });
 
-        const verifiedReviews = reviews.filter(review => review.is_moderated);
-        const nonVerifiedReviews = reviews.filter(review => !review.is_moderated);
+      const allReviews = await this.reviewRepository.find();
+      const averageAllReviewScore =
+          allReviews.length > 0
+              ? allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length
+              : 0;
 
-        const averageReviewScore =
-            verifiedReviews.length > 0
-                ? verifiedReviews.reduce((sum, review) => sum + review.rating, 0) / verifiedReviews.length
-                : 0;
 
-        const allUsersCount = await this.userRepository.count();
+      const allUsersCount = await this.userRepository.count();
         const regularUsersCount = await this.userRepository.count({
             where: { role: { name: 'user' } },
         });
@@ -86,6 +87,11 @@ export class StatService {
             },
         });
 
+        const totalEvents = await this.eventRepository.count(); // все мероприятия
+
+        const unverifiedEvents = totalEvents - totalVerifiedEvents;
+
+
         return {
             totalVerifiedEvents,
             endedEvents,
@@ -93,16 +99,18 @@ export class StatService {
             canceledEvents,
             totalReviews,
             totalUsers,
-            verifiedReviewsCount: verifiedReviews.length,
-            nonVerifiedReviewsCount: nonVerifiedReviews.length,
-            averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
+            verifiedReviewsCount: allModeratedReviewCount,
+            nonVerifiedReviewsCount: allUnmoderatedReviewCount,
+            averageReviewScore: parseFloat(averageAllReviewScore.toFixed(2)),
             regularUsersCount,
             organizersCount,
             adminsCount,
             activeUsersCount,
             socialActiveUsersCount,
             allUsersCount,
-            allNonAdminUsersCount
+            allNonAdminUsersCount,
+            totalEvents,
+            unverifiedEvents,
         };
     }
 

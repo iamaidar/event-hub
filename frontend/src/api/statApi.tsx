@@ -18,6 +18,8 @@ export interface StatData {
     reviewsByMonth?: number[];
     allUsersCount: number;
     allNonAdminUsersCount: number;
+    totalEvents: number;
+    unverifiedEvents: number;
 }
 
 export const fetchAdminStats = async (): Promise<StatData> => {
