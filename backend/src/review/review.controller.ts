@@ -9,16 +9,15 @@ import {
   UseGuards,
   Query,
   Req,
-  ForbiddenException
-} from '@nestjs/common';
-import { ReviewService } from './review.service';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
-import { JwtGuard } from '../auth/guard';
-import { Roles } from '../auth/decorator';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { Request } from 'express';
-
+  ForbiddenException,
+} from "@nestjs/common";
+import { ReviewService } from "./review.service";
+import { CreateReviewDto } from "./dto/create-review.dto";
+import { UpdateReviewDto } from "./dto/update-review.dto";
+import { JwtGuard } from "../auth/guard";
+import { Roles } from "../auth/decorator";
+import { PaginationDto } from "../common/dto/pagination.dto";
+import { Request } from "express";
 
 @Controller("reviews")
 export class ReviewController {
@@ -49,27 +48,27 @@ export class ReviewController {
     @Body() dto: UpdateReviewDto,
     @Req() req: Request,
   ) {
-    if ( !req.user) {
-      throw new ForbiddenException("You can only delete your own reviews");
-    }else if(!req.user['role']){
-      throw new ForbiddenException("You can only delete your own reviews");
+    if (!req.user) {
+      throw new ForbiddenException("You can only update your own reviews");
+    } else if (!req.user["role"]) {
+      throw new ForbiddenException("You can only update your own reviews");
     }
     const userId = req.user["id"];
-    const isAdmin = req.user["role"]['name'] === "admin";
+    const isAdmin = req.user["role"]["name"] === "admin";
     return this.reviewService.update(id, dto, userId, isAdmin);
   }
 
   @Roles("admin", "user")
   @UseGuards(JwtGuard)
   @Delete(":id")
-  remove(@Param("id") id: number,@Req() req: Request ) {
-    if ( !req.user) {
+  remove(@Param("id") id: number, @Req() req: Request) {
+    if (!req.user) {
       throw new ForbiddenException("You can only delete your own reviews");
-    }else if(!req.user['role']){
+    } else if (!req.user["role"]) {
       throw new ForbiddenException("You can only delete your own reviews");
     }
     const userId = req.user["id"];
-    const isAdmin = req.user["role"]['name'] === "admin";
+    const isAdmin = req.user["role"]["name"] === "admin";
     return this.reviewService.remove(id, userId, isAdmin);
   }
 }

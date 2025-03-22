@@ -42,6 +42,7 @@ export class User extends AppBaseEntity {
   is_social?: boolean;
 
   @Column({ type: "varchar", nullable: true })
+  @Exclude()
   refresh_token_hash?: string;
 
   @Column({ type: "text", nullable: true })
@@ -49,5 +50,4 @@ export class User extends AppBaseEntity {
 
   @Column({ type: "varchar", length: 50, nullable: true })
   avatar_mime_type?: string;
-
 }
