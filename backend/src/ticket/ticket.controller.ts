@@ -1,10 +1,14 @@
 // src/ticket/ticket.controller.ts
-import { Controller, Get, Query } from '@nestjs/common';
+import {Controller, Get, Query, UseGuards} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { OrderService } from '../order/order.service';
+import {Roles} from "../auth/decorator";
+import {JwtGuard} from "../auth/guard";
 
 @ApiTags('Tickets')
 @Controller('tickets')
+@UseGuards(JwtGuard)
+@Roles("organizer")
 export class TicketController {
   constructor(private readonly orderService: OrderService) {}
 
