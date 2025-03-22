@@ -106,7 +106,7 @@ export class OrderService {
   }
 
   // Метод для получения заказа (например, для оплаты)
-  async getOrderById(orderId: string): Promise<Order> {
+  async getOrderById(orderId: number): Promise<Order> {
     const order = await this.orderRepo.findOneBy({ id: Number(orderId) });
     if (!order) throw new NotFoundException('Order not found');
     return order;

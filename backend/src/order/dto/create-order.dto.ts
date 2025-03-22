@@ -1,10 +1,11 @@
-import { IsUUID, IsNumber, Min } from 'class-validator';
+// create-order.dto.ts
+import { IsNumber, Min } from 'class-validator';
+
 export class CreateOrderDto {
-    @IsUUID()
-    eventId: string;
+    @IsNumber()
+    eventId: number;
 
     @IsNumber()
     @Min(1)
     ticketCount: number;
 }
-

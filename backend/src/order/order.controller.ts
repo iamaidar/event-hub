@@ -1,25 +1,32 @@
 // src/order/order.controller.ts
 import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  Req,
-  NotFoundException,
   BadRequestException,
-  ForbiddenException, UseGuards
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderService } from './order.service';
-import { StripeService } from '../stripe/stripe.service';
-import { Request } from 'express';
-import {JwtGuard} from "../auth/guard";
-import {Roles} from "../auth/decorator";
+  Body,
+  Controller,
+  ForbiddenException,
+  NotFoundException,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { CreateOrderDto } from "./dto/create-order.dto";
+import { OrderService } from "./order.service";
+import { StripeService } from "../stripe/stripe.service";
+import { Request } from "express";
+import { JwtGuard } from "../auth/guard";
+import { Roles } from "../auth/decorator";
+import { RolesGuard } from "../auth/guard/roles.guard";
 
 @ApiTags('Orders')
-@UseGuards(JwtGuard)
-@Roles("user")
+@UseGuards(JwtGuard,RolesGuard)
 @Controller('orders')
 export class OrderController {
   constructor(
@@ -28,6 +35,7 @@ export class OrderController {
   ) {}
 
   @Post()
+  @Roles("user")
   @ApiOperation({ summary: 'Create a new order' })
   @ApiBody({ type: CreateOrderDto, description: 'Order creation data' })
   @ApiResponse({ status: 201, description: 'Order successfully created' })
@@ -38,20 +46,20 @@ export class OrderController {
       throw new ForbiddenException("You can only update your own reviews");
     }
     const userId = req.user["id"];
-    const order = await this.orderService.createOrder(userId, dto);
-    return order;
+    return await this.orderService.createOrder(userId, dto);
   }
 
   @Post('pay/:orderId')
+  @Roles("user")
   @ApiOperation({ summary: 'Initiate payment for an order via Stripe Checkout' })
   @ApiParam({ name: 'orderId', description: 'Order identifier' })
   @ApiResponse({ status: 200, description: 'Returns a URL for Stripe Checkout payment' })
-  async pay(@Param('orderId') orderId: string) {
+  async pay(@Param('orderId') orderId: number) {
     const order = await this.orderService.getOrderById(orderId);
     if (!order) throw new NotFoundException('Order not found');
     if (order.status !== 'pending') throw new BadRequestException('Order already processed');
+    const session = await this.stripeService.createCheckoutSession(order.total_amount, order.id);
 
-    const url = await this.stripeService.createCheckoutSession(order.total_amount, String(order.id));
-    return { url };
+    return { sessionId: session['id'] };
   }
 }

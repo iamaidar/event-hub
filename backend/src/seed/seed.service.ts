@@ -1,5 +1,5 @@
 // seed/seed.service.ts
-import { Injectable } from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
@@ -7,7 +7,8 @@ import { Event } from 'src/event/entities/event.entity';
 import { User } from 'src/user/entities/user.entity';
 import * as argon from 'argon2';
 import { faker } from '@faker-js/faker';
-import {Review} from "../review/entities/review.entity";
+import { Review } from '../review/entities/review.entity';
+import {Role} from "../role/entities/role.entity";
 
 @Injectable()
 export class SeedService {
@@ -20,9 +21,10 @@ export class SeedService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Review)
         private readonly reviewRepository: Repository<Review>,
+        @InjectRepository(Role)
+        private readonly roleRepository: Repository<Role>,
     ) {}
 
-    // Создаём одного тестового пользователя
     async seedUser(): Promise<User> {
         const existingUser = await this.userRepository.findOne({
             where: { email: 'example@mail.com' },
@@ -31,22 +33,54 @@ export class SeedService {
 
         const password = '123456';
         const hash = await argon.hash(password);
+        const role = await this.roleRepository.findOne({ where: { name: 'admin' } });
+        if (!role) throw new NotFoundException(`User admin doesn't exist}`);
         const user = this.userRepository.create({
             username: 'user1',
             email: 'example@mail.com',
             password_hash: hash,
             is_active: true,
+            role: role, // default
         });
         return await this.userRepository.save(user);
     }
 
-    // Создаем 5 заранее заданных категорий
+    async seedUsersWithRoles(): Promise<User[]> {
+        const users: User[] = [];
+        const roleNames = ['user', 'organizer'];
+
+        for (const roleName of roleNames) {
+            const role = await this.roleRepository.findOne({ where: { name: roleName } });
+            if (!role) {
+                throw new Error(`Role "${roleName}" not found`);
+            }
+
+            const email = `${roleName}@mail.com`;
+            let user = await this.userRepository.findOne({ where: { email } });
+
+            if (!user) {
+                const hash = await argon.hash('123456');
+                user = this.userRepository.create({
+                    username: `${roleName}_test`,
+                    email,
+                    password_hash: hash,
+                    is_active: true,
+                    role,
+                });
+                user = await this.userRepository.save(user);
+            }
+
+            users.push(user);
+        }
+
+        return users;
+    }
+
     async seedCategories(): Promise<Category[]> {
         const categoryNames = ['Games', 'Music', 'Sports', 'Technology', 'Food'];
         const categories: Category[] = [];
 
         for (const name of categoryNames) {
-            // Проверяем, существует ли категория с таким именем
             let category = await this.categoryRepository.findOne({ where: { name } });
             if (!category) {
                 category = this.categoryRepository.create({
@@ -61,10 +95,9 @@ export class SeedService {
         return categories;
     }
 
-    // Создаем события с использованием сидированного пользователя и категорий
     async seedEvents(count = 50): Promise<Event[]> {
         const events: Event[] = [];
-        const organizer = await this.seedUser();
+        const organizer = (await this.seedUsersWithRoles()).find((u) => u.role.name === 'organizer');
         const categories = await this.seedCategories();
 
         for (let i = 0; i < count; i++) {
@@ -73,8 +106,8 @@ export class SeedService {
                 description: faker.lorem.paragraph(),
                 date_time: faker.date.future(),
                 location: faker.address.city(),
-                price: Number(faker.commerce.price({min:1000,max:20000})),
-                total_tickets: faker.helpers.rangeToNumber({min:1,max:4}),
+                price: Number(faker.commerce.price({ min: 1000, max: 20000 })),
+                total_tickets: faker.helpers.rangeToNumber({ min: 1, max: 4 }),
                 status: faker.helpers.arrayElement(['scheduled', 'cancelled', 'completed']),
                 is_verified: faker.datatype.boolean(),
                 organizer,
@@ -85,10 +118,9 @@ export class SeedService {
         return events;
     }
 
-    // Создаем отзывы для событий
     async seedReviews(count = 100): Promise<Review[]> {
         const reviews: Review[] = [];
-        const user = await this.seedUser();
+        const user = (await this.seedUsersWithRoles()).find((u) => u.role.name === 'user');
         const events = await this.eventRepository.find();
 
         if (events.length === 0) {
@@ -110,6 +142,7 @@ export class SeedService {
 
     async runSeed() {
         await this.seedUser();
+        await this.seedUsersWithRoles();
         await this.seedCategories();
         await this.seedEvents();
         await this.seedReviews();

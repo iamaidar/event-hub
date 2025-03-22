@@ -1,6 +1,6 @@
 // src/stripe/stripe.service.ts
-import { Injectable } from '@nestjs/common';
-import Stripe from 'stripe';
+import { Injectable } from "@nestjs/common";
+import Stripe from "stripe";
 
 @Injectable()
 export class StripeService {
@@ -12,29 +12,27 @@ export class StripeService {
         });
     }
 
-    async createCheckoutSession(totalAmount: number, orderId: string): Promise<string> {
-        const session = await this.stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'usd',
-                        product_data: {
-                            name: `Order #${orderId}`,
-                        },
-                        unit_amount: Math.round(totalAmount * 100), // сумма в центах
-                    },
-                    quantity: 1,
+    async createCheckoutSession(amount: number, orderId: number): Promise<Stripe.Checkout.Session> {
+        return await this.stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          mode: "payment",
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                unit_amount: Math.round(amount * 100),
+                product_data: {
+                  name: `Order #${orderId}`,
                 },
-            ],
-            mode: 'payment',
-            success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
-            metadata: {
-                orderId,
+              },
+              quantity: 1,
             },
+          ],
+          success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
+          metadata: {
+            orderId: orderId.toString(),
+          },
         });
-
-        return session.url ?? '';
     }
 }
