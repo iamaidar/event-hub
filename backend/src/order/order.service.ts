@@ -111,4 +111,25 @@ export class OrderService {
     if (!order) throw new NotFoundException('Order not found');
     return order;
   }
+
+  async getTicketsBySession(sessionId: string) {
+    const order = await this.orderRepo.findOne({
+      where: { stripe_payment_id: sessionId },
+      relations: ['tickets'],
+    });
+
+    if (!order) throw new NotFoundException('Order not found by session');
+
+    return {
+      orderId: order.id,
+      tickets: order.tickets.map((ticket) => ({
+        id: ticket.id,
+        ticket_code: ticket.ticket_code,
+        qr_code_data: ticket.qr_code_data,
+      })),
+    };
+  }
+
+
+
 }

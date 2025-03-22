@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   NotFoundException,
   Param,
   Post,
@@ -25,20 +26,20 @@ import { JwtGuard } from "../auth/guard";
 import { Roles } from "../auth/decorator";
 import { RolesGuard } from "../auth/guard/roles.guard";
 
-@ApiTags('Orders')
-@UseGuards(JwtGuard,RolesGuard)
-@Controller('orders')
+@ApiTags("Orders")
+@UseGuards(JwtGuard, RolesGuard)
+@Controller("orders")
 export class OrderController {
   constructor(
-      private readonly orderService: OrderService,
-      private readonly stripeService: StripeService,
+    private readonly orderService: OrderService,
+    private readonly stripeService: StripeService,
   ) {}
 
   @Post()
   @Roles("user")
-  @ApiOperation({ summary: 'Create a new order' })
-  @ApiBody({ type: CreateOrderDto, description: 'Order creation data' })
-  @ApiResponse({ status: 201, description: 'Order successfully created' })
+  @ApiOperation({ summary: "Create a new order" })
+  @ApiBody({ type: CreateOrderDto, description: "Order creation data" })
+  @ApiResponse({ status: 201, description: "Order successfully created" })
   async createOrder(@Req() req: Request, @Body() dto: CreateOrderDto) {
     if (!req.user) {
       throw new ForbiddenException("You can only update your own reviews");
@@ -49,17 +50,40 @@ export class OrderController {
     return await this.orderService.createOrder(userId, dto);
   }
 
-  @Post('pay/:orderId')
+  @Post("pay/:orderId")
   @Roles("user")
-  @ApiOperation({ summary: 'Initiate payment for an order via Stripe Checkout' })
-  @ApiParam({ name: 'orderId', description: 'Order identifier' })
-  @ApiResponse({ status: 200, description: 'Returns a URL for Stripe Checkout payment' })
-  async pay(@Param('orderId') orderId: number) {
+  @ApiOperation({
+    summary: "Initiate payment for an order via Stripe Checkout",
+  })
+  @ApiParam({ name: "orderId", description: "Order identifier" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns a URL for Stripe Checkout payment",
+  })
+  async pay(@Param("orderId") orderId: number) {
     const order = await this.orderService.getOrderById(orderId);
-    if (!order) throw new NotFoundException('Order not found');
-    if (order.status !== 'pending') throw new BadRequestException('Order already processed');
-    const session = await this.stripeService.createCheckoutSession(order.total_amount, order.id);
+    if (!order) throw new NotFoundException("Order not found");
+    if (order.status !== "pending")
+      throw new BadRequestException("Order already processed");
+    const session = await this.stripeService.createCheckoutSession(
+      order.total_amount,
+      order.id,
+    );
 
-    return { sessionId: session['id'] };
+    return { sessionId: session["id"] };
+  }
+
+  @Get("by-session/:sessionId")
+  @Roles("user")
+  @ApiOperation({
+    summary: "Get tickets by Stripe session ID after successful payment",
+  })
+  @ApiParam({ name: "sessionId", description: "Stripe Checkout Session ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the list of tickets for the session",
+  })
+  async getTicketsBySession(@Param("sessionId") sessionId: string) {
+    return await this.orderService.getTicketsBySession(sessionId);
   }
 }

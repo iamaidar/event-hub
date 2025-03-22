@@ -12,7 +12,7 @@ const getRedirectPath = (role: string): string => {
         case "admin":
             return "/admin";
         case "user":
-            return "/dashboard";
+            return "/user/dashboard";
         default:
             return "/dashboard";
     }

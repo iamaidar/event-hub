@@ -29,6 +29,8 @@ import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
 import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
 import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
 import ReviewList from "./pages/admin/review/ReviewList.tsx";
+import OrderPage from "./pages/user/OrderPage.tsx";
+import PaymentSuccess from "./pages/user/PaymentSuccess.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -67,13 +69,26 @@ const AppContent = () => {
               </PublicRoute>
             }
           />
+          {/*<Route*/}
+          {/*  path="/dashboard"*/}
+          {/*  element={*/}
+          {/*    <PrivateRoute requiredRoles={["user"]}>*/}
+          {/*      <Dashboard />*/}
+          {/*    </PrivateRoute>*/}
+          {/*  }*/}
+          {/*/>*/}
           <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute requiredRoles={["user"]}>
-                <Dashboard />
-              </PrivateRoute>
-            }
+              path="/user/*"
+              element={
+                <PrivateRoute requiredRoles={["user"]}>
+                  <Routes>
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="orders/:id" element={<OrderPage />} />
+                    <Route path="payment-success" element={<PaymentSuccess />} />
+                    <Route path="payment-cancel" element={<p>❌ Оплата не завершена</p>} />
+                  </Routes>
+                </PrivateRoute>
+              }
           />
           <Route path="/home" element={<Home />} />
           <Route path="/events" element={<SearchResults />} />
