@@ -29,17 +29,17 @@ export class AuthService {
   async signup(dto: SignupDto) {
     const hash = await argon.hash(dto.password);
 
-    const userRole = await this.roleRepository.findOne({
-      where: { name: "user" },
+    const role = await this.roleRepository.findOne({
+      where: { name: dto.role },
     });
 
     try {
-      if (userRole) {
+      if (role) {
         const user = this.userRepository.create({
           username: dto.username,
           email: dto.email,
           password_hash: hash,
-          role: userRole,
+          role: role,
           is_active: true,
         });
 
