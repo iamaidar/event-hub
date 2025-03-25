@@ -23,7 +23,7 @@ import { OrderService } from "./order.service";
 import { StripeService } from "../stripe/stripe.service";
 import { Request } from "express";
 import { JwtGuard } from "../auth/guard";
-import { Roles } from "../auth/decorator";
+import { Roles} from "../auth/decorator";
 import { RolesGuard } from "../auth/guard/roles.guard";
 
 @ApiTags("Orders")

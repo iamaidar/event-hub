@@ -1,5 +1,4 @@
 import Button from "./Button.tsx";
-import event_2 from "../assets/images/event_2.png";
 
 export interface EventCardProps {
   date_time: string;

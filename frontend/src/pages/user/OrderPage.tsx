@@ -4,7 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useParams } from 'react-router-dom';
 import { payForOrder } from '../../api/orderApi';
 
-const stripePromise = loadStripe('pk_test_51R5XpnDG9SLxUqscesPeBWiaD9UI1PtzC8AaOdrMPxGFozfKZKdQ2BLX0iJshLtAWLEehI4LOMBBnhnGmpQ1tmL300sYxWR2NN');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const OrderPage: React.FC = () => {
     const { id } = useParams();

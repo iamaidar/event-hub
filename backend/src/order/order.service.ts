@@ -1,12 +1,16 @@
 // src/order/order.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Order } from './entities/order.entity';
-import { Event } from '../event/entities/event.entity';
-import { User } from '../user/entities/user.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
-import {Ticket} from "../ticket/entities/ticket.entity";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Order } from "./entities/order.entity";
+import { Event } from "../event/entities/event.entity";
+import { User } from "../user/entities/user.entity";
+import { CreateOrderDto } from "./dto/create-order.dto";
+import { Ticket } from "../ticket/entities/ticket.entity";
 
 @Injectable()
 export class OrderService {
@@ -31,6 +35,11 @@ export class OrderService {
     const event = await this.eventRepo.findOneBy({ id: Number(eventId) });
     if (!event) throw new NotFoundException('Event not found');
 
+    // Проверяем, что статус мероприятия - 'scheduled'
+    if (event.status !== 'scheduled') {
+      throw new BadRequestException('Event must be scheduled');
+    }
+
     // Предположим, что мероприятие имеет поле price
     const pricePerTicket = event.price;
     const totalAmount = pricePerTicket * ticketCount;
@@ -39,7 +48,7 @@ export class OrderService {
       user,
       event,
       total_amount: totalAmount,
-      status: 'pending', // ожидание оплаты
+      status: 'pending',
       ticket_count: ticketCount,
     });
 

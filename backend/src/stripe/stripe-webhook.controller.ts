@@ -32,10 +32,9 @@ export class StripeWebhookController {
             const session = event.data.object as Stripe.Checkout.Session;
             // @ts-ignore
             const orderId = session.metadata.orderId;
-            const paymentIntentId = session.payment_intent as string;
 
             // Подтверждаем заказ и генерируем билеты
-            await this.orderService.confirmOrder(orderId, paymentIntentId);
+            await this.orderService.confirmOrder(orderId, session.id);
         }
 
         res.status(200).send();
