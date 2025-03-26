@@ -86,4 +86,22 @@ export class OrderController {
   async getTicketsBySession(@Param("sessionId") sessionId: string) {
     return await this.orderService.getTicketsBySession(sessionId);
   }
+
+  @Get('my')
+  @Roles("user")
+  @ApiOperation({
+    summary: "Get user orders",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the list of user orders",
+  })
+  async getUserOrders(@Req() req: Request) {
+    if (!req.user) {
+      throw new ForbiddenException("You can only update your own reviews");
+    } else if (!req.user["role"]) {
+      throw new ForbiddenException("You can only update your own reviews");
+    }
+    return this.orderService.getMyOrders(req.user['id']);
+  }
 }

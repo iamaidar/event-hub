@@ -75,9 +75,9 @@ const AppContent = () => {
                 <PrivateRoute requiredRoles={["user"]}>
                   <Routes>
                     <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="orders/:id" element={<OrderPage />} />
+                    <Route path="orders/my" element={<OrderPage />} />
                     <Route path="payment-success" element={<PaymentSuccess />} />
-                    <Route path="payment-cancel" element={<p>❌ Оплата не завершена</p>} />
+                    <Route path="payment-cancel" element={<p>❌ Payment is not completed</p>} />
                   </Routes>
                 </PrivateRoute>
               }

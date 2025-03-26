@@ -1,7 +1,7 @@
 // src/order/order.service.ts
 import {
   BadRequestException,
-  Injectable, Logger,
+  Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -164,6 +164,17 @@ export class OrderService {
     };
   }
 
-
+  async getMyOrders(userId: number): Promise<Order[]> {
+    return await this.orderRepo.find({
+      where: {
+        user: { id: userId },
+        status: 'pending', // или: In(['pending']) — если статус может быть множественным
+      },
+      relations: ['event'], // загружаем связанную информацию о мероприятии
+      order: {
+        createdAt: 'DESC', // сортировка по дате создания, по желанию
+      },
+    });
+  }
 
 }
