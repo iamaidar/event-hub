@@ -19,6 +19,7 @@ export const createOrder = async (eventId: number, ticketCount: number) => {
         eventId,
         ticketCount,
     });
+    console.log(res.data);
     return res.data.data;
 };
 
@@ -26,3 +27,9 @@ export const getMyOrders = async () => {
     const res = await api.get('/orders/my');
     return res.data.data;
 };
+
+export const getAvailableTickets = async (eventId: number): Promise<{ availableTickets: number,ticketPrice:number }> => {
+    const res = await api.get(`/events/${eventId}/available-tickets`);
+    return res.data.data;
+};
+

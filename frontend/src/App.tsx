@@ -69,14 +69,6 @@ const AppContent = () => {
               </PublicRoute>
             }
           />
-          {/*<Route*/}
-          {/*  path="/dashboard"*/}
-          {/*  element={*/}
-          {/*    <PrivateRoute requiredRoles={["user"]}>*/}
-          {/*      <Dashboard />*/}
-          {/*    </PrivateRoute>*/}
-          {/*  }*/}
-          {/*/>*/}
           <Route
               path="/user/*"
               element={
