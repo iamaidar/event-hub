@@ -1,7 +1,7 @@
 // src/order/order.service.ts
 import {
   BadRequestException,
-  Injectable,
+  Injectable, Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -26,34 +26,59 @@ export class OrderService {
   ) {}
 
   // Этап 1: Создание заказа с статусом "pending"
+
   async createOrder(userId: string, dto: CreateOrderDto): Promise<Order> {
-    const { eventId, ticketCount } = dto;
+    try {
+      const { eventId, ticketCount } = dto;
 
-    const user = await this.userRepo.findOneBy({ id: Number(userId) });
-    if (!user) throw new NotFoundException('User not found');
+      const user = await this.userRepo.findOneBy({ id: Number(userId) });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-    const event = await this.eventRepo.findOneBy({ id: Number(eventId) });
-    if (!event) throw new NotFoundException('Event not found');
+      const event = await this.eventRepo.findOneBy({ id: Number(eventId) });
+      if (!event) {
+        throw new NotFoundException('Event not found');
+      }
 
-    // Проверяем, что статус мероприятия - 'scheduled'
-    if (event.status !== 'scheduled') {
-      throw new BadRequestException('Event must be scheduled');
+      if (event.status !== 'scheduled') {
+        throw new BadRequestException('The event is not open for booking');
+      }
+
+      const soldTickets = await this.orderRepo
+          .createQueryBuilder('o')
+          .select('SUM(o.ticket_count)', 'sum')
+          .where('o.event_id = :eventId', { eventId: event.id })
+          .andWhere('o.status IN (:...statuses)', { statuses: ['confirmed'] })
+          .getRawOne();
+
+      const totalSold = Number(soldTickets.sum) || 0;
+
+      if (totalSold + ticketCount > event.total_tickets) {
+        throw new BadRequestException('Not enough tickets available for this event');
+      }
+
+      const totalAmount = event.price * ticketCount;
+
+      const order = this.orderRepo.create({
+        user,
+        event,
+        total_amount: totalAmount,
+        status: 'pending',
+        ticket_count: ticketCount,
+      });
+
+      return await this.orderRepo.save(order);
+
+    } catch (error) {
+      // optionally, throw standardized response if needed
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('An error occurred while creating the order');
     }
-
-    // Предположим, что мероприятие имеет поле price
-    const pricePerTicket = event.price;
-    const totalAmount = pricePerTicket * ticketCount;
-
-    const order = this.orderRepo.create({
-      user,
-      event,
-      total_amount: totalAmount,
-      status: 'pending',
-      ticket_count: ticketCount,
-    });
-
-    return await this.orderRepo.save(order);
   }
+
 
   // Этап 3: Подтверждение оплаты. Вызывается из Stripe webhook.
   // Здесь мы обновляем статус заказа и генерируем билеты с QR-кодами.

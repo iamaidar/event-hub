@@ -260,7 +260,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new NotFoundException("Мероприятие не найдено");
+      throw new NotFoundException("Event doesn't found");
     }
 
     const confirmedOrders = await this.orderRepository.find({
