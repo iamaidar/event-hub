@@ -19,7 +19,6 @@ export const createOrder = async (eventId: number, ticketCount: number) => {
         eventId,
         ticketCount,
     });
-    console.log(res.data);
     return res.data.data;
 };
 
