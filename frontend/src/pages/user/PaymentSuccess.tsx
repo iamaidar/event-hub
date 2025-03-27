@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import {getTicketsBySession} from "../../api/orderApi.tsx";
+import { getTicketsBySession } from "../../api/orderApi.tsx";
+import './PaymentSuccess.css';
 
 const PaymentSuccess: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -29,7 +30,7 @@ const PaymentSuccess: React.FC = () => {
         fetchTickets();
     }, [searchParams]);
 
-    if (loading) return <p>Загрузка билетов...</p>;
+    if (loading) return <p className="loading-text">Загрузка билетов...</p>;
 
     return (
         <div className="payment-success">
@@ -37,17 +38,25 @@ const PaymentSuccess: React.FC = () => {
             <h3>Ваши билеты:</h3>
 
             {tickets.length === 0 ? (
-                <p>Нет доступных билетов.</p>
+                <p className="no-tickets">Нет доступных билетов.</p>
             ) : (
-                tickets.map((ticket) => (
-                    <div key={ticket.id} style={{ margin: '20px 0' }}>
-                        <p><strong>Код билета:</strong> {ticket.ticket_code}</p>
-                        <QRCode value={ticket.qr_code_data} />
-                    </div>
-                ))
+                <div className="tickets-container">
+                    {tickets.map((ticket) => (
+                        <div key={ticket.id} className="ticket-card">
+                            <p><strong>Код билета:</strong> {ticket.ticket_code}</p>
+                            <QRCode
+                                value={ticket.qr_code_data}
+                                bgColor="#FFFFFF"
+                                fgColor="#000000"
+                                size={256}
+                            />
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );
 };
 
 export default PaymentSuccess;
+

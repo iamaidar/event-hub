@@ -98,21 +98,31 @@ export class OrderService {
 
   // Генерация билетов с QR-кодом для заказа
   async generateTicketsForOrder(order: Order) {
-    const tickets:Ticket[] = [];
-    // Импортируем библиотеки: uuid для генерации кода, qrcode для генерации изображения
+    const tickets: Ticket[] = [];
     const { v4: uuid } = await import('uuid');
     const QRCode = await import('qrcode');
 
+    const baseVerifyUrl = 'http://localhost:5173/verify'; // 🔁 Замени на свой реальный фронтенд-домен
+
     for (let i = 0; i < order.ticket_count; i++) {
       const ticketCode = uuid();
-      // Генерируем QR-код (base64 строка)
-      const qrData = await QRCode.toDataURL(ticketCode);
+
+      // 🔗 Генерируем URL с кодом
+      const ticketUrl = `${baseVerifyUrl}?code=${ticketCode}`;
+
+      // 🖼 Генерируем QR-код из URL
+      const qrData = await QRCode.toDataURL(ticketUrl, {
+        errorCorrectionLevel: 'Q', // лучше чем L
+        margin: 2,
+        scale: 6, // больше масштаб = выше качество
+      });
 
       const ticket = this.ticketRepo.create({
         order,
         ticket_code: ticketCode,
         qr_code_data: qrData,
       });
+
       tickets.push(ticket);
     }
 
