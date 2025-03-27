@@ -11,6 +11,8 @@ const getRedirectPath = (role: string): string => {
     switch (role) {
         case "admin":
             return "/admin";
+        case "organizer":
+            return "/organizer";
         case "user":
             return "/user/dashboard";
         default:
