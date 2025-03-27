@@ -29,11 +29,13 @@ import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
 import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
 import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
 import ReviewList from "./pages/admin/review/ReviewList.tsx";
+import OrganizerLayout from "./layout/OrganizerLayout.tsx"
+import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx"
+import QRVerification from "./pages/organizer/ QRVerification.tsx";
 
 const AppContent = () => {
   const location = useLocation();
   const authContext = useContext(AuthContext);
-
   useEffect(() => {
     if (authContext) {
       setupAxiosInterceptors(authContext);
@@ -45,10 +47,11 @@ const AppContent = () => {
   }, [location.pathname]);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isOrganizerRoute = location.pathname.startsWith("/organizer");
 
   return (
     <>
-      {!isAdminRoute && <Header />}
+      {!isAdminRoute && !isOrganizerRoute && <Header />}
       <main className="min-h-screen bg-gray-100">
         <Routes>
           <Route
@@ -102,10 +105,23 @@ const AppContent = () => {
             <Route path="reviews" element={<ReviewList />} />
           </Route>
 
+          {/* Организаторские маршруты */}
+          <Route
+              path="/organizer/*"
+              element={
+                <PrivateRoute requiredRoles={["organizer"]}>
+                  <OrganizerLayout />
+                </PrivateRoute>
+              }
+          >
+            <Route index element={<OrganizerDashboardPage />} />
+            <Route path="qr" element={<QRVerification />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isOrganizerRoute && <Footer />}
     </>
   );
 };
