@@ -1,19 +1,29 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { fetchOrganizerStats, OrganizerStatData } from "../../api/statApi.tsx";
 import StatCard from "../../components/admin/statistics/StatCard.tsx";
 import PieChart from "../../components/admin/statistics/PieChart.tsx";
 import ReviewsCard from "../../components/admin/review/ReviewCard.tsx";
 import MonthlyTicketSalesChart from "../../components/organizer/MonthlyTicketSalesChart.tsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 
 export default function OrganizerDashboardPage() {
   const [stats, setStats] = useState<OrganizerStatData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user;
 
   useEffect(() => {
     const getStats = async () => {
+      if (!user) {
+        setError("Пользователь не авторизован");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await fetchOrganizerStats(3);
+        const data = await fetchOrganizerStats(user.sub); // передаем ID организатора
+        console.log(data);
         setStats(data);
       } catch (err) {
         setError("Ошибка загрузки данных");
@@ -24,7 +34,7 @@ export default function OrganizerDashboardPage() {
     };
 
     getStats();
-  }, []);
+  }, [user]); // добавляем `user` как зависимость, чтобы перезагружать при изменении пользователя
 
   if (loading)
     return (
@@ -36,17 +46,12 @@ export default function OrganizerDashboardPage() {
   if (!stats)
     return <p className="text-gray-500 text-center mt-8">Данные не найдены</p>;
 
-  // Данные для графиков
+  // Защищаем от NaN
   const eventsData = [
     {
       name: "Events with reviews",
       value: stats?.reviewsReceived ?? 0,
       color: "#8B5CF6",
-    },
-    {
-      name: "Events without reviews",
-      value: stats?.eventsCreated - stats?.reviewsReceived,
-      color: "#E5E7EB",
     },
   ];
 
