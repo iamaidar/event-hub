@@ -14,7 +14,8 @@ import * as mime from "mime-types";
 
 @Injectable()
 export class SeedService {
-  private base64String: string;
+  private defaultUserImageBase64: string;
+  private defaultImageBase64: string;
 
   constructor(
     @InjectRepository(Category)
@@ -34,6 +35,10 @@ export class SeedService {
     });
     if (existingUser) return existingUser;
 
+    if (!this.defaultUserImageBase64) {
+      this.defaultImageBase64 = await this.convertImageToBase64("user.png");
+    }
+
     const password = "123456";
     const hash = await argon.hash(password);
     const user = this.userRepository.create({
@@ -41,6 +46,8 @@ export class SeedService {
       email: "example@mail.com",
       password_hash: hash,
       is_active: true,
+      avatar_base64: this.defaultUserImageBase64,
+      avatar_mime_type: "image/png",
     });
     return await this.userRepository.save(user);
   }
@@ -50,8 +57,8 @@ export class SeedService {
     const categoryNames = ["Games", "Music", "Sports", "Technology", "Food"];
     const categories: Category[] = [];
 
-    if (!this.base64String) {
-      this.base64String = await this.convertImageToBase64("default.jpg");
+    if (!this.defaultImageBase64) {
+      this.defaultImageBase64 = await this.convertImageToBase64("default.jpg");
     }
 
     for (const name of categoryNames) {
@@ -62,7 +69,7 @@ export class SeedService {
           name,
           description: `${name} category description`,
           is_verified: true,
-          image_base64: this.base64String,
+          image_base64: this.defaultImageBase64,
         });
         category = await this.categoryRepository.save(category);
       }
@@ -77,8 +84,8 @@ export class SeedService {
     const organizer = await this.seedUser();
     const categories = await this.seedCategories();
 
-    if (!this.base64String) {
-      this.base64String = await this.convertImageToBase64("default.jpg");
+    if (!this.defaultImageBase64) {
+      this.defaultImageBase64 = await this.convertImageToBase64("default.jpg");
     }
 
     for (let i = 0; i < count; i++) {
@@ -99,7 +106,7 @@ export class SeedService {
         category: categories.length
           ? faker.helpers.arrayElement(categories)
           : undefined,
-        image_base64: this.base64String,
+        image_base64: this.defaultImageBase64,
       });
       events.push(await this.eventRepository.save(event));
     }

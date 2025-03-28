@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
-import { AuthContext } from "../../context/AuthContext.tsx";
-import "../Header.css";
+import { AuthContext } from "../../../context/AuthContext.tsx";
+import "../../Header.css";
 
 const AdminHeader = () => {
   const authContext = useContext(AuthContext);
@@ -44,6 +44,10 @@ const AdminHeader = () => {
 
           <Link to="/admin/reviews" className="hover:text-gray-300 font-bold">
             REVIEWS
+          </Link>
+
+          <Link to="/admin/users" className="hover:text-gray-300 font-bold">
+            USERS
           </Link>
         </nav>
 

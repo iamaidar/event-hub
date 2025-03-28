@@ -6,74 +6,59 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { JwtGuard } from "src/auth/guard/jwt.guard";
-import { GetUser } from "src/auth/decorator";
 import { User } from "./entities/user.entity";
-import { RolesGuard } from "src/auth/guard/roles.guard";
-import { Roles } from "src/auth/decorator/roles.decorator";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { Roles } from "src/auth/decorator";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { FilterUserDto } from "./dto/filter-user.dto";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 
-@Controller("user")
+@Controller("users")
+@UseGuards(JwtGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Roles('admin')
-  @UseGuards(JwtGuard)
+  @Roles("admin")
+  @Get("filter")
+  filterUsersPaginated(
+    @Query() filterDto: FilterUserDto,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.userService.filterUsersPaginated(filterDto, paginationDto);
+  }
+
+  @Roles("admin")
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @Roles('admin')
-  @UseGuards(JwtGuard)
+  @Roles("admin")
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAllPaginated(@Query() paginationDto: PaginationDto) {
+    return this.userService.findAllPaginated(paginationDto);
   }
 
-  @Roles('admin')
-  @UseGuards(JwtGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Roles("admin")
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.userService.findOne(+id);
   }
 
-  @Roles('admin')
-  @UseGuards(JwtGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @Roles("admin")
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Roles('admin')
-  @UseGuards(JwtGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
-  }
-
-  @UseGuards(JwtGuard)
-  @Get("me")
-  getMe(@GetUser("") user: User, @GetUser("email") email: string) {
-    return user;
-  }
-
-  @UseGuards(JwtGuard)
-  @Get()
-  test() {
-    return "test";
-  }
-
-  @UseGuards(JwtGuard, RolesGuard)
-  @Get("admin")
   @Roles("admin")
-  @ApiBearerAuth()
-  admin() {
-    return "you are admin";
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.userService.remove(+id);
   }
 }
