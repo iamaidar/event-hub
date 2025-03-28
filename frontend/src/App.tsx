@@ -33,11 +33,13 @@ import UserList from "./pages/admin/user/UserList.tsx";
 import UserCreate from "./pages/admin/user/UserCreate.tsx";
 import UserEdit from "./pages/admin/user/UserEdit.tsx";
 import UserDetail from "./pages/admin/user/UserDetail.tsx";
+import OrganizerLayout from "./layout/OrganizerLayout.tsx";
+import QRVerification from "./pages/organizer/ QRVerification.tsx";
+import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx";
 
 const AppContent = () => {
   const location = useLocation();
   const authContext = useContext(AuthContext);
-
   useEffect(() => {
     if (authContext) {
       setupAxiosInterceptors(authContext);
@@ -49,10 +51,11 @@ const AppContent = () => {
   }, [location.pathname]);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isOrganizerRoute = location.pathname.startsWith("/organizer");
 
   return (
     <>
-      {!isAdminRoute && <Header />}
+      {!isAdminRoute && !isOrganizerRoute && <Header />}
       <main className="min-h-screen bg-gray-100">
         <Routes>
           <Route
@@ -105,16 +108,30 @@ const AppContent = () => {
 
             <Route path="reviews" element={<ReviewList />} />
 
+            {/* Админские пользователи */}
             <Route path="users" element={<UserList />}></Route>
             <Route path="users/create" element={<UserCreate />}></Route>
             <Route path="users/edit/:id" element={<UserEdit />}></Route>
             <Route path="users/:id" element={<UserDetail />}></Route>
           </Route>
 
+          {/* Организаторские маршруты */}
+          <Route
+            path="/organizer/*"
+            element={
+              <PrivateRoute requiredRoles={["organizer"]}>
+                <OrganizerLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<OrganizerDashboardPage />} />
+            <Route path="qr" element={<QRVerification />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isOrganizerRoute && <Footer />}
     </>
   );
 };
