@@ -36,6 +36,8 @@ import UserDetail from "./pages/admin/user/UserDetail.tsx";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
 import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx";
+import OrderPage from "./pages/user/OrderPage.tsx";
+import PaymentSuccess from "./pages/user/PaymentSuccess.tsx";
 
 const AppContent = () => {
   const location = useLocation();
