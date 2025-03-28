@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { payForOrder, getMyOrders } from '../../api/orderApi';
+import {useNavigate} from "react-router-dom";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -28,6 +29,8 @@ const OrderPage: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loadingId, setLoadingId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -94,9 +97,19 @@ const OrderPage: React.FC = () => {
                                     >
                                         {loadingId === order.id ? 'Redirecting...' : '💳 Pay Now'}
                                     </button>
+                                ) : order.status === 'confirmed' && order.stripe_payment_id ? (
+                                    <button
+                                        onClick={() => navigate(`/user/payment-success?session_id=${order.stripe_payment_id}`, {
+                                            state: { fromOrders: true }
+                                        })}
+                                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+                                    >
+                                        🎟️ View Tickets
+                                    </button>
                                 ) : (
                                     <span className="text-gray-400">Payment not available</span>
                                 )}
+
                             </li>
                         ))}
                     </ul>

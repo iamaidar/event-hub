@@ -179,7 +179,7 @@ export class OrderService {
     return await this.orderRepo.find({
       where: {
         user: { id: userId },
-        status: 'pending', // или: In(['pending']) — если статус может быть множественным
+        // status: 'pending', // или: In(['pending']) — если статус может быть множественным
       },
       relations: ['event'], // загружаем связанную информацию о мероприятии
       order: {

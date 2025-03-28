@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getTicketsBySession } from "../../api/orderApi.tsx";
 import './PaymentSuccess.css';
+import { useLocation } from 'react-router-dom';
 
 const PaymentSuccess: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -15,6 +16,9 @@ const PaymentSuccess: React.FC = () => {
         location: string;
     } | null>(null);
     const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const fromOrders = location.state?.fromOrders;
+
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -39,9 +43,12 @@ const PaymentSuccess: React.FC = () => {
 
     return (
         <div className="payment-success">
-            <div className="success-header">
-                <h2>🎉 Оплата прошла успешно!</h2>
-            </div>
+            {!fromOrders && (
+                <div className="success-header">
+                    <h2>🎉 Оплата прошла успешно!</h2>
+                </div>
+            )}
+
 
             {event && (
                 <div className="event-info">
