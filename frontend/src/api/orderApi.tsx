@@ -1,5 +1,23 @@
 // src/api/orderApi.ts
 import api from './axiosInstance';
+type Ticket = {
+    id: number;
+    ticket_code: string;
+    qr_code_data: string;
+};
+
+type Event = {
+    id: number;
+    title: string;
+    date: string;
+    location: string;
+};
+
+type TicketsBySessionResponse = {
+    orderId: number;
+    tickets: Ticket[];
+    event: Event;
+};
 
 export const payForOrder = async (orderId: number): Promise<{ sessionId: string }> => {
     const res = await api.post(`/orders/pay/${orderId}`);
@@ -9,7 +27,7 @@ export const payForOrder = async (orderId: number): Promise<{ sessionId: string 
 
 export const getTicketsBySession = async (
     sessionId: string
-): Promise<{ tickets: { id: number; ticket_code: string; qr_code_data: string }[] }> => {
+): Promise<TicketsBySessionResponse> => {
     const res = await api.get(`/orders/by-session/${sessionId}`);
     return res.data.data;
 };

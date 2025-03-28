@@ -1,4 +1,3 @@
-// src/pages/PaymentSuccess.tsx
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getTicketsBySession } from "../../api/orderApi.tsx";
@@ -9,6 +8,12 @@ const PaymentSuccess: React.FC = () => {
     const [tickets, setTickets] = useState<
         { id: number; ticket_code: string; qr_code_data: string }[]
     >([]);
+    const [event, setEvent] = useState<{
+        id: number;
+        title: string;
+        date: string;
+        location: string;
+    } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -19,6 +24,7 @@ const PaymentSuccess: React.FC = () => {
 
                 const res = await getTicketsBySession(sessionId);
                 setTickets(res.tickets);
+                setEvent(res.event);
             } catch (error) {
                 console.error('Ошибка загрузки билетов:', error);
             } finally {
@@ -33,7 +39,18 @@ const PaymentSuccess: React.FC = () => {
 
     return (
         <div className="payment-success">
-            <h2>🎉 Оплата прошла успешно!</h2>
+            <div className="success-header">
+                <h2>🎉 Оплата прошла успешно!</h2>
+            </div>
+
+            {event && (
+                <div className="event-info">
+                    <h3>{event.title}</h3>
+                    <p>📅 {new Date(event.date).toLocaleString()}</p>
+                    <p>📍 {event.location}</p>
+                </div>
+            )}
+
             <h3>Ваши билеты:</h3>
 
             {tickets.length === 0 ? (
@@ -42,14 +59,13 @@ const PaymentSuccess: React.FC = () => {
                 <div className="tickets-container">
                     {tickets.map((ticket) => (
                         <div key={ticket.id} className="ticket-card">
-                            <p><strong>Код билета:</strong> {ticket.ticket_code}</p>
                             <img
                                 src={ticket.qr_code_data}
                                 alt="QR Code"
                                 width={180}
                                 height={180}
                             />
-
+                            <p><strong>Код билета:</strong> {ticket.ticket_code}</p>
                         </div>
                     ))}
                 </div>
