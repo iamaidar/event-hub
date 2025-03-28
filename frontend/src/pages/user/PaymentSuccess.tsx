@@ -1,7 +1,6 @@
 // src/pages/PaymentSuccess.tsx
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import QRCode from 'react-qr-code';
 import { getTicketsBySession } from "../../api/orderApi.tsx";
 import './PaymentSuccess.css';
 
@@ -44,12 +43,13 @@ const PaymentSuccess: React.FC = () => {
                     {tickets.map((ticket) => (
                         <div key={ticket.id} className="ticket-card">
                             <p><strong>Код билета:</strong> {ticket.ticket_code}</p>
-                            <QRCode
-                                value={ticket.qr_code_data}
-                                bgColor="#FFFFFF"
-                                fgColor="#000000"
-                                size={256}
+                            <img
+                                src={ticket.qr_code_data}
+                                alt="QR Code"
+                                width={180}
+                                height={180}
                             />
+
                         </div>
                     ))}
                 </div>

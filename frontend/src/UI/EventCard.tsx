@@ -53,6 +53,7 @@ const EventCard: React.FC<EventCardProps> = ({
   }, [id]);
 
   const handleBookClick = () => {
+    console.log(user);
     if (!user) {
       navigate("/login");
     } else {
@@ -69,7 +70,7 @@ const EventCard: React.FC<EventCardProps> = ({
     try {
       await createOrder(id, ticketCount);
       setModalOpen(false);
-      navigate("/orders/my");
+      navigate("user/orders/my");
     } catch (err) {
       console.error("Order creation failed:", err);
     }

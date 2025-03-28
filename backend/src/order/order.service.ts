@@ -96,25 +96,25 @@ export class OrderService {
     await this.generateTicketsForOrder(order);
   }
 
-  // Генерация билетов с QR-кодом для заказа
+  // Генерация билетов с компактным QR-кодом для заказа
   async generateTicketsForOrder(order: Order) {
     const tickets: Ticket[] = [];
-    const { v4: uuid } = await import('uuid');
     const QRCode = await import('qrcode');
+    const { nanoid } = await import('nanoid'); // Установи nanoid: npm i nanoid
 
-    const baseVerifyUrl = 'http://localhost:5173/verify'; // 🔁 Замени на свой реальный фронтенд-домен
+    const baseVerifyUrl = 'http://localhost:5173/t'; // 🔁 Короткий путь к проверке билета
 
     for (let i = 0; i < order.ticket_count; i++) {
-      const ticketCode = uuid();
+      const ticketCode = nanoid(8); // Генерируем короткий уникальный код (8 символов)
 
-      // 🔗 Генерируем URL с кодом
-      const ticketUrl = `${baseVerifyUrl}?code=${ticketCode}`;
+      // 🔗 Генерируем компактный URL
+      const ticketUrl = `${baseVerifyUrl}/${ticketCode}`;
 
-      // 🖼 Генерируем QR-код из URL
+      // 🖼 Генерируем QR-код с минимальными размерами
       const qrData = await QRCode.toDataURL(ticketUrl, {
-        errorCorrectionLevel: 'Q', // лучше чем L
-        margin: 2,
-        scale: 6, // больше масштаб = выше качество
+        errorCorrectionLevel: 'M', // Средняя коррекция ошибок (меньше размер)
+        margin: 1,                 // Минимальный отступ
+        scale: 4,                  // Небольшой масштаб, но всё ещё читаемый
       });
 
       const ticket = this.ticketRepo.create({
@@ -129,6 +129,7 @@ export class OrderService {
     await this.ticketRepo.save(tickets);
     return tickets;
   }
+
 
   // Метод для проверки (валидации) билета по QR-коду
   async validateTicket(ticketCode: string) {
