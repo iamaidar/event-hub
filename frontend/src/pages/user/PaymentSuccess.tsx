@@ -12,7 +12,7 @@ const PaymentSuccess: React.FC = () => {
     const [event, setEvent] = useState<{
         id: number;
         title: string;
-        date: string;
+        date_time: string;
         location: string;
     } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ const PaymentSuccess: React.FC = () => {
             {event && (
                 <div className="event-info">
                     <h3>{event.title}</h3>
-                    <p>📅 {new Date(event.date).toLocaleString()}</p>
+                    <p>📅 {new Date(event.date_time).toLocaleString()}</p>
                     <p>📍 {event.location}</p>
                 </div>
             )}
