@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {Entity, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
 import { AppBaseEntity } from '../../common/app-base.entity';
 import { User } from '../../user/entities/user.entity';
 import { Event } from '../../event/entities/event.entity';
+import {Ticket} from "../../ticket/entities/ticket.entity";
 
 @Entity('orders')
 export class Order extends AppBaseEntity {
@@ -21,4 +22,10 @@ export class Order extends AppBaseEntity {
     @ManyToOne(() => Event, { nullable: false })
     @JoinColumn({ name: 'event_id' })
     event: Event;
+
+    @OneToMany(() => Ticket, ticket => ticket.order)
+    tickets: Ticket[];
+
+    @Column({ type: 'int', default: 1 })
+    ticket_count: number;
 }

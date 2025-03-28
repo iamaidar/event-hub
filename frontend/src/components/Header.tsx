@@ -48,9 +48,11 @@ const Header = () => {
 
           {/* Cart and Authentication */}
           <nav className="hidden md:flex items-center space-x-6">
-            <button className="text-white hover:text-gray-300">
-              <ShoppingCart size={24} />
-            </button>
+            {authContext?.user?.role === 'user' && (
+                <Link to="user/orders/my" className="text-white hover:text-gray-300">
+                  <ShoppingCart size={24} />
+                </Link>
+            )}
 
             {authContext?.user ? (
                 <div className="flex items-center space-x-4">

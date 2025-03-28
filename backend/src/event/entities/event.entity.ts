@@ -1,10 +1,12 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {Entity, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
 import { AppBaseEntity } from '../../common/app-base.entity';
 import { Category } from '../../category/entities/category.entity';
 import { User } from '../../user/entities/user.entity';
+import {Order} from "../../order/entities/order.entity";
 
 @Entity('events')
 export class Event extends AppBaseEntity {
+
     @Column({ type: 'varchar', length: 255 })
     title: string;
 
@@ -39,6 +41,10 @@ export class Event extends AppBaseEntity {
 
     @Column({ type: "text", nullable: true })
     image_base64?: string;
+
+    @OneToMany(() => Order, (order) => order.event)
+    orders: Order[];
+
 
 
 }

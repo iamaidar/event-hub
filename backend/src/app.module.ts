@@ -32,8 +32,7 @@ import { Order } from "./order/entities/order.entity";
 import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
-import {StatModule} from "./stat/stat.module";
-
+import { StatModule } from "./stat/stat.module";
 
 @Module({
   imports: [
@@ -75,7 +74,7 @@ import {StatModule} from "./stat/stat.module";
     NotificationModule,
     AuthModule,
     SeedModule,
-      StatModule
+    StatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
