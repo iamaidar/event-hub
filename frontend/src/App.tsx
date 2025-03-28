@@ -16,7 +16,7 @@ import Home from "./pages/Home";
 import LoginForm from "./pages/LoginForm";
 import SearchResults from "./pages/SearchResults";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminDashboardPage from "./pages/admin/main/AdminDashboardPage";
 import EventList from "./pages/admin/event/EventList";
 import EventCreate from "./pages/admin/event/EventCreate";
 import EventEdit from "./pages/admin/event/EventEdit";
@@ -29,9 +29,13 @@ import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
 import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
 import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
 import ReviewList from "./pages/admin/review/ReviewList.tsx";
-import OrganizerLayout from "./layout/OrganizerLayout.tsx"
-import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx"
+import UserList from "./pages/admin/user/UserList.tsx";
+import UserCreate from "./pages/admin/user/UserCreate.tsx";
+import UserEdit from "./pages/admin/user/UserEdit.tsx";
+import UserDetail from "./pages/admin/user/UserDetail.tsx";
+import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
+import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -103,16 +107,22 @@ const AppContent = () => {
             <Route path="categories/:id" element={<CategoryDetail />} />
 
             <Route path="reviews" element={<ReviewList />} />
+
+            {/* Админские пользователи */}
+            <Route path="users" element={<UserList />}></Route>
+            <Route path="users/create" element={<UserCreate />}></Route>
+            <Route path="users/edit/:id" element={<UserEdit />}></Route>
+            <Route path="users/:id" element={<UserDetail />}></Route>
           </Route>
 
           {/* Организаторские маршруты */}
           <Route
-              path="/organizer/*"
-              element={
-                <PrivateRoute requiredRoles={["organizer"]}>
-                  <OrganizerLayout />
-                </PrivateRoute>
-              }
+            path="/organizer/*"
+            element={
+              <PrivateRoute requiredRoles={["organizer"]}>
+                <OrganizerLayout />
+              </PrivateRoute>
+            }
           >
             <Route index element={<OrganizerDashboardPage />} />
             <Route path="qr" element={<QRVerification />} />

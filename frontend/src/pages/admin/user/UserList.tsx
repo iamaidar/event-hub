@@ -1,36 +1,32 @@
 import { useEffect, useState } from "react";
-import {
-  deleteReview,
-  fetchPaginatedReviews,
-  ReviewType,
-  updateReview,
-} from "../../../api/reviewApi";
-import ReviewTable from "../../../components/admin/review/ReviewTable";
+import { deleteUser, fetchPaginatedUsers, User } from "../../../api/userApi";
+import Button from "../../../UI/Button";
+import UserTable from "../../../components/admin/user/UserTable";
 
-const ReviewList: React.FC = () => {
-  const [reviews, setReviews] = useState<ReviewType[]>([]);
+const UserList: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const loadReviews = (page: number) => {
+  const loadUsers = (page: number) => {
     setLoading(true);
-    fetchPaginatedReviews(page, 10)
+    fetchPaginatedUsers(page, 10)
       .then((result) => {
-        setReviews(result.data);
+        setUsers(result.data);
         setCurrentPage(result.page);
         setTotalPages(result.totalPages);
         setLoading(false);
       })
       .catch(() => {
-        setError("Error loading reviews");
+        setError("Error loading users");
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    loadReviews(currentPage);
+    loadUsers(currentPage);
   }, [currentPage]);
 
   const handlePrev = () => {
@@ -46,26 +42,13 @@ const ReviewList: React.FC = () => {
   };
 
   const handleDelete = (id: number | string) => {
-    if (window.confirm("Are you sure you want to delete this review?")) {
-      deleteReview(id)
+    if (window.confirm("Are you sure you want to delete this user ?")) {
+      deleteUser(id)
         .then(() => {
-          setReviews(reviews.filter((review) => review.id !== id));
+          setUsers(users.filter((user) => user.id !== id));
         })
         .catch(() => {
-          alert("Error deleting review");
-        });
-    }
-  };
-
-  const handleVerifyUnverify = (id: number | string, verify: boolean) => {
-    if (window.confirm("Are you sure you want to confirm this review?")) {
-      updateReview(id, { is_moderated: verify })
-        .then(() => {
-          console.log("✅ Review verified successfully!");
-          loadReviews(currentPage);
-        })
-        .catch(() => {
-          alert("Error deleting review");
+          alert("Error deleting user");
         });
     }
   };
@@ -75,20 +58,17 @@ const ReviewList: React.FC = () => {
   }
 
   if (error) {
-    <div className="container mx-auto px-4 py-8 text-red-800">{error}</div>;
+    return <div className="container mx-auto px-4 py-8">{error}</div>;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-start mb-4">
-        <h1 className="text-2xl font-bold">Reviews</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Users</h1>
+        <Button text="Create User" to="/admin/users/create" variant="green" />
       </div>
 
-      <ReviewTable
-        reviews={reviews}
-        onDelete={handleDelete}
-        onVerify={handleVerifyUnverify}
-      ></ReviewTable>
+      <UserTable onDelete={handleDelete} users={users}></UserTable>
 
       <div className="flex items-center justify-center mt-8 space-x-4">
         <button
@@ -125,4 +105,4 @@ const ReviewList: React.FC = () => {
   );
 };
 
-export default ReviewList;
+export default UserList;
