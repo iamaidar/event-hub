@@ -70,7 +70,7 @@ const EventCard: React.FC<EventCardProps> = ({
     try {
       await createOrder(id, ticketCount);
       setModalOpen(false);
-      navigate("user/orders/my");
+      navigate("/user/orders/my");
     } catch (err) {
       console.error("Order creation failed:", err);
     }
