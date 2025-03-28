@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import React from "react";
-import { EventType } from "../../api/eventApi";
+import { EventType } from "../../../api/eventApi";
 
 interface EventTableProps {
   events: EventType[];

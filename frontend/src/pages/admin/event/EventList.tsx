@@ -4,7 +4,7 @@ import {
   deleteEvent,
   EventType,
 } from "../../../api/eventApi";
-import EventTable from "../../../components/admin/EventTable.tsx";
+import EventTable from "../../../components/admin/event/EventTable.tsx";
 import Button from "../../../UI/Button.tsx";
 
 const EventList: React.FC = () => {
@@ -78,7 +78,7 @@ const EventList: React.FC = () => {
         <button
           onClick={handlePrev}
           disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-300 rounded-2xl disabled:opacity-50"
         >
           Previous
         </button>

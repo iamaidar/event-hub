@@ -19,6 +19,7 @@ async function bootstrap() {
       '/webhook',
       bodyParser.raw({ type: 'application/json' }),
   );
+
   app.useGlobalInterceptors(new TransformResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
