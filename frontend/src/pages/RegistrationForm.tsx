@@ -18,6 +18,10 @@ const RegistrationForm = () => {
   const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{6,}$/;
 
   useEffect(() => {
+    setError("");
+  }, [username, email]);
+
+  useEffect(() => {
     if (authContext?.user) {
       navigate("/dashboard", { replace: true });
     }

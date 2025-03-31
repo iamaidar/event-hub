@@ -28,6 +28,7 @@ export interface OrganizerStatData {
   reviewsReceived: number;
   participantsCount: number;
   averageReviewScore: number;
+  eventsWithoutReviewsCount: number;
 }
 
 // export interface OrganizerStatData {
