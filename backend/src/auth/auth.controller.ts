@@ -1,9 +1,19 @@
-import { Controller, Post, Body, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Get,
+  Res,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignInDto, SignupDto } from "./dto";
 import { JwtGuard } from "./guard";
 import { Request } from "express";
 import { User } from "src/user/entities/user.entity";
+import { AuthGuard } from "@nestjs/passport";
+import { Response } from "express";
 
 interface RequestWithUser extends Request {
   user: User;
@@ -32,5 +42,20 @@ export class AuthController {
   @UseGuards(JwtGuard)
   logout(@Req() request: RequestWithUser) {
     return this.authService.logout(request.user.id);
+  }
+
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googleAuth(@Req() req) {
+    // Перенаправление на Google
+  }
+
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const tokens = await this.authService.googleLogin(req.user);
+
+    const redirectUrl = `http://localhost:5173/auth/callback?access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`;
+    res.redirect(redirectUrl);
   }
 }
