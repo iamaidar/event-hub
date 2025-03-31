@@ -1,34 +1,107 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+// src/order/order.controller.ts
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { CreateOrderDto } from "./dto/create-order.dto";
+import { OrderService } from "./order.service";
+import { StripeService } from "../stripe/stripe.service";
+import { Request } from "express";
+import { JwtGuard } from "../auth/guard";
+import { Roles} from "../auth/decorator";
+import { RolesGuard } from "../auth/guard/roles.guard";
 
-@Controller('order')
+@ApiTags("Orders")
+@UseGuards(JwtGuard, RolesGuard)
+@Controller("orders")
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly stripeService: StripeService,
+  ) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  @Roles("user")
+  @ApiOperation({ summary: "Create a new order" })
+  @ApiBody({ type: CreateOrderDto, description: "Order creation data" })
+  @ApiResponse({ status: 201, description: "Order successfully created" })
+  async createOrder(@Req() req: Request, @Body() dto: CreateOrderDto) {
+    if (!req.user) {
+      throw new ForbiddenException("You can only update your own reviews");
+    } else if (!req.user["role"]) {
+      throw new ForbiddenException("You can only update your own reviews");
+    }
+    const userId = req.user["id"];
+    return await this.orderService.createOrder(userId, dto);
   }
 
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @Post("pay/:orderId")
+  @Roles("user")
+  @ApiOperation({
+    summary: "Initiate payment for an order via Stripe Checkout",
+  })
+  @ApiParam({ name: "orderId", description: "Order identifier" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns a URL for Stripe Checkout payment",
+  })
+  async pay(@Param("orderId") orderId: number) {
+    const order = await this.orderService.getOrderById(orderId);
+    if (!order) throw new NotFoundException("Order not found");
+    if (order.status !== "pending")
+      throw new BadRequestException("Order already processed");
+    const session = await this.stripeService.createCheckoutSession(
+      order.total_amount,
+      order.id,
+    );
+
+    return { sessionId: session["id"] };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  @Get("by-session/:sessionId")
+  @Roles("user")
+  @ApiOperation({
+    summary: "Get tickets by Stripe session ID after successful payment",
+  })
+  @ApiParam({ name: "sessionId", description: "Stripe Checkout Session ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the list of tickets for the session",
+  })
+  async getTicketsBySession(@Param("sessionId") sessionId: string) {
+    return await this.orderService.getTicketsBySession(sessionId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  @Get('my')
+  @Roles("user")
+  @ApiOperation({
+    summary: "Get user orders",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the list of user orders",
+  })
+  async getUserOrders(@Req() req: Request) {
+    if (!req.user) {
+      throw new ForbiddenException("You can only update your own reviews");
+    } else if (!req.user["role"]) {
+      throw new ForbiddenException("You can only update your own reviews");
+    }
+    return this.orderService.getMyOrders(req.user['id']);
   }
 }

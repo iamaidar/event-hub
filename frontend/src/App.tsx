@@ -36,10 +36,13 @@ import UserDetail from "./pages/admin/user/UserDetail.tsx";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
 import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx";
+import OrderPage from "./pages/user/OrderPage.tsx";
+import PaymentSuccess from "./pages/user/PaymentSuccess.tsx";
 
 const AppContent = () => {
   const location = useLocation();
   const authContext = useContext(AuthContext);
+
   useEffect(() => {
     if (authContext) {
       setupAxiosInterceptors(authContext);
@@ -75,12 +78,17 @@ const AppContent = () => {
             }
           />
           <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute requiredRoles={["user"]}>
-                <Dashboard />
-              </PrivateRoute>
-            }
+              path="/user/*"
+              element={
+                <PrivateRoute requiredRoles={["user"]}>
+                  <Routes>
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="orders/my" element={<OrderPage />} />
+                    <Route path="payment-success" element={<PaymentSuccess />} />
+                    <Route path="payment-cancel" element={<p>❌ Payment is not completed</p>} />
+                  </Routes>
+                </PrivateRoute>
+              }
           />
           <Route path="/home" element={<Home />} />
           <Route path="/events" element={<SearchResults />} />

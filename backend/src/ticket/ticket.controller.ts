@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TicketService } from './ticket.service';
-import { CreateTicketDto } from './dto/create-ticket.dto';
-import { UpdateTicketDto } from './dto/update-ticket.dto';
+// src/ticket/ticket.controller.ts
+import {Controller, Get, Query, UseGuards} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { OrderService } from '../order/order.service';
+import {Roles} from "../auth/decorator";
+import {JwtGuard} from "../auth/guard";
 
-@Controller('ticket')
+@ApiTags('Tickets')
+@Controller('tickets')
+@UseGuards(JwtGuard)
+@Roles("organizer")
 export class TicketController {
-  constructor(private readonly ticketService: TicketService) {}
+  constructor(private readonly orderService: OrderService) {}
 
-  @Post()
-  create(@Body() createTicketDto: CreateTicketDto) {
-    return this.ticketService.create(createTicketDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.ticketService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ticketService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTicketDto: UpdateTicketDto) {
-    return this.ticketService.update(+id, updateTicketDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ticketService.remove(+id);
+  @Get('validate')
+  @ApiOperation({ summary: 'Validate a ticket using its QR code' })
+  @ApiQuery({
+    name: 'ticketCode',
+    description: 'Unique ticket code generated during ticket creation',
+    required: true,
+  })
+  @ApiResponse({ status: 200, description: 'Ticket validated successfully and marked as used' })
+  async validateTicket(@Query('ticketCode') ticketCode: string) {
+    const ticket = await this.orderService.validateTicket(ticketCode);
+    return {
+      message: 'Ticket validated successfully',
+      ticket,
+    };
   }
 }

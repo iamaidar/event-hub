@@ -18,8 +18,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { FilterEventDto } from './dto/filter-event.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Public } from '../auth/decorator/public.decorator'
-import {RolesGuard} from "../auth/guard/roles.guard";
+import { Public } from '../auth/decorator'
 import {Roles} from "../auth/decorator";
 
 @ApiTags('Event')
@@ -116,4 +115,17 @@ export class EventController {
   remove(@Param('id') id: string) {
     return this.eventService.remove(id);
   }
+
+  @Public()
+  @Get(':id/available-tickets')
+  @ApiOperation({ summary: 'Получить количество свободных билетов на мероприятие' })
+  @ApiResponse({
+    status: 200,
+    description: 'Количество доступных билетов.',
+  })
+  getAvailableTickets(@Param('id') id: number) {
+    return this.eventService.getAvailableTicketsCountAndPrice(id);
+
+  }
+
 }
