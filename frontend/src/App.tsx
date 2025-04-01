@@ -38,6 +38,7 @@ import QRVerification from "./pages/organizer/ QRVerification.tsx";
 import OrganizerDashboardPage from "./pages/organizer/OrganizerDashboardPage.tsx";
 import OrderPage from "./pages/user/OrderPage.tsx";
 import PaymentSuccess from "./pages/user/PaymentSuccess.tsx";
+import AuthCallback from "./pages/AuthCallback.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -78,17 +79,24 @@ const AppContent = () => {
             }
           />
           <Route
-              path="/user/*"
-              element={
-                <PrivateRoute requiredRoles={["user"]}>
-                  <Routes>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="orders/my" element={<OrderPage />} />
-                    <Route path="payment-success" element={<PaymentSuccess />} />
-                    <Route path="payment-cancel" element={<p>❌ Payment is not completed</p>} />
-                  </Routes>
-                </PrivateRoute>
-              }
+            path="/auth/callback"
+            element={<AuthCallback></AuthCallback>}
+          />
+          <Route
+            path="/user/*"
+            element={
+              <PrivateRoute requiredRoles={["user"]}>
+                <Routes>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="orders/my" element={<OrderPage />} />
+                  <Route path="payment-success" element={<PaymentSuccess />} />
+                  <Route
+                    path="payment-cancel"
+                    element={<p>❌ Payment is not completed</p>}
+                  />
+                </Routes>
+              </PrivateRoute>
+            }
           />
           <Route path="/home" element={<Home />} />
           <Route path="/events" element={<SearchResults />} />

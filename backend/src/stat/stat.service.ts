@@ -191,12 +191,27 @@ export class StatService {
         `Средний рейтинг организатора: ${averageReviewScore.toFixed(2)}`,
       );
 
+      const eventsWithoutReviews = await this.eventRepository
+        .createQueryBuilder("event")
+        .leftJoin("event.organizer", "organizer")
+        .where("organizer.id = :organizerId", {
+          organizerId: organizerIdNumber,
+        })
+        .andWhere(
+          "event.id NOT IN (SELECT review.event_id FROM reviews review)",
+        )
+        .getMany();
+
+      // Количество мероприятий без отзывов
+      const eventsWithoutReviewsCount = eventsWithoutReviews.length;
+
       return {
         organizerId: organizerIdNumber,
         eventsCreated,
         reviewsReceived,
         participantsCount,
         averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
+        eventsWithoutReviewsCount,
       };
     } catch (error) {
       // Логируем ошибку, если она произошла

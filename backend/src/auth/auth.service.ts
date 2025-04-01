@@ -6,9 +6,9 @@ import {
 import { SignInDto, SignupDto } from "./dto";
 import * as argon from "argon2";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/user/entities/user.entity";
+import { User } from "../user/entities/user.entity";
 import { Repository } from "typeorm";
-import { Role } from "src/role/entities/role.entity";
+import { Role } from "../role/entities/role.entity";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 
@@ -17,18 +17,14 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
-
     private jwt: JwtService,
-
     private config: ConfigService,
   ) {}
 
   async signup(dto: SignupDto) {
     const hash = await argon.hash(dto.password);
-
     const role = await this.roleRepository.findOne({
       where: { name: dto.role },
     });
@@ -44,17 +40,14 @@ export class AuthService {
         });
 
         await this.userRepository.save(user);
-
         return this.signTokens(user.id, user.email, user.role.name);
       }
     } catch (error) {
       if (error.code === "23505") {
         throw new ForbiddenException("Credentials Taken");
       }
-
       throw error;
     }
-
     throw new ForbiddenException("Something went wrong during signup");
   }
 
@@ -66,7 +59,6 @@ export class AuthService {
     if (!user) throw new ForbiddenException("Credentials incorrect");
 
     const pwMatches = await argon.verify(user.password_hash, dto.password);
-
     if (!pwMatches) {
       throw new ForbiddenException("Credentials incorrect");
     }
@@ -96,14 +88,13 @@ export class AuthService {
     });
     const hash = await argon.hash(refresh_token);
 
-    // Обновляем пользователя, сохраняя хеш refresh_token
     await this.userRepository.update(userId, {
       refresh_token_hash: hash,
     });
-    // Возвращаем «сырые» данные – глобальный интерцептор оформит их в:
-    // { success: true, data: { access_token, refresh_token }, message: "OK" }
+
     return { access_token, refresh_token };
   }
+
   async updateRefreshToken(userId: number, refresh_token: string) {
     const refresh_token_hash = await argon.hash(refresh_token);
     await this.userRepository.update(userId, {
@@ -135,9 +126,7 @@ export class AuthService {
       }
 
       const tokens = await this.signTokens(user.id, user.email, user.role.name);
-
       await this.updateRefreshToken(user.id, tokens.refresh_token);
-
       return tokens;
     } catch {
       throw new UnauthorizedException("Invalid refresh token");
@@ -147,5 +136,40 @@ export class AuthService {
   async logout(userId: number) {
     await this.userRepository.update(userId, { refresh_token_hash: undefined });
     return {};
+  }
+
+  // Новый метод для Google OAuth
+  async googleLogin(googleUser: any) {
+    // Ищем пользователя по email или googleId
+    let user = await this.userRepository.findOne({
+      where: [{ email: googleUser.email }, { google_id: googleUser.googleId }],
+      relations: ["role"], // Загружаем роль
+    });
+
+    // Если пользователя нет, создаем нового с ролью по умолчанию (например, "user")
+    if (!user) {
+      const defaultRole = await this.roleRepository.findOne({
+        where: { name: "user" }, // Предполагаемая роль по умолчанию
+      });
+
+      if (!defaultRole) {
+        throw new ForbiddenException("Default role not found");
+      }
+
+      user = this.userRepository.create({
+        email: googleUser.email,
+        username: googleUser.email.split("@")[0], // Генерируем username из email
+        firstname: googleUser.firstName,
+        lastname: googleUser.lastName,
+        google_id: googleUser.googleId,
+        role: defaultRole,
+        is_active: true,
+      });
+
+      await this.userRepository.save(user);
+    }
+
+    // Генерируем токены с использованием существующего метода
+    return this.signTokens(user.id, user.email, user.role.name);
   }
 }

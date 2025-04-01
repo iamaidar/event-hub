@@ -49,8 +49,13 @@ export default function OrganizerDashboardPage() {
   // Защищаем от NaN
   const eventsData = [
     {
+      name: "Events without reviews",
+      value: stats?.eventsWithoutReviewsCount ?? 0,
+      color: "#8B5CF6",
+    },
+    {
       name: "Events with reviews",
-      value: stats?.reviewsReceived ?? 0,
+      value: stats?.eventsCreated - stats?.eventsWithoutReviewsCount,
       color: "#8B5CF6",
     },
   ];
