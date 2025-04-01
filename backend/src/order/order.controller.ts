@@ -98,9 +98,9 @@ export class OrderController {
   })
   async getUserOrders(@Req() req: Request) {
     if (!req.user) {
-      throw new ForbiddenException("You can only update your own reviews");
+      throw new ForbiddenException("Access danied");
     } else if (!req.user["role"]) {
-      throw new ForbiddenException("You can only update your own reviews");
+      throw new ForbiddenException("You don't have permission to access this page");
     }
     return this.orderService.getMyOrders(req.user['id']);
   }
