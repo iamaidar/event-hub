@@ -16,6 +16,7 @@ import { FilterEventDto } from "./dto/filter-event.dto";
 import { PaginationDto } from "../common/dto/pagination.dto";
 import { PaginationService } from "../common/services/pagination.service";
 import { Order } from "../order/entities/order.entity";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class EventService {
@@ -26,6 +27,7 @@ export class EventService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly emailService: EmailService,
   ) {}
 
   // Получение всех событий с пагинацией
