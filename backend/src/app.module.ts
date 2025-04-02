@@ -33,6 +33,9 @@ import { Review } from "./review/entities/review.entity";
 import { Ticket } from "./ticket/entities/ticket.entity";
 import { UserSubscription } from "./user-subscription/entities/user-subscription.entity";
 import { StatModule } from "./stat/stat.module";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
+import { EmailModule } from "./email/email.module";
 
 @Module({
   imports: [
@@ -75,6 +78,7 @@ import { StatModule } from "./stat/stat.module";
     AuthModule,
     SeedModule,
     StatModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

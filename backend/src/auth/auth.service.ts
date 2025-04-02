@@ -11,6 +11,7 @@ import { Repository } from "typeorm";
 import { Role } from "../role/entities/role.entity";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class AuthService {

@@ -9,6 +9,7 @@ import { JwtStrategy } from "./strategy";
 import { ConfigModule } from "@nestjs/config";
 import { PassportModule } from "@nestjs/passport";
 import { GoogleStrategy } from "./strategy/google.strategy";
+import { EmailModule } from "src/email/email.module";
 
 @Module({
   imports: [
