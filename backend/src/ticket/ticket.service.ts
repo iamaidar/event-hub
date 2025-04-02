@@ -18,18 +18,35 @@ export class TicketService {
 
   // Метод для проверки (валидации) билета по QR-коду
   async checkTicket(ticketCode: string) {
-    const l = new Logger('d');
-    const ticket = await this.ticketRepo.findOne({
-      where: { ticket_code: ticketCode },
-      relations: ['order'],
-    });
-    l.log(ticket);
+    const ticket = await this.ticketRepo
+        .createQueryBuilder('ticket')
+        .leftJoinAndSelect('ticket.order', 'order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.event', 'event')
+        .where('ticket.ticket_code = :code', { code: ticketCode })
+        .select([
+          'ticket.id',
+          'ticket.ticket_code',
+          'ticket.is_used',
+          'order.id',
+          'user.email',
+          'event.title',
+          'event.date_time',
+        ])
+        .getOne();
+
     if (!ticket) {
       throw new NotFoundException('Ticket not found');
     }
+
     if (ticket.is_used) {
       throw new BadRequestException('Ticket already used');
     }
+
+    if (ticket.order?.event?.date_time && new Date(ticket.order.event.date_time) < new Date()) {
+      throw new BadRequestException('Event is already over');
+    }
+
     return ticket;
   }
 
