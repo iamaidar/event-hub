@@ -10,7 +10,7 @@ type Ticket = {
 type Event = {
     id: number;
     title: string;
-    date: string;
+    date_time: string;
     location: string;
 };
 

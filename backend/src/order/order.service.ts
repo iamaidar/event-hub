@@ -161,24 +161,6 @@ export class OrderService {
     return tickets;
   }
 
-  // Метод для проверки (валидации) билета по QR-коду
-  async validateTicket(ticketCode: string) {
-    const ticket = await this.ticketRepo.findOne({
-      where: { ticket_code: ticketCode },
-      relations: ["order"],
-    });
-    if (!ticket) {
-      throw new NotFoundException("Ticket not found");
-    }
-    if (ticket.is_used) {
-      throw new Error("Ticket already used");
-    }
-    // Отмечаем билет как использованный
-    ticket.is_used = true;
-    ticket.used_at = new Date();
-    await this.ticketRepo.save(ticket);
-    return ticket;
-  }
 
   // Метод для получения заказа (например, для оплаты)
   async getOrderById(orderId: number): Promise<Order> {
@@ -217,4 +199,15 @@ export class OrderService {
       },
     });
   }
+
+  async checkTicket(ticketCode:string){
+    const ticket = await this.ticketRepo.findOne({
+      where: {
+        ticket_code: ticketCode,
+      }
+    })
+    if (!ticket) throw new NotFoundException('Ticket not found');
+    return ticket;
+  }
+
 }

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { ReviewType } from "../../api/reviewApi";
 import { Star } from "lucide-react";
+import {ReviewType} from "../../../api/reviewApi.tsx";
 
 interface ReviewTableProps {
   reviews: ReviewType[];

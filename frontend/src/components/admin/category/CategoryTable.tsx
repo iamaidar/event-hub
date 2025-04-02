@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { CategoryType } from "../../api/categoryApi";
+import {CategoryType} from "../../../api/categoryApi.tsx";
 
 interface CategoryTableProps {
     categories: CategoryType[];

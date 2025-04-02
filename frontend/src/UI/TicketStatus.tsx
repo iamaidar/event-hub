@@ -1,22 +1,27 @@
 import { CheckCircle, XCircle } from "lucide-react";
 
-export default function TicketStatusMessage({ status }: { status: "valid" | "used" | "invalid" | null }) {
+export default function TicketStatusMessage({ status }: { status: "valid" | "used" | "invalid" |"expired"| null }) {
     const statusConfig = {
         valid: {
-            text: "✅ Ваш билет подтвержден!",
+            text: "✅ Your ticket has been confirmed!",
             color: "text-green-500",
             Icon: CheckCircle,
         },
         used: {
-            text: "❌ Этот билет уже использован!",
+            text: "❌ This ticket has already been used!",
             color: "text-red-500",
             Icon: XCircle,
         },
         invalid: {
-            text: "❌ Билет недействителен.",
+            text: "❌ The ticket is invalid.",
             color: "text-gray-500",
             Icon: XCircle,
         },
+        expired: {
+            text: "❌ The ticket is expired.",
+            color: "text-gray-500",
+            Icon: XCircle,
+        }
     };
 
     if (!status) return null;

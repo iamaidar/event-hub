@@ -19,4 +19,5 @@ export class Ticket extends AppBaseEntity {
 
     @Column({ type: 'timestamptz', nullable: true })
     used_at?: Date;
+
 }
