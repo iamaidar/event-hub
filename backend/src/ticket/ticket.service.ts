@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
+import {BadRequestException, HttpException, Injectable, Logger, NotFoundException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Repository} from "typeorm";
 import {Ticket} from "./entities/ticket.entity";
@@ -18,15 +18,17 @@ export class TicketService {
 
   // Метод для проверки (валидации) билета по QR-коду
   async checkTicket(ticketCode: string) {
+    const l = new Logger('d');
     const ticket = await this.ticketRepo.findOne({
       where: { ticket_code: ticketCode },
       relations: ['order'],
     });
+    l.log(ticket);
     if (!ticket) {
       throw new NotFoundException('Ticket not found');
     }
     if (ticket.is_used) {
-      throw new Error('Ticket already used');
+      throw new BadRequestException('Ticket already used');
     }
     return ticket;
   }

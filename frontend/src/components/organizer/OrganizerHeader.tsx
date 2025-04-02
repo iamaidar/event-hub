@@ -34,9 +34,6 @@ const OrganizerHeader = () => {
             <Link to="/organizer/events" className="hover:text-gray-300 font-bold">
               EVENTS
             </Link>
-            <Link to="/organizer/qr" className="hover:text-gray-300 font-bold">
-              QR
-            </Link>
           </nav>
 
           {/* Authentication */}
