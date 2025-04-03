@@ -284,4 +284,51 @@ export class EventService {
       ticketPrice: event.price,
     };
   }
+
+  async createByOrganizer(dto: CreateEventDto, user: any) {
+    const event = this.eventRepository.create({
+      ...dto,
+      is_verified: false,
+      status: 'pending',
+      organizer: { id: user.id },
+    });
+
+    return this.eventRepository.save(event);
+  }
+
+  async updateByOrganizer(id: number, dto: UpdateEventDto) {
+    await this.eventRepository.update(id, {
+      ...dto,
+      is_verified: false,
+    });
+
+    return this.eventRepository.findOneBy({ id });
+  }
+
+  async softRemoveByOrganizer(id: string) {
+    await this.eventRepository.update(id, {
+      is_verified: false,
+      status: 'inactive',
+    });
+
+    return { message: 'Event deactivated and sent for re-verification.' };
+  }
+
+  async getEventsByOrganizer(userId: number,paginationDto: PaginationDto): Promise<{
+      data: Event[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      nextPage: number | null;
+    }> {
+      const query = this.eventRepository
+          .createQueryBuilder("event")
+          .leftJoinAndSelect("event.category", "category")
+          .leftJoin("event.organizer", "organizer")
+          .addSelect(["organizer.id", "organizer.username", "organizer.email"])
+          .where("organizer.id = :userId", { userId: userId });
+
+      return PaginationService.paginate(query, paginationDto);
+    }
 }

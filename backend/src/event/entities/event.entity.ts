@@ -34,7 +34,7 @@ export class Event extends AppBaseEntity {
     total_tickets: number;
 
     @Column({ type: 'varchar', length: 50 })
-    status: string; // например: 'scheduled', 'cancelled', 'completed'
+    status: string; // например: 'pending' | 'scheduled' | 'completed' | 'cancelled' | 'rejected' | 'inactive'
 
     @Column({ type: 'boolean', nullable: true })
     is_verified?: boolean;

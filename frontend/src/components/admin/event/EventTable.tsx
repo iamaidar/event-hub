@@ -9,7 +9,7 @@ interface EventTableProps {
 
 const EventTable: React.FC<EventTableProps> = ({ events, onDelete }) => {
   return (
-    <div className="overflow-x-auto rounded-lg shadow-lg bg-white p-4">
+    <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
       <table className="min-w-full text-gray-900">
         <thead className="bg-gray-100">
           <tr>
@@ -35,14 +35,24 @@ const EventTable: React.FC<EventTableProps> = ({ events, onDelete }) => {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {events.map((event, index) => {
-            const statusColor =
-              event.status === "completed"
-                ? "bg-green-100 text-green-700"
-                : event.status === "scheduled"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700";
+              const statusColor =
+                  event.status === "completed"
+                      ? "bg-green-100 text-green-700"
+                      : event.status === "scheduled"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : event.status === "pending"
+                              ? "bg-blue-100 text-blue-700"
+                              : event.status === "draft"
+                                  ? "bg-gray-100 text-gray-700"
+                                  : event.status === "rejected"
+                                      ? "bg-red-100 text-red-700"
+                                      : event.status === "cancelled"
+                                          ? "bg-orange-100 text-orange-700"
+                                          : event.status === "inactive"
+                                              ? "bg-zinc-200 text-zinc-600"
+                                              : "bg-neutral-100 text-neutral-700"; // fallback for unknown statuses
 
-            return (
+              return (
               <tr
                 key={event.id}
                 className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
