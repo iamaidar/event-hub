@@ -7,7 +7,7 @@ import {
     Param,
     Request,
     UseGuards,
-    Get, Query,
+    Get, Query, Logger,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from '../event/dto/create-event.dto';

@@ -1,5 +1,6 @@
 // event/dto/filter-event.dto.ts
-import { IsOptional, IsString, IsDateString } from 'class-validator';
+import {IsOptional, IsString, IsDateString, IsEnum, IsBoolean} from 'class-validator';
+import {EventStatus} from "../event-status.enum";
 
 export class FilterEventDto {
     // Фильтр по части названия мероприятия (регистронезависимый поиск)
@@ -30,4 +31,16 @@ export class FilterEventDto {
     @IsOptional()
     @IsString()
     location?: string;
+
+    @IsOptional()
+    @IsEnum(EventStatus, { each: true })
+    status?: EventStatus[];
+
+    @IsOptional()
+    @IsBoolean()
+    isVerified?: boolean;
+
+    @IsOptional()
+    @IsString()
+    search?: string;
 }

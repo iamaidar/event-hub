@@ -64,6 +64,5 @@ export const updateOrganizerEvent = async (
 };
 
 export const deleteOrganizerEvent = async (id: number | string): Promise<void> => {
-    const r = await api.delete(`/organizer/events/${id}`);
-    console.log(r);
+    return await api.delete(`/organizer/events/${id}`);
 };
