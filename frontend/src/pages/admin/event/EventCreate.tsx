@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createEvent } from "../../../api/eventApi.tsx";
+import { createEvent, EventStatus } from "../../../api/eventApi.tsx";
 import EventForm from "../../../components/admin/event/EventForm.tsx";
 import { fetchCategories } from "../../../api/categoryApi.tsx";
 
@@ -16,18 +16,15 @@ const EventCreate: React.FC = () => {
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState(0);
   const [totalTickets, setTotalTickets] = useState(0);
-  const [status, setStatus] = useState("Active");
+  const [status, setStatus] = useState<EventStatus>("pending"); // 👈 начальный статус
   const [isVerified, setIsVerified] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null,
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch categories from the API
     fetchCategories()
       .then((data: Category[]) => {
         setCategories(data);
@@ -43,7 +40,7 @@ const EventCreate: React.FC = () => {
     const newEvent: any = {
       title,
       description,
-      date_time: dateTime,
+      date_time: new Date(dateTime).toISOString(),
       location,
       price,
       total_tickets: totalTickets,
@@ -68,34 +65,34 @@ const EventCreate: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-center">Create Event</h1>
-      <EventForm
-        title={title}
-        setTitle={setTitle}
-        description={description}
-        setDescription={setDescription}
-        dateTime={dateTime}
-        setDateTime={setDateTime}
-        location={location}
-        setLocation={setLocation}
-        price={price}
-        setPrice={(value) => setPrice(Number(value))}
-        totalTickets={totalTickets}
-        setTotalTickets={(value) => setTotalTickets(Number(value))}
-        status={status}
-        setStatus={setStatus}
-        isVerified={isVerified}
-        setIsVerified={setIsVerified}
-        imageBase64={imageBase64}
-        setImageBase64={setImageBase64}
-        onSubmit={handleSubmit}
-        submitButtonText="Create Event"
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        setSelectedCategoryId={setSelectedCategoryId}
-      />
-    </div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6 text-center">Create Event</h1>
+        <EventForm
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            dateTime={dateTime}
+            setDateTime={setDateTime}
+            location={location}
+            setLocation={setLocation}
+            price={price}
+            setPrice={(value) => setPrice(Number(value))}
+            totalTickets={totalTickets}
+            setTotalTickets={(value) => setTotalTickets(Number(value))}
+            status={status}
+            setStatus={setStatus}
+            isVerified={isVerified}
+            setIsVerified={setIsVerified}
+            imageBase64={imageBase64}
+            setImageBase64={setImageBase64}
+            onSubmit={handleSubmit}
+            submitButtonText="Create Event"
+            categories={categories}
+            selectedCategoryId={selectedCategoryId}
+            setSelectedCategoryId={setSelectedCategoryId}
+        />
+      </div>
   );
 };
 

@@ -9,6 +9,15 @@ export type EventStatus =
     | "inactive"
     | "deleted";
 
+export const EventStatusList: EventStatus[] = [
+    "pending",
+    "published",
+    "completed",
+    "cancelled",
+    "inactive",
+    "deleted",
+];
+
 export interface EventType {
     id: number;
     title: string;
