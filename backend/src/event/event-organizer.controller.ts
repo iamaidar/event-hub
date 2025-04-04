@@ -42,7 +42,7 @@ export class OrganizerEventController {
     @Delete(':id')
     @ApiOperation({ summary: 'Soft delete an event (deactivates and un-verifies)' })
     @ApiResponse({ status: 200, description: 'Event marked as inactive and pending re-verification.' })
-    softDelete(@Param('id') id: string) {
+    softDelete(@Param('id') id: number) {
         return this.eventService.softRemoveByOrganizer(id);
     }
 

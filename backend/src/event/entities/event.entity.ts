@@ -3,6 +3,7 @@ import { AppBaseEntity } from '../../common/app-base.entity';
 import { Category } from '../../category/entities/category.entity';
 import { User } from '../../user/entities/user.entity';
 import {Order} from "../../order/entities/order.entity";
+import {Review} from "../../review/entities/review.entity";
 
 @Entity('events')
 export class Event extends AppBaseEntity {
@@ -44,6 +45,9 @@ export class Event extends AppBaseEntity {
 
     @OneToMany(() => Order, (order) => order.event)
     orders: Order[];
+
+    @OneToMany(() => Review, (review) => review.event)
+    reviews: Review[];
 
 
 

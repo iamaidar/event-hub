@@ -289,7 +289,7 @@ export class EventService {
     const event = this.eventRepository.create({
       ...dto,
       is_verified: false,
-      status: 'pending',
+      status: "pending",
       organizer: { id: user.id },
     });
 
@@ -299,36 +299,57 @@ export class EventService {
   async updateByOrganizer(id: number, dto: UpdateEventDto) {
     await this.eventRepository.update(id, {
       ...dto,
-      is_verified: false,
+      status: "pending",
+      is_verified: true,
     });
 
     return this.eventRepository.findOneBy({ id });
   }
 
-  async softRemoveByOrganizer(id: string) {
-    await this.eventRepository.update(id, {
-      is_verified: false,
-      status: 'inactive',
+  async softRemoveByOrganizer(id: number) {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ["reviews", "tickets", "orders"], // adjust to your real relations
     });
 
-    return { message: 'Event deactivated and sent for re-verification.' };
+    const hasReviews = event?.reviews && event.reviews.length > 0;
+    const hasOrders = event?.orders && event.orders.length > 0;
+
+    const hasDependents = hasReviews || hasOrders;
+
+    if (!hasDependents) {
+      await this.eventRepository.delete(id);
+      return { message: "Event was fully deleted (no related data)." };
+    }
+
+    await this.eventRepository.update(id, {
+      status: "inactive",
+    });
+
+    return {
+      message:
+        "Event cannot be deleted due to related data (reviews, tickets, or orders). It was marked as inactive instead.",
+    };
   }
 
-  async getEventsByOrganizer(userId: number,paginationDto: PaginationDto): Promise<{
-      data: Event[];
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-      nextPage: number | null;
-    }> {
-      const query = this.eventRepository
-          .createQueryBuilder("event")
-          .leftJoinAndSelect("event.category", "category")
-          .leftJoin("event.organizer", "organizer")
-          .addSelect(["organizer.id", "organizer.username", "organizer.email"])
-          .where("organizer.id = :userId", { userId: userId });
+  async getEventsByOrganizer(
+    userId: number,
+    paginationDto: PaginationDto,
+  ): Promise<{
+    data: Event[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    nextPage: number | null;
+  }> {
+    const query = this.eventRepository
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.category", "category")
+      .leftJoin("event.organizer", "organizer")
+      .addSelect(["organizer.id", "organizer.username", "organizer.email"])
+      .where("organizer.id = :userId", { userId: userId });
 
-      return PaginationService.paginate(query, paginationDto);
-    }
+    return PaginationService.paginate(query, paginationDto);
+  }
 }

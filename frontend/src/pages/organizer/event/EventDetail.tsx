@@ -66,7 +66,7 @@ const EventList: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">Events</h1>
-                <Button text="Create Event" to="/admin/events/create" variant="green" />
+                <Button text="Create Event" to="/organizer/events/create" variant="green" />
             </div>
 
             <EventTable events={events} onDelete={handleDelete}></EventTable>
