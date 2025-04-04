@@ -125,7 +125,7 @@ export class EventService {
       date_time: new Date(date_time),
       organizer,
       image_base64,
-      status: EventStatus.DRAFT,
+      status: EventStatus.PENDING,
       is_verified: false,
     });
 
@@ -269,7 +269,7 @@ export class EventService {
       total_tickets: Number(total_tickets),
       date_time: new Date(date_time),
       is_verified: false,
-      status: EventStatus.DRAFT,
+      status: EventStatus.PENDING,
       organizer: { id: user.id },
       image_base64,
     });
@@ -288,9 +288,9 @@ export class EventService {
   }
 
 
-  async updateByOrganizer(id: number, dto: UpdateEventDto, user: any): Promise<Event> {
+  async updateByOrganizer(id: number, dto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({
-      where: { id, organizer: { id: user.id } },
+      where: { id},
     });
 
     if (!event) {
@@ -322,7 +322,7 @@ export class EventService {
     }
 
     // обновляем статус и верификацию
-    event.status = EventStatus.DRAFT;
+    event.status = EventStatus.PENDING;
     event.is_verified = false;
 
     return this.eventRepository.save(event);

@@ -35,7 +35,7 @@ export class Event extends AppBaseEntity {
     @Column({ type: 'int' })
     total_tickets: number;
 
-    @Column({ type: 'enum', enum: EventStatus, default: EventStatus.DRAFT })
+    @Column({ type: 'enum', enum: EventStatus, default: EventStatus.PENDING })
     status: EventStatus;
 
     @Column({ type: 'boolean', nullable: true })
