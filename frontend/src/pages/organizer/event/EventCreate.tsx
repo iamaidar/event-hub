@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createEvent } from "../../../api/eventApi.tsx";
 import EventForm from "../../../components/organizer/event/EventForm.tsx";
 import { fetchCategories } from "../../../api/categoryApi.tsx";
+import {createOrganizerEvent} from "../../../api/organizerEventApi.tsx";
 
 interface Category {
     id: number;
@@ -54,9 +54,9 @@ const EventCreate: React.FC = () => {
         }
         console.log(newEvent);
 
-        createEvent(newEvent)
+        createOrganizerEvent(newEvent)
             .then(() => {
-                navigate("/admin/events");
+                navigate("/organizer/events");
             })
             .catch((_err) => {
                 alert("Error creating event");

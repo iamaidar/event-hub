@@ -1,7 +1,6 @@
 import api from "./axiosInstance";
 
 export type EventStatus =
-    | "draft"
     | "pending"
     | "published"
     | "completed"

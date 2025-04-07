@@ -1,5 +1,21 @@
 import api from "./axiosInstance";
 
+export type EventStatus =
+    | "pending"
+    | "published"
+    | "completed"
+    | "cancelled"
+    | "inactive"
+    | "deleted";
+
+export const EventStatusList: EventStatus[] = [
+    "pending",
+    "published",
+    "completed",
+    "cancelled",
+    "inactive",
+    "deleted",
+];
 export interface EventType {
     category: any;
     id: number;
@@ -9,7 +25,7 @@ export interface EventType {
     location: string;
     price: number;
     total_tickets: number;
-    status: string;
+    status: EventStatus;
     is_verified?: boolean;
     categoryId: number|null;
     image_base64: string| null;

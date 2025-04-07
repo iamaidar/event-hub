@@ -121,7 +121,7 @@ const EventDetail: React.FC = () => {
                     )}
                 </div>
                 <Link
-                    to="/admin/events"
+                    to="/organizer/events"
                     className="mt-6 inline-block bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600 transition"
                 >
                     ← Back to Events List
