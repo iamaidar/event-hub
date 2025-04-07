@@ -1,57 +1,45 @@
 import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {ExtendedEventType, fetchOrganizerEventById} from "../../../api/organizerEventApi.tsx";
 
-import EventTable from "../../../components/admin/event/EventTable.tsx";
-import Button from "../../../UI/Button.tsx";
-import {deleteOrganizerEvent, EventType, fetchPaginatedOrganizerEvents} from "../../../api/organizerEventApi.tsx";
-
-const EventList: React.FC = () => {
-    const [events, setEvents] = useState<EventType[]>([]);
+const EventDetail: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const [event, setEvent] = useState<ExtendedEventType | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(1);
-
-    const loadEvents = (page: number) => {
-        setLoading(true);
-        fetchPaginatedOrganizerEvents(page, 10)
-            .then((result) => {
-                setEvents(result.data);
-                setCurrentPage(result.page);
-                setTotalPages(result.totalPages);
-                setLoading(false);
-            })
-            .catch(() => {
-                setError("Error loading events");
-                setLoading(false);
-            });
-    };
 
     useEffect(() => {
-        loadEvents(currentPage);
-    }, [currentPage]);
-
-    const handlePrev = () => {
-        if (currentPage > 1) {
-            setCurrentPage((prev) => prev - 1);
-        }
-    };
-
-    const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage((prev) => prev + 1);
-        }
-    };
-
-    const handleDelete = (id: number | string) => {
-        if (window.confirm("Are you sure you want to delete this event?")) {
-            deleteOrganizerEvent(id)
-                .then(() => {
-                    setEvents(events.filter((event) => event.id !== id));
+        if (id) {
+            fetchOrganizerEventById(id)
+                .then((data) => {
+                    setEvent(data);
+                    setLoading(false);
                 })
                 .catch(() => {
-                    alert("Error deleting event");
+                    setError("Ошибка при загрузке данных мероприятия");
+                    setLoading(false);
                 });
         }
+    }, [id]);
+
+    const getStatusBadge = (status: string) => {
+        const colors: Record<string, string> = {
+            pending: "bg-blue-100 text-blue-700",
+            published: "bg-yellow-100 text-yellow-700",
+            completed: "bg-green-100 text-green-700",
+            cancelled: "bg-orange-100 text-orange-700",
+            inactive: "bg-zinc-200 text-zinc-600",
+            deleted: "bg-neutral-300 text-neutral-600",
+        };
+        return (
+            <span
+                className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                    colors[status] || "bg-gray-200 text-gray-600"
+                }`}
+            >
+        {status}
+      </span>
+        );
     };
 
     if (loading) {
@@ -62,48 +50,85 @@ const EventList: React.FC = () => {
         return <div className="container mx-auto px-4 py-8">{error}</div>;
     }
 
+    if (!event) {
+        return (
+            <div className="container mx-auto px-4 py-8">Event not found.</div>
+        );
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Events</h1>
-                <Button text="Create Event" to="/organizer/events/create" variant="green" />
-            </div>
+            <div className="bg-white shadow-lg rounded-lg p-6 max-w-2xl mx-auto">
+                <h1 className="text-2xl font-bold mb-4 text-gray-800">{event.title}</h1>
+                <div className="space-y-3 text-gray-700">
+                    <p className="border-b pb-2">
+                        <strong>Description:</strong> {event.description}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Date & Time:</strong>{" "}
+                        {new Date(event.date_time).toLocaleString()}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Location:</strong> {event.location}
+                    </p>
+                    {event.category && (
+                        <p className="border-b pb-2">
+                            <strong>Category:</strong> {event.category.name}
+                        </p>
+                    )}
+                    <p className="border-b pb-2">
+                        <strong>Price:</strong> {event.price} RUB
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Total Tickets:</strong> {event.total_tickets}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Total Tickets:</strong> {event.total_tickets}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Tickets Sold:</strong> {event.ticketsSold}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Tickets Remaining:</strong> {event.ticketsRemaining}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Orders Count:</strong> {event.ordersCount}
+                    </p>
 
-            <EventTable events={events} onDelete={handleDelete}></EventTable>
-
-            <div className="flex items-center justify-center mt-8 space-x-4">
-                <button
-                    onClick={handlePrev}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-gray-300 rounded-2xl disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <div className="flex space-x-2">
-                    {Array.from({ length: totalPages }, (_, index) => (
-                        <button
-                            key={index + 1}
-                            onClick={() => setCurrentPage(index + 1)}
-                            className={`px-3 py-1 border rounded ${
-                                currentPage === index + 1
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-white text-black"
-                            }`}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
+                    <p className="border-b pb-2">
+                        <strong>Status:</strong> {getStatusBadge(event.status)}
+                    </p>
+                    <p>
+                        <strong>Verified:</strong>{" "}
+                        {event.is_verified ? (
+                            <span className="text-green-600 font-semibold">✅ Yes</span>
+                        ) : (
+                            <span className="text-red-500 font-semibold">❌ No</span>
+                        )}
+                    </p>
+                    {event.image_base64 ? (
+                        <img
+                            src={event.image_base64}
+                            alt={event.title}
+                            className="rounded-lg mt-4"
+                        />
+                    ) : (
+                        <img
+                            src="https://via.placeholder.com/150"
+                            alt="Placeholder"
+                            className="rounded-lg mt-4"
+                        />
+                    )}
                 </div>
-                <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-gray-300 rounded-2xl disabled:opacity-50"
+                <Link
+                    to="/admin/events"
+                    className="mt-6 inline-block bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600 transition"
                 >
-                    Next
-                </button>
+                    ← Back to Events List
+                </Link>
             </div>
         </div>
     );
 };
 
-export default EventList;
+export default EventDetail;

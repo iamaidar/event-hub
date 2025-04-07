@@ -217,6 +217,32 @@ export class EventService {
     }
   }
 
+  async getEventDetailsById(eventId: number) {
+    // Получаем мероприятие по его id
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Мероприятие с id ${eventId} не найдено`);
+    }
+
+    // Получаем все заказы, связанные с данным мероприятием
+    // Предполагается, что в Order есть связь с Event (например, через поле event)
+    const orders = await this.orderRepository.find({ where: { event: { id: eventId } } });
+
+    // Подсчитываем общее количество проданных билетов
+    const ticketsSold = orders.reduce((sum, order) => sum + order.ticket_count, 0);
+
+    // Рассчитываем оставшиеся билеты, если в мероприятии указано общее количество билетов (totalTickets)
+    const ticketsRemaining = event.total_tickets - ticketsSold;
+
+    // Возвращаем информацию о мероприятии с дополнительными данными
+    return {
+      ...event, // данные мероприятия
+      ticketsSold,       // куплено билетов
+      ticketsRemaining,  // осталось билетов
+      ordersCount: orders.length, // количество заказов
+    };
+  }
+
   async getAvailableTicketsCountAndPrice(eventId: number): Promise<{
     availableTickets: number;
     ticketPrice: number;

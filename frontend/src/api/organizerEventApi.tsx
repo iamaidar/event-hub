@@ -1,4 +1,4 @@
-import api from "./axiosInstance"; // ваш настроенный axios-инстанс
+import api from "./axiosInstance";
 
 export interface EventType {
     category: any;
@@ -29,9 +29,18 @@ export interface PaginatedEvents {
     nextPage: number | null;
 }
 
+export type ExtendedEventType = EventType & {
+    ticketsSold: number;
+    ticketsRemaining: number;
+    ordersCount: number;
+};
+
+
 export const fetchPaginatedOrganizerEvents = async (page: number = 1, limit: number = 10): Promise<PaginatedEvents> => {
+    console.log(1);
     const response = await api.get("/organizer/events", { params: { page, limit } });
     const paginatedData = response.data.data; // Получаем объект с массивом и параметрами пагинации
+    console.log(paginatedData);
     return {
         data: paginatedData.data,
         total: paginatedData.total,
@@ -42,8 +51,8 @@ export const fetchPaginatedOrganizerEvents = async (page: number = 1, limit: num
     };
 };
 
-export const fetchOrganizerEventById = async (id: number | string): Promise<EventType> => {
-    const response = await api.get(`/events/${id}`);
+export const fetchOrganizerEventById = async (id: number | string): Promise<ExtendedEventType> => {
+    const response = await api.get(`organizer/events/${id}`);
 
     return response.data.data;
 };

@@ -53,4 +53,12 @@ export class OrganizerEventController {
            @Query() paginationDto: PaginationDto, ) {
         return this.eventService.getEventsByOrganizer(req.user['id'],paginationDto);
     }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get event details including sold tickets and orders count' })
+    @ApiResponse({ status: 200, description: 'Returns event details with ticket purchase and order information.' })
+    getEventDetails(@Param('id') id: number) {
+        return this.eventService.getEventDetailsById(id);
+    }
+
 }
