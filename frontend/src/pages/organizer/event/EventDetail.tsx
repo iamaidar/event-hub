@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { EventType, fetchEventById } from "../../../api/eventApi.tsx";
+import {ExtendedEventType, fetchOrganizerEventById} from "../../../api/organizerEventApi.tsx";
 
 const EventDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const [event, setEvent] = useState<EventType | null>(null);
+    const [event, setEvent] = useState<ExtendedEventType | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (id) {
-            fetchEventById(id)
+            fetchOrganizerEventById(id)
                 .then((data) => {
                     setEvent(data);
                     setLoading(false);
@@ -83,6 +83,19 @@ const EventDetail: React.FC = () => {
                         <strong>Total Tickets:</strong> {event.total_tickets}
                     </p>
                     <p className="border-b pb-2">
+                        <strong>Total Tickets:</strong> {event.total_tickets}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Tickets Sold:</strong> {event.ticketsSold}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Tickets Remaining:</strong> {event.ticketsRemaining}
+                    </p>
+                    <p className="border-b pb-2">
+                        <strong>Orders Count:</strong> {event.ordersCount}
+                    </p>
+
+                    <p className="border-b pb-2">
                         <strong>Status:</strong> {getStatusBadge(event.status)}
                     </p>
                     <p>
@@ -108,7 +121,7 @@ const EventDetail: React.FC = () => {
                     )}
                 </div>
                 <Link
-                    to="/admin/events"
+                    to="/organizer/events"
                     className="mt-6 inline-block bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600 transition"
                 >
                     ← Back to Events List
@@ -119,4 +132,3 @@ const EventDetail: React.FC = () => {
 };
 
 export default EventDetail;
-

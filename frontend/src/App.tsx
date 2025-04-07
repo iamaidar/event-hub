@@ -1,42 +1,41 @@
-import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    Navigate,
-    useLocation,
-} from "react-router-dom";
-import {useContext, useEffect} from "react";
-import {AuthContext, AuthProvider} from "./context/AuthContext";
-import Dashboard from "./pages/Dashboard";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useContext } from "react";
 import Header from "./components/Header";
-import PublicRoute from "./routes/PublicRoute";
-import RegistrationForm from "./pages/RegistrationForm";
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
 import LoginForm from "./pages/LoginForm";
-import SearchResults from "./pages/SearchResults";
+import RegistrationForm from "./pages/RegistrationForm";
+import OrderPage from "./pages/user/OrderPage";
+import PaymentSuccess from "./pages/user/PaymentSuccess";
+import AuthCallback from "./pages/AuthCallback";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import PublicRoute from "./routes/PublicRoute";
+import PrivateRoute from "./routes/PrivateRoute";
+import {AuthContext, AuthProvider} from "./context/AuthContext";
+import { setupAxiosInterceptors } from "./api/axiosInstance";
+
+// Admin pages
 import AdminDashboardPage from "./pages/admin/main/AdminDashboardPage";
+import UserList from "./pages/admin/user/UserList";
+import UserCreate from "./pages/admin/user/UserCreate";
+import UserEdit from "./pages/admin/user/UserEdit";
+import UserDetail from "./pages/admin/user/UserDetail";
+import AdminLayout from "./layout/AdminLayout";
 import EventList from "./pages/admin/event/EventList";
 import EventCreate from "./pages/admin/event/EventCreate";
 import EventEdit from "./pages/admin/event/EventEdit";
 import EventDetail from "./pages/admin/event/EventDetail";
-import PrivateRoute from "./routes/PrivateRoute";
-import AdminLayout from "./layout/AdminLayout";
-import {setupAxiosInterceptors} from "./api/axiosInstance";
-import CategoryList from "./pages/admin/category/CategoryList.tsx";
-import CategoryCreate from "./pages/admin/category/CategoryCreate.tsx";
-import CategoryEdit from "./pages/admin/category/CategoryEdit.tsx";
+import CategoryList from "./pages/admin/category/CategoryList";
+import CategoryCreate from "./pages/admin/category/CategoryCreate";
+import CategoryEdit from "./pages/admin/category/CategoryEdit";
 import CategoryDetail from "./pages/admin/category/CategoryDetail.tsx";
 import ReviewList from "./pages/admin/review/ReviewList.tsx";
-import UserList from "./pages/admin/user/UserList.tsx";
-import UserCreate from "./pages/admin/user/UserCreate.tsx";
-import UserEdit from "./pages/admin/user/UserEdit.tsx";
-import UserDetail from "./pages/admin/user/UserDetail.tsx";
-import OrderPage from "./pages/user/OrderPage.tsx";
-import PaymentSuccess from "./pages/user/PaymentSuccess.tsx";
-import AuthCallback from "./pages/AuthCallback.tsx";
-import OrganizerRoutes from "./routes/OrganizerRoutes.tsx";
+
+// Other pages
+import Home from "./pages/Home";
+import SearchResults from "./pages/SearchResults";
+import OrganizerRoutes from "./routes/OrganizerRoutes";
+import Dashboard from "./pages/Dashboard";
+import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 
 const AppContent = () => {
     const location = useLocation();
@@ -57,85 +56,78 @@ const AppContent = () => {
 
     return (
         <>
-      {!isAdminRoute && !isOrganizerRoute && <Header/>}
-          <main className="min-h-screen bg-gray-100">
-              <Routes>
-                  <Route
-                      path="/login"
-                      element={
-                          <PublicRoute>
-                              <LoginForm/>
-                          </PublicRoute>
-                      }
-                  />
-                  <Route
-                      path="/register"
-                      element={
-                          <PublicRoute>
-                              <RegistrationForm/>
-                          </PublicRoute>
-                      }
-                  />
-                  <Route
-                      path="/auth/callback"
-                      element={<AuthCallback></AuthCallback>}
-                  />
-                  <Route
-                      path="/user/*"
-                      element={
-                          <PrivateRoute requiredRoles={["user"]}>
-                              <Routes>
-                                  <Route path="dashboard" element={<Dashboard/>}/>
-                                  <Route path="orders/my" element={<OrderPage/>}/>
-                                  <Route path="payment-success" element={<PaymentSuccess/>}/>
-                                  <Route
-                                      path="payment-cancel"
-                                      element={<p>❌ Payment is not completed</p>}
-                                  />
-                              </Routes>
-                          </PrivateRoute>
-                      }
-                  />
-                  <Route path="/home" element={<Home/>}/>
-                  <Route path="/events" element={<SearchResults/>}/>
-                  <Route path="/unauthorized" element={<UnauthorizedPage/>}/>
+            {!isAdminRoute && !isOrganizerRoute && <Header />}
+            <main className="min-h-screen bg-gray-100">
+                <Routes>
 
-                  {/* Админские маршруты */}
-                  <Route
-                      path="/admin/*"
-                      element={
-                          <PrivateRoute requiredRoles={["admin"]}>
-                              <AdminLayout/>
-                          </PrivateRoute>
-                      }
-                  >
-                      <Route index element={<AdminDashboardPage/>}/>
-                      <Route path="events" element={<EventList/>}/>
-                      <Route path="events/create" element={<EventCreate/>}/>
-                      <Route path="events/edit/:id" element={<EventEdit/>}/>
-                      <Route path="events/:id" element={<EventDetail/>}/>
+                    {/* Public Routes */}
+                    <Route path="/login" element={<PublicRoute><LoginForm /></PublicRoute>} />
+                    <Route path="/register" element={<PublicRoute><RegistrationForm /></PublicRoute>} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/events" element={<SearchResults />} />
 
-                      <Route path="categories" element={<CategoryList/>}/>
-                      <Route path="categories/create" element={<CategoryCreate/>}/>
-                      <Route path="categories/edit/:id" element={<CategoryEdit/>}/>
-                      <Route path="categories/:id" element={<CategoryDetail/>}/>
+                    {/* User Routes */}
+                    <Route
+                        path="/user/*"
+                        element={
+                            <PrivateRoute requiredRoles={["user"]}>
+                                <Routes>
+                                    <Route path="dashboard" element={<Dashboard />} />
+                                    <Route path="orders/my" element={<OrderPage />} />
+                                    <Route path="payment-success" element={<PaymentSuccess />} />
+                                    <Route path="payment-cancel" element={<p>❌ Payment is not completed</p>} />
+                                </Routes>
+                            </PrivateRoute>
+                        }
+                    />
 
-                      <Route path="reviews" element={<ReviewList/>}/>
+                    {/* Admin Layout Routes */}
+                    <Route
+                        path="/admin/*"
+                        element={
+                            <PrivateRoute requiredRoles={["admin"]}>
+                                <AdminLayout />
+                            </PrivateRoute>
+                        }
+                    >
+                        <Route index element={<AdminDashboardPage />} />
+                        <Route path="events" element={<EventList />} />
+                        <Route path="events/create" element={<EventCreate />} />
+                        <Route path="events/edit/:id" element={<EventEdit />} />
+                        <Route path="events/:id" element={<EventDetail />} />
 
-                      {/* Админские пользователи */}
-                      <Route path="users" element={<UserList/>}></Route>
-                      <Route path="users/create" element={<UserCreate/>}></Route>
-                      <Route path="users/edit/:id" element={<UserEdit/>}></Route>
-                      <Route path="users/:id" element={<UserDetail/>}></Route>
-                  </Route>
+                        <Route path="categories" element={<CategoryList />} />
+                        <Route path="categories/create" element={<CategoryCreate />} />
+                        <Route path="categories/edit/:id" element={<CategoryEdit />} />
+                        <Route path="categories/:id" element={<CategoryDetail />} />
 
-                  <Route path="/*" element={<OrganizerRoutes />} />
+                        <Route path="reviews" element={<ReviewList />} />
 
+                        <Route path="users" element={<UserList />} />
+                        <Route path="users/create" element={<UserCreate />} />
+                        <Route path="users/edit/:id" element={<UserEdit />} />
+                        <Route path="users/:id" element={<UserDetail />} />
+                    </Route>
 
-                  <Route path="*" element={<Navigate to="/login" replace/>}/>
-              </Routes>
-          </main>
-          {!isAdminRoute && !isOrganizerRoute && <Footer/>}
+                    {/* Organizer Layout Routes */}
+                    <Route
+                        path="/organizer/*"
+                        element={
+                            <PrivateRoute requiredRoles={["organizer"]}>
+                                <OrganizerLayout />
+                            </PrivateRoute>
+                        }
+                    >
+                        {OrganizerRoutes()} {/* ⬅ вызываем как функцию, не компонент */}
+                    </Route>
+
+                    {/* Fallback */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </main>
+            {!isAdminRoute && !isOrganizerRoute && <Footer />}
         </>
     );
 };
@@ -144,7 +136,7 @@ const App = () => {
     return (
         <AuthProvider>
             <Router>
-                <AppContent/>
+                <AppContent />
             </Router>
         </AuthProvider>
     );

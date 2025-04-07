@@ -11,6 +11,7 @@ import { Review } from "../review/entities/review.entity";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as mime from "mime-types";
+import { EventStatus } from "../event/event-status.enum";
 
 @Injectable()
 export class SeedService {
@@ -79,6 +80,7 @@ export class SeedService {
   }
 
   // Создаем события с использованием сидированного пользователя и категорий
+
   async seedEvents(count = 50): Promise<Event[]> {
     const events: Event[] = [];
     const organizer = await this.seedUser();
@@ -88,28 +90,45 @@ export class SeedService {
       this.defaultImageBase64 = await this.convertImageToBase64("default.jpg");
     }
 
+    const possibleStatuses: EventStatus[] = [
+      EventStatus.PENDING,
+      EventStatus.PUBLISHED,
+      EventStatus.COMPLETED,
+      EventStatus.CANCELLED,
+      EventStatus.INACTIVE,
+      EventStatus.DELETED,
+    ];
+
     for (let i = 0; i < count; i++) {
+      const status = faker.helpers.arrayElement(possibleStatuses);
+
+      // is_verified зависит от статуса: только опубликованные и completed - true
+      const is_verified = [
+        EventStatus.PUBLISHED,
+        EventStatus.COMPLETED,
+      ].includes(status)
+        ? true
+        : faker.datatype.boolean();
+
       const event = this.eventRepository.create({
         title: faker.lorem.words(3),
         description: faker.lorem.paragraph(),
         date_time: faker.date.future(),
         location: faker.location.city(),
         price: Number(faker.commerce.price({ min: 1000, max: 20000 })),
-        total_tickets: faker.helpers.rangeToNumber({ min: 1, max: 4 }),
-        status: faker.helpers.arrayElement([
-          "scheduled",
-          "cancelled",
-          "completed",
-        ]),
-        is_verified: faker.datatype.boolean(),
+        total_tickets: faker.helpers.rangeToNumber({ min: 10, max: 200 }),
+        status,
+        is_verified,
         organizer,
         category: categories.length
           ? faker.helpers.arrayElement(categories)
           : undefined,
         image_base64: this.defaultImageBase64,
       });
+
       events.push(await this.eventRepository.save(event));
     }
+
     return events;
   }
 

@@ -4,16 +4,17 @@ import { Not, Repository } from "typeorm";
 import { Review } from "src/review/entities/review.entity";
 import { Event } from "src/event/entities/event.entity";
 import { User } from "src/user/entities/user.entity";
+import {EventStatus} from "../event/event-status.enum";
 
 @Injectable()
 export class StatService {
   constructor(
-    @InjectRepository(Review)
-    private readonly reviewRepository: Repository<Review>,
-    @InjectRepository(Event)
-    private readonly eventRepository: Repository<Event>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+      @InjectRepository(Review)
+      private readonly reviewRepository: Repository<Review>,
+      @InjectRepository(Event)
+      private readonly eventRepository: Repository<Event>,
+      @InjectRepository(User)
+      private readonly userRepository: Repository<User>,
   ) {}
 
   async getAdminStats() {
@@ -22,13 +23,24 @@ export class StatService {
     });
 
     const endedEvents = await this.eventRepository.count({
-      where: { is_verified: true, status: "completed" },
+      where: {
+        is_verified: true,
+        status: EventStatus.COMPLETED,
+      },
     });
+
     const upcomingEvents = await this.eventRepository.count({
-      where: { is_verified: true, status: "scheduled" },
+      where: {
+        is_verified: true,
+        status: EventStatus.PUBLISHED,
+      },
     });
+
     const canceledEvents = await this.eventRepository.count({
-      where: { is_verified: true, status: "cancelled" },
+      where: {
+        is_verified: true,
+        status: EventStatus.CANCELLED,
+      },
     });
 
     const [totalReviews, totalUsers] = await Promise.all([
@@ -36,22 +48,17 @@ export class StatService {
       this.userRepository.count(),
     ]);
 
-    // Отзывы по всем мероприятиям (модерированные / не модерированные)
-    const allModeratedReviewCount = await this.reviewRepository.count({
-      where: { is_moderated: true },
-    });
-    const allUnmoderatedReviewCount = await this.reviewRepository.count({
-      where: { is_moderated: false },
-    });
+    const [allModeratedReviewCount, allUnmoderatedReviewCount] = await Promise.all([
+      this.reviewRepository.count({ where: { is_moderated: true } }),
+      this.reviewRepository.count({ where: { is_moderated: false } }),
+    ]);
 
     const allReviews = await this.reviewRepository.find();
     const averageAllReviewScore =
-      allReviews.length > 0
-        ? allReviews.reduce((sum, review) => sum + review.rating, 0) /
-          allReviews.length
-        : 0;
+        allReviews.length > 0
+            ? allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length
+            : 0;
 
-    const allUsersCount = await this.userRepository.count();
     const regularUsersCount = await this.userRepository.count({
       where: { role: { name: "user" } },
     });
@@ -82,8 +89,7 @@ export class StatService {
       },
     });
 
-    const totalEvents = await this.eventRepository.count(); // все мероприятия
-
+    const totalEvents = await this.eventRepository.count();
     const unverifiedEvents = totalEvents - totalVerifiedEvents;
 
     return {
@@ -101,7 +107,7 @@ export class StatService {
       adminsCount,
       activeUsersCount,
       socialActiveUsersCount,
-      allUsersCount,
+      allUsersCount: totalUsers,
       allNonAdminUsersCount,
       totalEvents,
       unverifiedEvents,
@@ -112,30 +118,18 @@ export class StatService {
     const logger = new Logger("OrganizerStatLogger");
 
     try {
-      // Логируем начало выполнения метода
-      logger.log(
-        `Начинаем получение статистики для организатора с ID: ${organizerId}`,
-      );
-
-      // Преобразуем ID организатора в число и проверяем, является ли это числом
+      logger.log(`Начинаем получение статистики для организатора ID: ${organizerId}`);
       const organizerIdNumber = Number(organizerId);
       if (isNaN(organizerIdNumber)) {
         throw new Error(`Невалидный ID организатора: ${organizerId}`);
       }
 
-      // Получаем мероприятия, созданные данным организатором
       const organizerEvents = await this.eventRepository.find({
         where: { organizer: { id: organizerIdNumber } },
       });
       const eventsCreated = organizerEvents.length;
       const organizerEventIds = organizerEvents.map((event) => event.id);
 
-      // Логируем количество найденных мероприятий
-      logger.log(
-        `Найдено ${eventsCreated} мероприятий для организатора с ID: ${organizerIdNumber}`,
-      );
-
-      // Если мероприятий нет, сразу возвращаем нулевые значения
       if (eventsCreated === 0) {
         return {
           organizerId: organizerIdNumber,
@@ -143,67 +137,38 @@ export class StatService {
           reviewsReceived: 0,
           participantsCount: 0,
           averageReviewScore: 0,
+          eventsWithoutReviewsCount: 0,
         };
       }
 
-      // Получаем количество отзывов для мероприятий организатора
       const reviewsReceived = await this.reviewRepository
-        .createQueryBuilder("review")
-        .leftJoin("review.event", "event")
-        .where("event.id IN (:...ids)", { ids: organizerEventIds })
-        .getCount();
+          .createQueryBuilder("review")
+          .leftJoin("review.event", "event")
+          .where("event.id IN (:...ids)", { ids: organizerEventIds })
+          .getCount();
 
-      // Логируем количество отзывов
-      logger.log(
-        `Получено ${reviewsReceived} отзывов для организатора с ID: ${organizerIdNumber}`,
-      );
-
-      // Подсчитываем общее количество участников по всем мероприятиям
       const participantsCount = organizerEvents.reduce(
-        (sum, event) => sum + (event["participants"] || 0),
-        0,
+          (sum, event) => sum + (event["participants"] || 0),
+          0,
       );
 
-      // Логируем количество участников
-      logger.log(`Общее количество участников: ${participantsCount}`);
-
-      // Получаем все отзывы для мероприятий организатора
       const organizerReviews = await this.reviewRepository
-        .createQueryBuilder("review")
-        .leftJoin("review.event", "event")
-        .where("event.id IN (:...ids)", { ids: organizerEventIds })
-        .getMany();
+          .createQueryBuilder("review")
+          .leftJoin("review.event", "event")
+          .where("event.id IN (:...ids)", { ids: organizerEventIds })
+          .getMany();
 
-      // Логируем количество отзывов
-      logger.log(
-        `Получено ${organizerReviews.length} отзывов для организатора с ID: ${organizerIdNumber}`,
-      );
-
-      // Рассчитываем средний рейтинг для отзывов организатора
       const averageReviewScore =
-        organizerReviews.length > 0
-          ? organizerReviews.reduce((sum, review) => sum + review.rating, 0) /
-            organizerReviews.length
-          : 0;
-
-      // Логируем средний рейтинг
-      logger.log(
-        `Средний рейтинг организатора: ${averageReviewScore.toFixed(2)}`,
-      );
+          organizerReviews.length > 0
+              ? organizerReviews.reduce((sum, review) => sum + review.rating, 0) / organizerReviews.length
+              : 0;
 
       const eventsWithoutReviews = await this.eventRepository
-        .createQueryBuilder("event")
-        .leftJoin("event.organizer", "organizer")
-        .where("organizer.id = :organizerId", {
-          organizerId: organizerIdNumber,
-        })
-        .andWhere(
-          "event.id NOT IN (SELECT review.event_id FROM reviews review)",
-        )
-        .getMany();
-
-      // Количество мероприятий без отзывов
-      const eventsWithoutReviewsCount = eventsWithoutReviews.length;
+          .createQueryBuilder("event")
+          .leftJoin("event.organizer", "organizer")
+          .where("organizer.id = :organizerId", { organizerId: organizerIdNumber })
+          .andWhere("event.id NOT IN (SELECT review.event_id FROM reviews review)")
+          .getMany();
 
       return {
         organizerId: organizerIdNumber,
@@ -211,17 +176,11 @@ export class StatService {
         reviewsReceived,
         participantsCount,
         averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
-        eventsWithoutReviewsCount,
+        eventsWithoutReviewsCount: eventsWithoutReviews.length,
       };
     } catch (error) {
-      // Логируем ошибку, если она произошла
-      logger.error(
-        `Ошибка при получении статистики для организатора с ID: ${organizerId}`,
-        error,
-      );
-      throw new Error(
-        `Ошибка при получении статистики для организатора с ID: ${organizerId}`,
-      );
+      logger.error(`Ошибка при получении статистики для организатора ID: ${organizerId}`, error);
+      throw new Error(`Ошибка при получении статистики для организатора ID: ${organizerId}`);
     }
   }
 }

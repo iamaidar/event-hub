@@ -1,4 +1,3 @@
-// src/order/order.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -12,23 +11,23 @@ import { User } from "../user/entities/user.entity";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { Ticket } from "../ticket/entities/ticket.entity";
 import { EmailService } from "src/email/email.service";
+import {EventStatus} from "../event/event-status.enum";
 
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepo: Repository<Order>,
-    @InjectRepository(Ticket)
-    private readonly ticketRepo: Repository<Ticket>,
-    @InjectRepository(Event)
-    private readonly eventRepo: Repository<Event>,
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    private readonly emailService: EmailService,
+      @InjectRepository(Order)
+      private readonly orderRepo: Repository<Order>,
+      @InjectRepository(Ticket)
+      private readonly ticketRepo: Repository<Ticket>,
+      @InjectRepository(Event)
+      private readonly eventRepo: Repository<Event>,
+      @InjectRepository(User)
+      private readonly userRepo: Repository<User>,
+      private readonly emailService: EmailService,
   ) {}
 
-  // Этап 1: Создание заказа с статусом "pending"
-
+  // Создание заказа
   async createOrder(userId: string, dto: CreateOrderDto): Promise<Order> {
     try {
       const { eventId, ticketCount } = dto;
@@ -43,23 +42,21 @@ export class OrderService {
         throw new NotFoundException("Event not found");
       }
 
-      if (event.status !== "scheduled") {
-        throw new BadRequestException("The event is not open for booking");
+      if (event.status !== EventStatus.PUBLISHED || !event.is_verified) {
+        throw new BadRequestException("The event is not available for booking");
       }
 
       const soldTickets = await this.orderRepo
-        .createQueryBuilder("o")
-        .select("SUM(o.ticket_count)", "sum")
-        .where("o.event_id = :eventId", { eventId: event.id })
-        .andWhere("o.status IN (:...statuses)", { statuses: ["confirmed"] })
-        .getRawOne();
+          .createQueryBuilder("o")
+          .select("SUM(o.ticket_count)", "sum")
+          .where("o.event_id = :eventId", { eventId: event.id })
+          .andWhere("o.status IN (:...statuses)", { statuses: ["confirmed"] })
+          .getRawOne();
 
       const totalSold = Number(soldTickets.sum) || 0;
 
       if (totalSold + ticketCount > event.total_tickets) {
-        throw new BadRequestException(
-          "Not enough tickets available for this event",
-        );
+        throw new BadRequestException("Not enough tickets available for this event");
       }
 
       const totalAmount = event.price * ticketCount;
@@ -68,27 +65,23 @@ export class OrderService {
         user,
         event,
         total_amount: totalAmount,
-        status: "pending",
+        status: "pending", // можно заменить на OrderStatus.PENDING, если есть enum
         ticket_count: ticketCount,
       });
 
       return await this.orderRepo.save(order);
     } catch (error) {
-      // optionally, throw standardized response if needed
       if (
-        error instanceof BadRequestException ||
-        error instanceof NotFoundException
+          error instanceof BadRequestException ||
+          error instanceof NotFoundException
       ) {
         throw error;
       }
-      throw new BadRequestException(
-        "An error occurred while creating the order",
-      );
+      throw new BadRequestException("An error occurred while creating the order");
     }
   }
 
-  // Этап 3: Подтверждение оплаты. Вызывается из Stripe webhook.
-  // Здесь мы обновляем статус заказа и генерируем билеты с QR-кодами.
+  // Подтверждение заказа (webhook)
   async confirmOrder(orderId: string, stripePaymentId: string) {
     const order = await this.orderRepo.findOne({
       where: { id: Number(orderId) },
@@ -96,13 +89,12 @@ export class OrderService {
     });
     if (!order) throw new NotFoundException("Order not found");
 
-    if (order.status === "confirmed") return; // Уже подтверждён
+    if (order.status === "confirmed") return;
 
     order.status = "confirmed";
     order.stripe_payment_id = stripePaymentId;
     await this.orderRepo.save(order);
 
-    // Генерация билетов
     await this.generateTicketsForOrder(order);
 
     const tickets = await this.ticketRepo.find({
@@ -121,31 +113,27 @@ export class OrderService {
     }));
 
     await this.emailService.sendTicketEmail(
-      order.user.email,
-      order.event.title,
-      ticketsWithQr,
+        order.user.email,
+        order.event.title,
+        ticketsWithQr,
     );
   }
 
-  // Генерация билетов с компактным QR-кодом для заказа
   async generateTicketsForOrder(order: Order) {
     const tickets: Ticket[] = [];
     const QRCode = await import("qrcode");
-    const { nanoid } = await import("nanoid"); // Установи nanoid: npm i nanoid
+    const { nanoid } = await import("nanoid");
 
-    const baseVerifyUrl = "http://localhost:5173/t"; // 🔁 Короткий путь к проверке билета
+    const baseVerifyUrl = "http://localhost:5173/t";
 
     for (let i = 0; i < order.ticket_count; i++) {
-      const ticketCode = nanoid(8); // Генерируем короткий уникальный код (8 символов)
-
-      // 🔗 Генерируем компактный URL
+      const ticketCode = nanoid(8);
       const ticketUrl = `${baseVerifyUrl}/${ticketCode}`;
 
-      // 🖼 Генерируем QR-код с минимальными размерами
       const qrData = await QRCode.toDataURL(ticketUrl, {
-        errorCorrectionLevel: "M", // Средняя коррекция ошибок (меньше размер)
-        margin: 1, // Минимальный отступ
-        scale: 4, // Небольшой масштаб, но всё ещё читаемый
+        errorCorrectionLevel: "M",
+        margin: 1,
+        scale: 4,
       });
 
       const ticket = this.ticketRepo.create({
@@ -161,8 +149,6 @@ export class OrderService {
     return tickets;
   }
 
-
-  // Метод для получения заказа (например, для оплаты)
   async getOrderById(orderId: number): Promise<Order> {
     const order = await this.orderRepo.findOneBy({ id: Number(orderId) });
     if (!order) throw new NotFoundException("Order not found");
@@ -191,23 +177,21 @@ export class OrderService {
     return await this.orderRepo.find({
       where: {
         user: { id: userId },
-        // status: 'pending', // или: In(['pending']) — если статус может быть множественным
       },
-      relations: ["event"], // загружаем связанную информацию о мероприятии
+      relations: ["event"],
       order: {
-        createdAt: "DESC", // сортировка по дате создания, по желанию
+        createdAt: "DESC",
       },
     });
   }
 
-  async checkTicket(ticketCode:string){
+  async checkTicket(ticketCode: string) {
     const ticket = await this.ticketRepo.findOne({
       where: {
         ticket_code: ticketCode,
-      }
-    })
-    if (!ticket) throw new NotFoundException('Ticket not found');
+      },
+    });
+    if (!ticket) throw new NotFoundException("Ticket not found");
     return ticket;
   }
-
 }

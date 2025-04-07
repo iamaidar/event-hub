@@ -1,4 +1,5 @@
 import React from "react";
+import { EventStatus, EventStatusList } from "../../../api/eventApi";
 
 interface Category {
   id: number;
@@ -12,7 +13,7 @@ interface EventFormProps {
   location: string;
   price: number;
   totalTickets: number;
-  status: string;
+  status: EventStatus;
   isVerified: boolean;
   setTitle: (value: string) => void;
   setDescription: (value: string) => void;
@@ -20,7 +21,7 @@ interface EventFormProps {
   setLocation: (value: string) => void;
   setPrice: (value: number) => void;
   setTotalTickets: (value: number) => void;
-  setStatus: (value: string) => void;
+  setStatus:React.Dispatch<React.SetStateAction<EventStatus>>;
   setIsVerified: (value: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
   submitButtonText: string;
@@ -174,14 +175,16 @@ const EventForm: React.FC<EventFormProps> = ({
         <div>
           <label className="block text-gray-700">Status</label>
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
-            required
+              value={status}
+              onChange={(e) => setStatus(e.target.value as EventStatus)}
+              className="w-full border px-4 py-3 rounded-full bg-gray-100 border-gray-300 focus:ring focus:ring-blue-400"
+              required
           >
-            <option value="cancelled">Cancelled</option>
-            <option value="completed">Completed</option>
-            <option value="scheduled">Scheduled</option>
+            {EventStatusList.map((statusValue) => (
+                <option key={statusValue} value={statusValue}>
+                  {statusValue.charAt(0).toUpperCase() + statusValue.slice(1)}
+                </option>
+            ))}
           </select>
         </div>
         <div className="flex items-center">

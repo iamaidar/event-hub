@@ -1,8 +1,10 @@
-import {Entity, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
+import {Entity, Column, ManyToOne, JoinColumn, OneToMany, DeleteDateColumn} from 'typeorm';
 import { AppBaseEntity } from '../../common/app-base.entity';
 import { Category } from '../../category/entities/category.entity';
 import { User } from '../../user/entities/user.entity';
 import {Order} from "../../order/entities/order.entity";
+import {Review} from "../../review/entities/review.entity";
+import {EventStatus} from "../event-status.enum";
 
 @Entity('events')
 export class Event extends AppBaseEntity {
@@ -33,8 +35,8 @@ export class Event extends AppBaseEntity {
     @Column({ type: 'int' })
     total_tickets: number;
 
-    @Column({ type: 'varchar', length: 50 })
-    status: string; // например: 'scheduled', 'cancelled', 'completed'
+    @Column({ type: 'enum', enum: EventStatus, default: EventStatus.PENDING })
+    status: EventStatus;
 
     @Column({ type: 'boolean', nullable: true })
     is_verified?: boolean;
@@ -44,6 +46,12 @@ export class Event extends AppBaseEntity {
 
     @OneToMany(() => Order, (order) => order.event)
     orders: Order[];
+
+    @OneToMany(() => Review, (review) => review.event)
+    reviews: Review[];
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
 
 
 

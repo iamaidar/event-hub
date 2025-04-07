@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {EventStatus, fetchEventById, updateEvent} from "../../../api/eventApi.tsx";
 import {fetchCategories} from "../../../api/categoryApi.tsx";
-import EventForm from "../../../components/admin/event/EventForm.tsx";
+import EventForm from "../../../components/organizer/event/EventForm.tsx";
+import { fetchOrganizerEventById, updateOrganizerEvent} from "../../../api/organizerEventApi.tsx";
 
 interface Category {
     id: number;
@@ -27,13 +27,11 @@ const EventEdit: React.FC = () => {
     const [location, setLocation] = useState("");
     const [price, setPrice] = useState(0);
     const [totalTickets, setTotalTickets] = useState(0);
-    const [status, setStatus] = useState<EventStatus>("pending");
-    const [isVerified, setIsVerified] = useState(false);
     const [imageBase64, setImageBase64] = useState<string | null>(null);
 
     useEffect(() => {
         if (id) {
-            fetchEventById(id)
+            fetchOrganizerEventById(id)
                 .then((data) => {
                     setTitle(data.title);
                     setDescription(data.description || "");
@@ -41,8 +39,6 @@ const EventEdit: React.FC = () => {
                     setLocation(data.location);
                     setPrice(data.price);
                     setTotalTickets(data.total_tickets);
-                    setStatus(data.status);
-                    setIsVerified(Boolean(data.is_verified));
                     setImageBase64(data.image_base64);
                     const categoryId = data.category?.id ?? null;
                     setSelectedCategoryId(categoryId);
@@ -75,8 +71,6 @@ const EventEdit: React.FC = () => {
             location,
             price: Number(price), // Убедимся, что price - число
             total_tickets: Number(totalTickets), // Убедимся, что total_tickets - число
-            status: status as EventStatus,
-            is_verified: Boolean(isVerified), // Передаем is_verified как true/false
             image_base64: imageBase64, // Передаем base64 строку изображения
             categoryId: selectedCategoryId ?? null,
         };
@@ -84,10 +78,10 @@ const EventEdit: React.FC = () => {
         console.log("🟡 Sending event update:", updatedEvent);
 
         if (id) {
-            updateEvent(id, updatedEvent)
+            updateOrganizerEvent(id, updatedEvent)
                 .then(() => {
                     console.log("✅ Event updated successfully!");
-                    navigate("/admin/events");
+                    navigate("/organizer/events");
                 })
                 .catch((error) => {
                     console.error(
@@ -126,14 +120,10 @@ const EventEdit: React.FC = () => {
                 setPrice={(value) => setPrice(Number(value))}
                 totalTickets={totalTickets}
                 setTotalTickets={(value) => setTotalTickets(Number(value))}
-                status={status}
-                setStatus={setStatus}
-                isVerified={isVerified}
-                setIsVerified={setIsVerified}
                 imageBase64={imageBase64}
                 setImageBase64={setImageBase64}
                 onSubmit={handleSubmit}
-                submitButtonText="Save Changes"
+                submitButtonText="Update Event"
                 categories={categories}
                 selectedCategoryId={selectedCategoryId}
                 setSelectedCategoryId={setSelectedCategoryId}
