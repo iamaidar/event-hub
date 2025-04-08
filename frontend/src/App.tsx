@@ -12,6 +12,7 @@ import PublicRoute from "./routes/PublicRoute";
 import PrivateRoute from "./routes/PrivateRoute";
 import {AuthContext, AuthProvider} from "./context/AuthContext";
 import { setupAxiosInterceptors } from "./api/axiosInstance";
+import ViewDetails from "./pages/user/ViewDetails.tsx";
 
 // Admin pages
 import AdminDashboardPage from "./pages/admin/main/AdminDashboardPage";
@@ -75,6 +76,7 @@ const AppContent = () => {
                             <PrivateRoute requiredRoles={["user"]}>
                                 <Routes>
                                     <Route path="dashboard" element={<Dashboard />} />
+                                    <Route path="details/:id" element={<ViewDetails />} />
                                     <Route path="orders/my" element={<OrderPage />} />
                                     <Route path="payment-success" element={<PaymentSuccess />} />
                                     <Route path="payment-cancel" element={<p>❌ Payment is not completed</p>} />
