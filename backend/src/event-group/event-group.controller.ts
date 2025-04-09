@@ -1,15 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EventGroupService } from './event-group.service';
-import { CreateEventGroupDto } from './dto/create-event-group.dto';
-import { UpdateEventGroupDto } from './dto/update-event-group.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from "@nestjs/common";
+import { EventGroupService } from "./event-group.service";
+import { CreateEventGroupDto } from "./dto/create-event-group.dto";
+import { UpdateEventGroupDto } from "./dto/update-event-group.dto";
+import { JwtGuard } from "src/auth/guard";
+import { Roles } from "src/auth/decorator";
 
-@Controller('event-group')
+@UseGuards(JwtGuard)
+@Roles("user")
+@Controller("event-group")
 export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
   @Post()
-  create(@Body() createEventGroupDto: CreateEventGroupDto) {
-    return this.eventGroupService.create(createEventGroupDto);
+  create(
+    @Body() createEventGroupDto: CreateEventGroupDto,
+    @Request() req: any,
+  ) {
+    console.log(req);
+    return this.eventGroupService.create(createEventGroupDto, req.user);
   }
 
   @Get()
@@ -17,18 +35,21 @@ export class EventGroupController {
     return this.eventGroupService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.eventGroupService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventGroupDto: UpdateEventGroupDto) {
+  @Patch(":id")
+  update(
+    @Param("id") id: string,
+    @Body() updateEventGroupDto: UpdateEventGroupDto,
+  ) {
     return this.eventGroupService.update(+id, updateEventGroupDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.eventGroupService.remove(+id);
   }
 }
