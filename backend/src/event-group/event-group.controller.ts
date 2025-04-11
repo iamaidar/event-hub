@@ -1,34 +1,63 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EventGroupService } from './event-group.service';
-import { CreateEventGroupDto } from './dto/create-event-group.dto';
-import { UpdateEventGroupDto } from './dto/update-event-group.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  ParseIntPipe,
+  Query,
+  Req,
+} from "@nestjs/common";
+import { EventGroupService } from "./event-group.service";
+import { CreateEventGroupDto } from "./dto/create-event-group.dto";
+import { UpdateEventGroupDto } from "./dto/update-event-group.dto";
+import { JwtGuard } from "src/auth/guard";
+import { Roles } from "src/auth/decorator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 
-@Controller('event-group')
+@UseGuards(JwtGuard)
+@Roles("user")
+@Controller("event-group")
 export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
   @Post()
-  create(@Body() createEventGroupDto: CreateEventGroupDto) {
-    return this.eventGroupService.create(createEventGroupDto);
+  create(@Body() dto: CreateEventGroupDto, @Request() req: any) {
+    return this.eventGroupService.create(dto, req.user);
   }
 
   @Get()
-  findAll() {
-    return this.eventGroupService.findAll();
+  findAll(
+    @Req() request: any,
+    @Query() paginationDto: PaginationDto,
+    @Query("eventId", ParseIntPipe) eventId?: number,
+  ) {
+    return this.eventGroupService.findAllPaginated(
+      paginationDto,
+      request.user,
+      eventId,
+    );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventGroupService.findOne(+id);
+  @Get(":id")
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.eventGroupService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventGroupDto: UpdateEventGroupDto) {
-    return this.eventGroupService.update(+id, updateEventGroupDto);
+  @Patch(":id")
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateEventGroupDto,
+  ) {
+    return this.eventGroupService.update(id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventGroupService.remove(+id);
+  @Delete(":id")
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.eventGroupService.remove(id);
   }
 }

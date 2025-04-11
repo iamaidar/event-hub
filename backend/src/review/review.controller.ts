@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   ForbiddenException,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { ReviewService } from "./review.service";
 import { CreateReviewDto } from "./dto/create-review.dto";
@@ -26,13 +27,21 @@ export class ReviewController {
   @Roles("user")
   @UseGuards(JwtGuard)
   @Post()
-  create(@Body() dto: CreateReviewDto, @Req() req: Request) {
-    return this.reviewService.create(dto);
+  create(@Body() dto: CreateReviewDto, @Req() req: any) {
+    return this.reviewService.create(dto, req.user);
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.reviewService.findAllPaginated(paginationDto);
+  findAll(
+    @Req() request: any,
+    @Query() paginationDto: PaginationDto,
+    @Query("eventId", ParseIntPipe) eventId?: number,
+  ) {
+    return this.reviewService.findAllPaginated(
+      paginationDto,
+      request.user,
+      eventId,
+    );
   }
 
   @Get(":id")
