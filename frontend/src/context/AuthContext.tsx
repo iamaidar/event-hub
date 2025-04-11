@@ -17,6 +17,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface User {
   sub: number;
+   name: string;
   email: string;
   role: string;
   exp: number;
