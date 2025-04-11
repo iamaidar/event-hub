@@ -4,6 +4,9 @@ import {
   MaxLength,
   IsOptional,
   IsEnum,
+  IsIn,
+  IsInt,
+  Min,
 } from "class-validator";
 
 export enum EventGroupStatus {
@@ -14,8 +17,6 @@ export enum EventGroupStatus {
 export class CreateEventGroupDto {
   @IsNotEmpty()
   eventId: number;
-  @IsNotEmpty()
-  creatorId: string;
 
   @IsString()
   @MaxLength(255)
@@ -29,4 +30,18 @@ export class CreateEventGroupDto {
   @IsEnum(EventGroupStatus)
   @IsNotEmpty()
   status: EventGroupStatus;
+
+  @IsOptional()
+  @IsIn(["male", "female", "any"])
+  genderRequirement?: "male" | "female" | "any";
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minAge?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  maxAge?: number;
 }

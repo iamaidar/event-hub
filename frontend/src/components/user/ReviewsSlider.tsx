@@ -1,33 +1,35 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Define types for review data
 interface Review {
-  user: {
-    username: string;
-  };
+  user: { username: string };
   rating: number;
   comment?: string;
 }
 
-// Define props type for the ReviewsSlider component
 interface ReviewsSliderProps {
   reviews: Review[];
+  onReachEnd: () => void; // Новый пропс для уведомления о достижении конца
 }
 
-const ReviewsSlider: React.FC<ReviewsSliderProps> = ({ reviews }) => {
+const ReviewsSlider: React.FC<ReviewsSliderProps> = ({
+  reviews,
+  onReachEnd,
+}) => {
   return (
-    <div className="relative max-w-6xl mx-auto">
+    <div className="relative max-w-7xl mx-auto px-16">
       <Swiper
         modules={[Navigation, Pagination]}
         navigation={{
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
+          nextEl: ".reviews-swiper-button-next",
+          prevEl: ".reviews-swiper-button-prev",
         }}
         pagination={{ clickable: true }}
         spaceBetween={20}
         slidesPerView={3}
+        onReachEnd={onReachEnd} // Срабатывает при достижении конца слайдера
         breakpoints={{
           1024: { slidesPerView: 3 },
           768: { slidesPerView: 2 },
@@ -38,7 +40,6 @@ const ReviewsSlider: React.FC<ReviewsSliderProps> = ({ reviews }) => {
         {reviews.map((review, index) => (
           <SwiperSlide key={index}>
             <div className="mt-4 bg-white p-6 rounded-lg shadow-md h-[200px] flex flex-col justify-between">
-              {/* Верхняя часть: пользователь и рейтинг */}
               <div className="flex flex-col justify-between h-full">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-gray-900 font-semibold">
@@ -52,10 +53,8 @@ const ReviewsSlider: React.FC<ReviewsSliderProps> = ({ reviews }) => {
                     ))}
                   </div>
                 </div>
-
-                {/* Нижняя часть: комментарий */}
-                <p className="text-gray-700 flex-grow break-words">
-                  {review.comment || "Без комментария"}
+                <p className="text-gray-700 flex-grow break-words pr-4">
+                  {review.comment || "No comment"}
                 </p>
               </div>
             </div>
@@ -63,9 +62,12 @@ const ReviewsSlider: React.FC<ReviewsSliderProps> = ({ reviews }) => {
         ))}
       </Swiper>
 
-      {/* Внешние стрелки */}
-      <div className="swiper-button-prev !absolute -left-10 top-1/2 transform -translate-y-1/2 !text-gray-700"></div>
-      <div className="swiper-button-next !absolute -right-10 top-1/2 transform -translate-y-1/2 !text-gray-700"></div>
+      <div className="reviews-swiper-button-prev absolute left-[-20px] top-1/2 -translate-y-1/2 text-gray-700 cursor-pointer z-10 flex items-center justify-center h-12 w-12">
+        <ChevronLeft className="h-8 w-8" />
+      </div>
+      <div className="reviews-swiper-button-next absolute right-[-20px] top-1/2 -translate-y-1/2 text-gray-700 cursor-pointer z-10 flex items-center justify-center h-12 w-12">
+        <ChevronRight className="h-8 w-8" />
+      </div>
     </div>
   );
 };

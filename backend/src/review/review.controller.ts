@@ -27,16 +27,21 @@ export class ReviewController {
   @Roles("user")
   @UseGuards(JwtGuard)
   @Post()
-  create(@Body() dto: CreateReviewDto, @Req() req: Request) {
-    return this.reviewService.create(dto);
+  create(@Body() dto: CreateReviewDto, @Req() req: any) {
+    return this.reviewService.create(dto, req.user);
   }
 
   @Get()
   findAll(
+    @Req() request: any,
     @Query() paginationDto: PaginationDto,
     @Query("eventId", ParseIntPipe) eventId?: number,
   ) {
-    return this.reviewService.findAllPaginated(paginationDto, eventId);
+    return this.reviewService.findAllPaginated(
+      paginationDto,
+      request.user,
+      eventId,
+    );
   }
 
   @Get(":id")

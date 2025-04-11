@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Button from "../UI/Button";
-import Modal from "../components/Modal";
+import Button from "../../UI/Button";
+import Modal from "../../components/Modal";
 
 interface Review {
   user: { username: string };
@@ -23,8 +23,6 @@ const ReviewsSummary = ({ reviews }: ReviewsSummaryProps) => {
       : 0;
 
   const handleSubmit = () => {
-    console.log("Оценка:", rating);
-    console.log("Комментарий:", comment);
     setModalOpen(false);
   };
 

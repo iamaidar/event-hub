@@ -8,12 +8,16 @@ import {
   Delete,
   UseGuards,
   Request,
+  ParseIntPipe,
+  Query,
+  Req,
 } from "@nestjs/common";
 import { EventGroupService } from "./event-group.service";
 import { CreateEventGroupDto } from "./dto/create-event-group.dto";
 import { UpdateEventGroupDto } from "./dto/update-event-group.dto";
 import { JwtGuard } from "src/auth/guard";
 import { Roles } from "src/auth/decorator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 
 @UseGuards(JwtGuard)
 @Roles("user")
@@ -22,34 +26,38 @@ export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
   @Post()
-  create(
-    @Body() createEventGroupDto: CreateEventGroupDto,
-    @Request() req: any,
-  ) {
-    console.log(req);
-    return this.eventGroupService.create(createEventGroupDto, req.user);
+  create(@Body() dto: CreateEventGroupDto, @Request() req: any) {
+    return this.eventGroupService.create(dto, req.user);
   }
 
   @Get()
-  findAll() {
-    return this.eventGroupService.findAll();
+  findAll(
+    @Req() request: any,
+    @Query() paginationDto: PaginationDto,
+    @Query("eventId", ParseIntPipe) eventId?: number,
+  ) {
+    return this.eventGroupService.findAllPaginated(
+      paginationDto,
+      request.user,
+      eventId,
+    );
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.eventGroupService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.eventGroupService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id") id: string,
-    @Body() updateEventGroupDto: UpdateEventGroupDto,
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateEventGroupDto,
   ) {
-    return this.eventGroupService.update(+id, updateEventGroupDto);
+    return this.eventGroupService.update(id, dto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.eventGroupService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.eventGroupService.remove(id);
   }
 }

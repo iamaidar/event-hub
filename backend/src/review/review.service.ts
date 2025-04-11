@@ -12,17 +12,22 @@ import { UpdateReviewDto } from "./dto/update-review.dto";
 import { Review } from "./entities/review.entity";
 import { PaginationDto } from "../common/dto/pagination.dto";
 import { PaginationService } from "../common/services/pagination.service";
+import { User } from "src/user/entities/user.entity";
 
 @Injectable()
 export class ReviewService {
   constructor(
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(dto: CreateReviewDto): Promise<Review> {
+  async create(dto: CreateReviewDto, user: User): Promise<Review> {
     const review = this.reviewRepository.create({
       ...dto,
+      user,
       is_moderated: false,
     });
     return this.reviewRepository.save(review);
@@ -30,6 +35,7 @@ export class ReviewService {
 
   async findAllPaginated(
     paginationDto: PaginationDto,
+    user: User,
     eventId?: number,
   ): Promise<{
     data: Review[];
@@ -39,10 +45,6 @@ export class ReviewService {
     totalPages: number;
     nextPage: number | null;
   }> {
-    console.log(
-      `Fetching reviews with pagination: ${JSON.stringify(paginationDto)}, eventId: ${eventId}`,
-    );
-
     const query = this.reviewRepository
       .createQueryBuilder("review")
       .leftJoinAndSelect("review.user", "user")
@@ -50,12 +52,14 @@ export class ReviewService {
 
     if (eventId !== undefined && eventId !== null) {
       query.andWhere("review.event_id = :eventId", { eventId });
-      console.debug(`Filtering reviews by eventId: ${eventId}`);
+    }
+
+    if (user !== undefined && user !== null && user.role.name === "user") {
+      query.andWhere("review.is_moderated = :isVerified", { isVerified: true });
     }
 
     try {
       const result = await PaginationService.paginate(query, paginationDto);
-      console.log(`Successfully fetched ${result.total} reviews`);
       return result;
     } catch (error) {
       console.error(`Failed to fetch reviews: ${error.message}`, error.stack);
