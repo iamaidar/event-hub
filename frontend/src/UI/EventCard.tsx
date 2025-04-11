@@ -108,7 +108,7 @@ const EventCard: React.FC<EventCardProps> = ({
             )}
           </div>
           <div className="flex flex-col items-end">
-            <Button text="View Details" to={`/user/details/${id}`} variant="outline" />
+            <Button text="View Details" to={`/details/${id}`} variant="outline" />
             <Button variant="solid" text="Book Now" onClick={handleBookClick} />
           </div>
         </div>
