@@ -2,7 +2,6 @@
 import {
   ForbiddenException,
   Injectable,
-  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -12,6 +11,7 @@ import { UpdateReviewDto } from "./dto/update-review.dto";
 import { Review } from "./entities/review.entity";
 import { PaginationDto } from "../common/dto/pagination.dto";
 import { PaginationService } from "../common/services/pagination.service";
+import { Event } from "src/event/entities/event.entity";
 import { User } from "src/user/entities/user.entity";
 
 @Injectable()
@@ -20,16 +20,27 @@ export class ReviewService {
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
 
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>,
   ) {}
 
   async create(dto: CreateReviewDto, user: User): Promise<Review> {
+    const event = await this.eventRepository.findOne({
+      where: { id: dto.event_id },
+    });
+
+    if (event === null || event === undefined) {
+      throw new NotFoundException("Event not found");
+    }
+
     const review = this.reviewRepository.create({
-      ...dto,
+      rating: dto.rating,
+      comment: dto.comment,
+      event: event,
       user,
       is_moderated: false,
     });
+
     return this.reviewRepository.save(review);
   }
 
