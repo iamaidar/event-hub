@@ -80,7 +80,7 @@ export class EventController {
   }
 
   // Защищённый маршрут получения мероприятия по ID
-  @Roles('admin')
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Получить мероприятие по ID' })
   @ApiResponse({
