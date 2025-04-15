@@ -37,7 +37,7 @@ export class SeedService {
     if (existingUser) return existingUser;
 
     if (!this.defaultUserImageBase64) {
-      this.defaultImageBase64 = await this.convertImageToBase64("user.png");
+      this.defaultUserImageBase64 = await this.convertImageToBase64("user.png");
     }
 
     const password = "123456";

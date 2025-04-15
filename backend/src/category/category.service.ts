@@ -121,7 +121,7 @@ export class CategoryService {
     if (!category) {
       throw new NotFoundException("Категория не найдена");
     }
-    await this.categoryRepository.remove(category);
+    await this.categoryRepository.softDelete(Number(id));
   }
 
   // Вспомогательный метод для проверки корректности строки base64

@@ -29,8 +29,11 @@ export interface PaginatedReview {
 export const fetchPaginatedReviews = async (
   page: number = 1,
   limit: number = 10,
+  eventId?: number,
 ): Promise<PaginatedReview> => {
-  const response = await api.get("/reviews", { params: { page, limit } });
+  const response = await api.get("/reviews", {
+    params: { page, limit, eventId },
+  });
   const paginatedData = response.data.data; // Получаем объект с массивом и параметрами пагинации
   return {
     data: paginatedData.data,
