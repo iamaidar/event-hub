@@ -28,7 +28,7 @@ export interface EventType {
     status: EventStatus;
     is_verified?: boolean;
     categoryId: number | null;
-    image_base64: string | undefined;
+    image_base64: string | null;
     category: any;
     organizer: {
         id: number;

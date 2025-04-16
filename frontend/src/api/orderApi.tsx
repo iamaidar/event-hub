@@ -5,6 +5,7 @@ type Ticket = {
     id: number;
     ticket_code: string;
     qr_code_data: string;
+    secret_code: string;
 };
 
 type Event = {
@@ -30,6 +31,7 @@ export const getTicketsBySession = async (
     sessionId: string
 ): Promise<TicketsBySessionResponse> => {
     const res = await api.get(`/orders/by-session/${sessionId}`);
+    console.log(res);
     return res.data.data;
 };
 

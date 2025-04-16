@@ -12,6 +12,7 @@ type TicketInfo = {
                 date_time: string;
             };
         };
+        secret_code: string;
     }
 };
 type TicketApiResponse = {

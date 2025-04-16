@@ -175,6 +175,7 @@ export class OrderService {
         id: ticket.id,
         ticket_code: ticket.ticket_code,
         qr_code_data: ticket.qr_code_data,
+        secret_code: ticket.secret_code,
       })),
       event: order.event,
     };
