@@ -110,6 +110,7 @@ export class OrderService {
       qrCodeBase64: ticket.qr_code_data,
       cid: `qr_${index}_${ticket.ticket_code}`,
       qrBuffer: Buffer.from(ticket.qr_code_data.split(",")[1], "base64"),
+      secretCode: ticket.secret_code,
     }));
 
     await this.emailService.sendTicketEmail(
@@ -140,6 +141,8 @@ export class OrderService {
         order,
         ticket_code: ticketCode,
         qr_code_data: qrData,
+        secret_code : this.generateFiveDigitCode()
+
       });
 
       tickets.push(ticket);
@@ -147,6 +150,10 @@ export class OrderService {
 
     await this.ticketRepo.save(tickets);
     return tickets;
+  }
+
+  public generateFiveDigitCode(): string {
+    return Math.floor(10000 + Math.random() * 90000).toString();
   }
 
   async getOrderById(orderId: number): Promise<Order> {
