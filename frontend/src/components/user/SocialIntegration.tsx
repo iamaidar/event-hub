@@ -7,17 +7,12 @@ import {
 import EventGroupsSlider from "./EventGroupsSlider.tsx";
 import Modal from "../../components/Modal";
 import Button from "../../UI/Button";
-import { User } from "../../api/userApi.tsx";
 
 interface SocialIntegrationProps {
   eventId: number;
-  user: User;
 }
 
-const SocialIntegration: React.FC<SocialIntegrationProps> = ({
-  eventId,
-  user,
-}) => {
+const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
   const isMounted = useRef(false);
 
   const [eventGroupsState, setEventGroupsState] = useState({

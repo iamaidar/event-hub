@@ -26,6 +26,19 @@ export interface PaginatedReview {
   nextPage: number | null;
 }
 
+interface CreateReviewDto {
+  event_id: number;
+  rating: number;
+  comment?: string;
+}
+
+export const createReview = async (
+  review: CreateReviewDto,
+): Promise<ReviewType> => {
+  const response = await api.post("/reviews", review);
+  return response.data.data;
+};
+
 export const fetchPaginatedReviews = async (
   page: number = 1,
   limit: number = 10,

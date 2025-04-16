@@ -36,6 +36,7 @@ import { StatModule } from "./stat/stat.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { EmailModule } from "./email/email.module";
+import { CalendarService } from './calendar/calendar.service';
 
 @Module({
   imports: [
@@ -81,6 +82,6 @@ import { EmailModule } from "./email/email.module";
     EmailModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CalendarService],
 })
 export class AppModule {}

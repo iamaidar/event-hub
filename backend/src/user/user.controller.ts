@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
@@ -22,6 +23,11 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 @UseGuards(JwtGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get("get-me")
+  getCurrentUser(@Req() req: any) {
+    return this.userService.getCurrentUser(req);
+  }
 
   @Roles("admin")
   @Get("filter")

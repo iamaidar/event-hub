@@ -20,6 +20,10 @@ export class UserService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
+  async getCurrentUser(req: any) {
+    return req.user;
+  }
+
   async filterUsersPaginated(
     filterDto: FilterUserDto,
     paginationDto: PaginationDto,

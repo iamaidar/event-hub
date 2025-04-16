@@ -6,11 +6,16 @@ import { Event } from "./entities/event.entity";
 import { Category } from "../category/entities/category.entity";
 import { Order } from "../order/entities/order.entity";
 import { EmailModule } from "src/email/email.module";
-import {OrganizerEventController} from "./event-organizer.controller";
+import { OrganizerEventController } from "./event-organizer.controller";
+import { CalendarModule } from "src/calendar/calendar.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Event, Category, Order]), EmailModule],
-  controllers: [EventController,OrganizerEventController],
+  imports: [
+    TypeOrmModule.forFeature([Event, Category, Order]),
+    EmailModule,
+    CalendarModule,
+  ],
+  controllers: [EventController, OrganizerEventController],
   providers: [EventService],
   exports: [TypeOrmModule],
 })
