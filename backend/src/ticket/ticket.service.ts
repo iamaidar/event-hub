@@ -28,6 +28,7 @@ export class TicketService {
           'ticket.id',
           'ticket.ticket_code',
           'ticket.is_used',
+          'ticket.secret_code',
           'order.id',
           'user.email',
           'event.title',

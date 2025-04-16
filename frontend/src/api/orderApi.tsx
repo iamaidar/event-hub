@@ -23,7 +23,6 @@ type TicketsBySessionResponse = {
 
 export const payForOrder = async (orderId: number): Promise<{ sessionId: string }> => {
     const res = await api.post(`/orders/pay/${orderId}`);
-    console.log(res);
     return res.data.data;
 };
 
@@ -31,7 +30,6 @@ export const getTicketsBySession = async (
     sessionId: string
 ): Promise<TicketsBySessionResponse> => {
     const res = await api.get(`/orders/by-session/${sessionId}`);
-    console.log(res);
     return res.data.data;
 };
 

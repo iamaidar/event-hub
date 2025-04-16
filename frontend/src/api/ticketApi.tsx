@@ -21,6 +21,7 @@ type TicketApiResponse = {
 // Проверка билета по QR-коду
 export const verifyTicket = async (code: string): Promise<TicketInfo> => {
     const response = await api.get<TicketApiResponse>(`/t/${code}`);
+    console.log(response);
     return response.data.data;
 };
 
