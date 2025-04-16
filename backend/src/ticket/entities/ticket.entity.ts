@@ -20,7 +20,7 @@ export class Ticket extends AppBaseEntity {
     @Column({ type: 'timestamptz', nullable: true })
     used_at?: Date;
 
-    @Column({type:'string',length:5})
+    @Column({ type: 'varchar', length: 5 })
     secret_code: string;
 
 }
