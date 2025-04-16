@@ -165,7 +165,8 @@ export class EventService {
       throw new NotFoundException("Event not found");
     }
 
-    const { categoryId, date_time, image_base64, ...rest } = updateEventDto;
+    // Деструктурируем поля, включая status и is_verified для администратора
+    const { categoryId, date_time, image_base64, status, is_verified, ...rest } = updateEventDto;
     Object.assign(event, rest);
 
     if (date_time) {
@@ -187,6 +188,9 @@ export class EventService {
         throw new NotFoundException(`Category with ID ${categoryId} not found`);
       }
       event.category = category;
+    }
+    if (is_verified !== undefined) {
+      event.is_verified = is_verified;
     }
 
     return this.eventRepository.save(event);

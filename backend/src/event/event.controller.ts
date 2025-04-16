@@ -44,7 +44,7 @@ export class EventController {
   }
 
 
-  @Roles('admin','organizer')
+  @Roles('organizer')
   @Post()
   @ApiOperation({ summary: 'Создать мероприятие' })
   @ApiResponse({
@@ -100,7 +100,6 @@ export class EventController {
     description: 'Мероприятие успешно обновлено.',
   })
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    console.log('Dd');
     return this.eventService.update(id, updateEventDto);
   }
 
