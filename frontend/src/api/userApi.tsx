@@ -75,3 +75,9 @@ export const updateUser = async (
 export const deleteUser = async (id: number | string): Promise<void> => {
   await api.delete(`/users/${id}`);
 };
+
+export const getCurrentUser = async () => {
+  const response = await api.get("/users/get-me");
+
+  return response.data.data;
+};
