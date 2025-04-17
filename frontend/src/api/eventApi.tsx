@@ -83,6 +83,31 @@ export const fetchPaginatedEvents = async (
   };
 };
 
+export const fetchPaginatedEventsAdmin = async (
+    page: number = 1,
+    limit: number = 10,
+    filters: EventFilters = {},
+): Promise<PaginatedEvents> => {
+    const params = {
+        page,
+        limit,
+        ...filters,
+        ...(filters.status ? { status: filters.status } : {}),
+    };
+
+    const response = await api.get("/events/admin", { params });
+    const paginatedData = response.data.data;
+
+    return {
+        data: paginatedData.data,
+        total: paginatedData.total,
+        page: paginatedData.page,
+        limit: paginatedData.limit,
+        totalPages: paginatedData.totalPages,
+        nextPage: paginatedData.nextPage,
+    };
+};
+
 // 🔍 Получение одного события
 export const fetchEventById = async (
   id: number | string,

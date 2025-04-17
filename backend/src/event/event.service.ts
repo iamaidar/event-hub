@@ -33,7 +33,7 @@ export class EventService {
   ) {}
 
   // Получение всех событий с пагинацией
-  async findAllPaginated(paginationDto: PaginationDto): Promise<{
+  async findAllPaginated(paginationDto: PaginationDto,isAdmin:boolean=false): Promise<{
     data: Event[];
     total: number;
     page: number;
@@ -45,8 +45,13 @@ export class EventService {
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.category', 'category')
         .leftJoin('event.organizer', 'organizer')
-        .addSelect(['organizer.id', 'organizer.username', 'organizer.email'])
-        .where('event.status = :completed', { completed: EventStatus.COMPLETED });
+        .addSelect(['organizer.id', 'organizer.username', 'organizer.email']);
+
+    if (!isAdmin) {
+      query.where('event.status = :published', {
+        published: EventStatus.PUBLISHED,
+      });
+    }
 
     return PaginationService.paginate(query, paginationDto);
   }
@@ -182,7 +187,7 @@ export class EventService {
     return event;
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
+  async update(id: number, updateEventDto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id: Number(id) },
     });
@@ -216,6 +221,18 @@ export class EventService {
     }
     if (is_verified !== undefined) {
       event.is_verified = is_verified;
+    }
+    if (status) {
+      console.log(status);
+      const allowedStatuses = Object.values(EventStatus);
+
+      if (!allowedStatuses.includes(status as EventStatus)) {
+        throw new BadRequestException(
+            `Invalid status`
+        );
+      }
+
+      event.status = status as EventStatus;
     }
 
     return this.eventRepository.save(event);

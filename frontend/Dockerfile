@@ -1,15 +1,11 @@
 FROM node:22-alpine
-
 WORKDIR /app
 
-# Копируем зависимости
+# Копируем только package*.json, чтобы залить зависимости в образ
 COPY package*.json ./
+RUN npm ci
 
-# Копируем исходный код
+# Копируем остальной код
 COPY . .
 
-EXPOSE 5173
-
-# Запускаем dev-сервер React (create-react-app по умолчанию использует react-scripts start)
 CMD ["npm", "run", "dev"]
-
