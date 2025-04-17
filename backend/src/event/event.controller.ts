@@ -56,7 +56,7 @@ export class EventController {
     return this.eventService.addEventToCalendar(id, req.user);
   }
 
-  @Roles("admin", "organizer")
+  @Roles('organizer')
   @Post()
   @ApiOperation({ summary: "Создать мероприятие" })
   @ApiResponse({
@@ -111,8 +111,7 @@ export class EventController {
     status: 200,
     description: "Мероприятие успешно обновлено.",
   })
-  update(@Param("id") id: string, @Body() updateEventDto: UpdateEventDto) {
-    console.log("Dd");
+  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventService.update(id, updateEventDto);
   }
 

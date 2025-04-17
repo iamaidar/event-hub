@@ -18,23 +18,23 @@ export const EventStatusList: EventStatus[] = [
 ];
 
 export interface EventType {
-  id: number;
-  title: string;
-  description?: string;
-  date_time: string;
-  location: string;
-  price: number;
-  total_tickets: number;
-  status: EventStatus;
-  is_verified?: boolean;
-  categoryId: number | null;
-  image_base64: string | undefined;
-  category: any;
-  organizer: {
     id: number;
-    username: string;
-    email: string;
-  };
+    title: string;
+    description?: string;
+    date_time: string;
+    location: string;
+    price: number;
+    total_tickets: number;
+    status: EventStatus;
+    is_verified?: boolean;
+    categoryId: number | null;
+    image_base64: string | null;
+    category: any;
+    organizer: {
+        id: number;
+        username: string;
+        email: string;
+    };
 }
 
 export interface PaginatedEvents {

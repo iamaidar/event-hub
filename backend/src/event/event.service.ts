@@ -42,11 +42,11 @@ export class EventService {
     nextPage: number | null;
   }> {
     const query = this.eventRepository
-      .createQueryBuilder("event")
-      .leftJoinAndSelect("event.category", "category")
-      .leftJoin("event.organizer", "organizer")
-      .addSelect(["organizer.id", "organizer.username", "organizer.email"])
-      .where("event.status != :deleted", { deleted: EventStatus.DELETED });
+        .createQueryBuilder('event')
+        .leftJoinAndSelect('event.category', 'category')
+        .leftJoin('event.organizer', 'organizer')
+        .addSelect(['organizer.id', 'organizer.username', 'organizer.email'])
+        .where('event.status = :completed', { completed: EventStatus.COMPLETED });
 
     return PaginationService.paginate(query, paginationDto);
   }
@@ -190,7 +190,8 @@ export class EventService {
       throw new NotFoundException("Event not found");
     }
 
-    const { categoryId, date_time, image_base64, ...rest } = updateEventDto;
+    // Деструктурируем поля, включая status и is_verified для администратора
+    const { categoryId, date_time, image_base64, status, is_verified, ...rest } = updateEventDto;
     Object.assign(event, rest);
 
     if (date_time) {
@@ -212,6 +213,9 @@ export class EventService {
         throw new NotFoundException(`Category with ID ${categoryId} not found`);
       }
       event.category = category;
+    }
+    if (is_verified !== undefined) {
+      event.is_verified = is_verified;
     }
 
     return this.eventRepository.save(event);

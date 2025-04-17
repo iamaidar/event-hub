@@ -74,13 +74,6 @@ const OrganizerHeader = () => {
               >
                 EVENTS
               </Link>
-              <Link
-                  to="/organizer/qr"
-                  className="hover:text-gray-300 font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-              >
-                QR
-              </Link>
 
               {authContext?.user ? (
                   <div className="flex flex-col items-center space-y-2">

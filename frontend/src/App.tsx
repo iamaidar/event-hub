@@ -38,6 +38,7 @@ import SearchResults from "./pages/SearchResults";
 import OrganizerRoutes from "./routes/OrganizerRoutes";
 import Dashboard from "./pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
+import QRVerification from "./pages/organizer/ QRVerification.tsx";
 
 const AppContent = () => {
     const location = useLocation();
@@ -130,6 +131,16 @@ const AppContent = () => {
 
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/login" replace />} />
+
+                    <Route
+                        path="/t/:id"
+                        element={
+                            <PrivateRoute requiredRoles={["organizer"]}>
+                                <QRVerification />
+                            </PrivateRoute>
+                        }
+                    />
+
                 </Routes>
             </main>
             {!isAdminRoute && !isOrganizerRoute && <Footer />}
