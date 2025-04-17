@@ -25,6 +25,17 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
+  @Get("check-is-ticket-bought")
+  checkIsUserBoughtTicket(
+    @Req() request: any,
+    @Query("eventId", ParseIntPipe) eventId: number,
+  ) {
+    return this.eventGroupService.checkIsUserBoughtTicket(
+      eventId,
+      request.user,
+    );
+  }
+
   @Post()
   create(@Body() dto: CreateEventGroupDto, @Request() req: any) {
     return this.eventGroupService.create(dto, req.user);

@@ -70,3 +70,11 @@ export const fetchPaginatedEventGroups = async (
     nextPage: paginatedData.nextPage,
   };
 };
+
+export const isUserBoughtTicket = async (eventId: string) => {
+  const response = await api.get("/event-group/check-is-ticket-bought", {
+    params: { eventId: eventId },
+  });
+
+  return response.data.data;
+};

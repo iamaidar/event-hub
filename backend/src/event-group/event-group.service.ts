@@ -14,6 +14,7 @@ import { User } from "src/user/entities/user.entity";
 import { GroupMember } from "src/group-member/entities/group-member.entity";
 import { PaginationService } from "src/common/services/pagination.service";
 import { PaginationDto } from "src/common/dto/pagination.dto";
+import { Order } from "src/order/entities/order.entity";
 
 @Injectable()
 export class EventGroupService {
@@ -24,6 +25,8 @@ export class EventGroupService {
     private readonly eventRepository: Repository<Event>,
     @InjectRepository(GroupMember)
     private readonly groupMemberRepository: Repository<GroupMember>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
   ) {}
 
   async findAllPaginated(
@@ -127,5 +130,24 @@ export class EventGroupService {
     if (!group) throw new NotFoundException("EventGroup not found");
 
     await this.eventGroupRepository.remove(group);
+  }
+
+  async checkIsUserBoughtTicket(
+    eventId: number,
+    user: User | undefined | null,
+  ): Promise<boolean> {
+    if (!user?.id) {
+      return false;
+    }
+
+    const orders = await this.orderRepository.find({
+      where: {
+        event: { id: eventId },
+        status: "confirmed",
+        user: { id: user?.id },
+      },
+    });
+
+    return orders.length > 0;
   }
 }
