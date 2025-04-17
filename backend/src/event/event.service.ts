@@ -45,7 +45,7 @@ export class EventService {
         .leftJoinAndSelect('event.category', 'category')
         .leftJoin('event.organizer', 'organizer')
         .addSelect(['organizer.id', 'organizer.username', 'organizer.email'])
-        .where('event.status != :deleted', { deleted: EventStatus.DELETED });
+        .where('event.status = :completed', { completed: EventStatus.COMPLETED });
 
     return PaginationService.paginate(query, paginationDto);
   }
