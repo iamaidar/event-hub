@@ -33,6 +33,9 @@ export class EventGroup extends AppBaseEntity {
   @Column({ type: "int", nullable: true })
   maxAge?: number;
 
+  @Column({ type: "int", nullable: false })
+  members_limit: number;
+
   @OneToMany(() => GroupMember, (member) => member.group)
   members: GroupMember[];
 

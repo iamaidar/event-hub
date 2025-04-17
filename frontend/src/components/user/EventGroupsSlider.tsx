@@ -3,15 +3,18 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
 import { EventGroupType } from "../../api/eventGroupApi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Button from "../../UI/Button";
 
 interface EventGroupsSliderProps {
   eventGroups: EventGroupType[];
   onReachEnd: () => void;
+  onJoinNow: (id: number | string) => Promise<void>;
 }
 
 const EventGroupsSlider: React.FC<EventGroupsSliderProps> = ({
   eventGroups,
   onReachEnd,
+  onJoinNow,
 }) => {
   const getRequirementsText = (group: EventGroupType): string => {
     const { genderRequirement, minAge, maxAge } = group;
@@ -74,13 +77,21 @@ const EventGroupsSlider: React.FC<EventGroupsSliderProps> = ({
                   </p>
                 )}
               </div>
-              <div className="mt-3 shrink-0">
-                <p className="text-sm text-gray-600">
+              <div className=" shrink-0">
+                <p className="text-sm text-gray-600 mb-3">
                   Requirements:{" "}
                   <span className="font-semibold text-purple-600">
                     {getRequirementsText(group)}
                   </span>
                 </p>
+                <div className="flex justify-end">
+                  <Button
+                    text="Join Now"
+                    variant="solid"
+                    className="text-xs px-3 py-1"
+                    onClick={() => onJoinNow(group.id)}
+                  />
+                </div>
               </div>
             </div>
           </SwiperSlide>
