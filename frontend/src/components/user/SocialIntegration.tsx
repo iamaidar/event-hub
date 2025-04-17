@@ -3,10 +3,12 @@ import {
   EventGroupType,
   fetchPaginatedEventGroups,
   createEventGroup,
+  joinToGroup,
 } from "../../api/eventGroupApi.tsx";
 import EventGroupsSlider from "./EventGroupsSlider.tsx";
 import Modal from "../../components/Modal";
 import Button from "../../UI/Button";
+import { toast } from "react-toastify";
 
 interface SocialIntegrationProps {
   eventId: number;
@@ -30,6 +32,7 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
     genderRequirement: "" as "" | "male" | "female" | "any",
     minAge: undefined as number | undefined,
     maxAge: undefined as number | undefined,
+    members_limit: 1, // Изменено с 0 на 1, так как 0 не имеет смысла для лимита участников
   });
 
   const fetchEventGroupsData = useCallback(
@@ -76,6 +79,7 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
         genderRequirement: newGroup.genderRequirement || undefined,
         minAge: newGroup.minAge,
         maxAge: newGroup.maxAge,
+        members_limit: newGroup.members_limit, // Добавляем members_limit
       };
       await createEventGroup(groupData);
       setModalOpen(false);
@@ -86,6 +90,7 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
         genderRequirement: "",
         minAge: undefined,
         maxAge: undefined,
+        members_limit: 1, // Сбрасываем на 1
       });
       fetchEventGroupsData(1); // Перезагружаем с первой страницы
     } catch (err) {
@@ -111,6 +116,25 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
     fetchEventGroupsData,
   ]);
 
+  const handleJoin = useCallback(
+    async (groupId: string | number) => {
+      try {
+        const result = await joinToGroup(groupId);
+        toast.success(result.message, {
+          autoClose: 3000,
+        });
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.message || "Failed to join the group",
+          {
+            autoClose: 5000,
+          },
+        );
+      }
+    },
+    [eventId],
+  );
+
   return (
     <>
       <Button
@@ -124,6 +148,7 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
           <EventGroupsSlider
             eventGroups={eventGroupsState.eventGroups}
             onReachEnd={handleReachEnd}
+            onJoinNow={handleJoin}
           />
           {eventGroupsState.isLoading && (
             <p className="text-center text-gray-500 mt-4">
@@ -148,6 +173,7 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
               setNewGroup((prev) => ({ ...prev, title: e.target.value }))
             }
             className="border px-2 py-1 rounded w-full"
+            required
           />
           <textarea
             placeholder="Description (optional)"
@@ -200,6 +226,20 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
               }))
             }
             min="0"
+            className="border px-2 py-1 rounded w-full"
+          />
+          <input
+            type="number"
+            placeholder="Members Limit"
+            value={newGroup.members_limit}
+            onChange={(e) =>
+              setNewGroup((prev) => ({
+                ...prev,
+                members_limit: Number(e.target.value) || 1, // Минимальное значение 1
+              }))
+            }
+            min="1"
+            required
             className="border px-2 py-1 rounded w-full"
           />
           <Button

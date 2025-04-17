@@ -44,13 +44,11 @@ export class CalendarService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       this.logger.error(`User not found for userId: ${userId}`);
-      throw new UnauthorizedException("Пользователь не найден");
+      throw new UnauthorizedException("The user was not found");
     }
     if (!user.google_access_token) {
       this.logger.error(`No Google access token for userId: ${userId}`);
-      throw new UnauthorizedException(
-        "Пользователь не авторизован через Google",
-      );
+      throw new UnauthorizedException("The user is not logged in via Google");
     }
     this.logger.debug(
       `Found user with google_access_token for userId: ${userId}`,
@@ -112,7 +110,7 @@ export class CalendarService {
         if (!user.google_refresh_token) {
           this.logger.error(`No refresh token available for userId: ${userId}`);
           throw new UnauthorizedException(
-            "Требуется повторная авторизация через Google",
+            "Re-authorization via Google is required",
           );
         }
 
@@ -150,12 +148,12 @@ export class CalendarService {
             refreshError.stack,
           );
           throw new UnauthorizedException(
-            "Не удалось обновить токен доступа. Требуется повторная авторизация",
+            "The access token could not be updated. Reauthorization is required",
           );
         }
       }
       throw new BadRequestException(
-        `Ошибка при создании события: ${error.message}`,
+        `Error when creating an event: ${error.message}`,
       );
     }
   }

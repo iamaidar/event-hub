@@ -25,6 +25,11 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
+  @Post("join/:id")
+  joinToGroup(@Param("id", ParseIntPipe) id: number, @Req() req: any) {
+    return this.eventGroupService.joinToGroup(id, req.user);
+  }
+
   @Get("check-is-ticket-bought")
   checkIsUserBoughtTicket(
     @Req() request: any,

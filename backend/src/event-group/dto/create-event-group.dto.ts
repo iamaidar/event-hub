@@ -44,4 +44,8 @@ export class CreateEventGroupDto {
   @IsInt()
   @Min(0)
   maxAge?: number;
+
+  @IsInt()
+  @Min(1)
+  members_limit: number;
 }
