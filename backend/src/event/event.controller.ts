@@ -11,7 +11,7 @@ import {
   Request,
   Query,
   ParseIntPipe,
-  Req,
+  Req, Logger,
 } from "@nestjs/common";
 import { EventService } from "./event.service";
 import { JwtGuard } from "../auth/guard";
@@ -56,14 +56,14 @@ export class EventController {
     return this.eventService.addEventToCalendar(id, req.user);
   }
 
-  @Roles('organizer')
   @Post()
   @ApiOperation({ summary: "Создать мероприятие" })
+  @Roles('organizer')
   @ApiResponse({
     status: 200,
     description: "Мероприятие успешно создано.",
   })
-  create(@Body() createEventDto: CreateEventDto, @Request() req) {
+  create(@Body() createEventDto: CreateEventDto, @Req() req: any) {
     return this.eventService.create(createEventDto, req.user);
   }
 
@@ -91,6 +91,17 @@ export class EventController {
     return this.eventService.findAllPaginated(paginationDto);
   }
 
+  @Get('admin')
+  @Roles("admin")
+  @ApiOperation({ summary: "Получить все мероприятия с пагинацией" })
+  @ApiResponse({
+    status: 200,
+    description: "Список мероприятий с пагинацией.",
+  })
+  findAllPaginatedAdmin(@Query() paginationDto: PaginationDto) {
+    return this.eventService.findAllPaginated(paginationDto,true);
+  }
+
   // Защищённый маршрут получения мероприятия по ID
   @Public()
   @Get(":id")
@@ -111,7 +122,8 @@ export class EventController {
     status: 200,
     description: "Мероприятие успешно обновлено.",
   })
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
+  update(@Param('id', ParseIntPipe) id: number,@Body() updateEventDto: UpdateEventDto) {
+
     return this.eventService.update(id, updateEventDto);
   }
 

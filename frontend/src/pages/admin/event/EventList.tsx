@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  fetchPaginatedEvents,
   deleteEvent,
-  EventType,
+  EventType, fetchPaginatedEventsAdmin,
 } from "../../../api/eventApi";
 import EventTable from "../../../components/admin/event/EventTable.tsx";
 
@@ -16,7 +15,7 @@ const EventList: React.FC = () => {
   const loadEvents = async (page: number) => {
     setLoading(true);
     try {
-      const result = await fetchPaginatedEvents(page, 10);
+      const result = await fetchPaginatedEventsAdmin(page, 10);
       setEvents(result.data);
       setTotalPages(result.totalPages);
       setLoading(false);
