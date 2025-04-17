@@ -193,7 +193,7 @@ const ViewDetails = () => {
     <div className="max-w-6xl mx-auto px-6 py-8 bg-gray-100 rounded-lg">
       <div className="flex flex-col md:flex-row items-center gap-6">
         <img
-          src={eventState.event.image_base64}
+          src={eventState.event.image_base64 as string}
           alt={eventState.event.title}
           loading="lazy"
           className="w-full md:w-1/2 rounded-lg shadow-md object-cover"

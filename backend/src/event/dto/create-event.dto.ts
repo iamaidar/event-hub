@@ -4,8 +4,9 @@ import {
   IsNumber,
   IsDateString,
   IsOptional,
-  IsBoolean,
+  IsBoolean, IsEnum,
 } from "class-validator";
+import {EventStatus} from "../event-status.enum";
 
 export class CreateEventDto {
   @IsString()
@@ -24,8 +25,10 @@ export class CreateEventDto {
   @IsNotEmpty()
   location: string;
 
+  @IsOptional()
+  @IsString()
   @IsNotEmpty()
-  categoryId?: string; // ID категории
+  categoryId?: string;
 
   @IsNumber()
   price: number;
@@ -34,7 +37,7 @@ export class CreateEventDto {
   total_tickets: number;
 
   @IsString()
-  status: string = "pending"; // 'scheduled' | 'cancelled' | ...
+  status: string;
 
   @IsOptional()
   @IsBoolean()

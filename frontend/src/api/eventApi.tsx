@@ -18,23 +18,23 @@ export const EventStatusList: EventStatus[] = [
 ];
 
 export interface EventType {
-  id: number;
-  title: string;
-  description?: string;
-  date_time: string;
-  location: string;
-  price: number;
-  total_tickets: number;
-  status: EventStatus;
-  is_verified?: boolean;
-  categoryId: number | null;
-  image_base64: string | undefined;
-  category: any;
-  organizer: {
     id: number;
-    username: string;
-    email: string;
-  };
+    title: string;
+    description?: string;
+    date_time: string;
+    location: string;
+    price: number;
+    total_tickets: number;
+    status: EventStatus;
+    is_verified?: boolean;
+    categoryId: number | null;
+    image_base64: string | null;
+    category: any;
+    organizer: {
+        id: number;
+        username: string;
+        email: string;
+    };
 }
 
 export interface PaginatedEvents {
@@ -81,6 +81,31 @@ export const fetchPaginatedEvents = async (
     totalPages: paginatedData.totalPages,
     nextPage: paginatedData.nextPage,
   };
+};
+
+export const fetchPaginatedEventsAdmin = async (
+    page: number = 1,
+    limit: number = 10,
+    filters: EventFilters = {},
+): Promise<PaginatedEvents> => {
+    const params = {
+        page,
+        limit,
+        ...filters,
+        ...(filters.status ? { status: filters.status } : {}),
+    };
+
+    const response = await api.get("/events/admin", { params });
+    const paginatedData = response.data.data;
+
+    return {
+        data: paginatedData.data,
+        total: paginatedData.total,
+        page: paginatedData.page,
+        limit: paginatedData.limit,
+        totalPages: paginatedData.totalPages,
+        nextPage: paginatedData.nextPage,
+    };
 };
 
 // 🔍 Получение одного события

@@ -46,6 +46,7 @@ import SearchResults from "./pages/SearchResults";
 import OrganizerRoutes from "./routes/OrganizerRoutes";
 import Dashboard from "./pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
+import QRVerification from "./pages/organizer/ QRVerification.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -103,10 +104,112 @@ const AppContent = () => {
                   <Route path="orders/my" element={<OrderPage />} />
                   <Route path="payment-success" element={<PaymentSuccess />} />
                   <Route path="profile" element={<ProfilePage />} />
-
                   <Route
                     path="payment-cancel"
                     element={<p>❌ Payment is not completed</p>}
+                  />
+                  {/* Public Routes */}
+                  <Route
+                    path="/login"
+                    element={
+                      <PublicRoute>
+                        <LoginForm />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path="/register"
+                    element={
+                      <PublicRoute>
+                        <RegistrationForm />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/events" element={<SearchResults />} />
+                  <Route path="/details/:id" element={<ViewDetails />} />
+                  {/* User Routes */}
+                  <Route
+                    path="/user/*"
+                    element={
+                      <PrivateRoute requiredRoles={["user"]}>
+                        <Routes>
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="orders/my" element={<OrderPage />} />
+                          <Route
+                            path="payment-success"
+                            element={<PaymentSuccess />}
+                          />
+                          <Route path="profile" element={<ProfilePage />} />
+
+                          <Route
+                            path="payment-cancel"
+                            element={<p>❌ Payment is not completed</p>}
+                          />
+                        </Routes>
+                      </PrivateRoute>
+                    }
+                  />
+
+                  {/* Admin Layout Routes */}
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <PrivateRoute requiredRoles={["admin"]}>
+                        <AdminLayout />
+                      </PrivateRoute>
+                    }
+                  >
+                    <Route index element={<AdminDashboardPage />} />
+                    <Route path="events" element={<EventList />} />
+                    <Route path="events/create" element={<EventCreate />} />
+                    <Route path="events/edit/:id" element={<EventEdit />} />
+                    <Route path="events/:id" element={<EventDetail />} />
+
+                    <Route path="categories" element={<CategoryList />} />
+                    <Route
+                      path="categories/create"
+                      element={<CategoryCreate />}
+                    />
+                    <Route
+                      path="categories/edit/:id"
+                      element={<CategoryEdit />}
+                    />
+                    <Route path="categories/:id" element={<CategoryDetail />} />
+
+                    <Route path="reviews" element={<ReviewList />} />
+
+                    <Route path="users" element={<UserList />} />
+                    <Route path="users/create" element={<UserCreate />} />
+                    <Route path="users/edit/:id" element={<UserEdit />} />
+                    <Route path="users/:id" element={<UserDetail />} />
+                  </Route>
+
+                  {/* Organizer Layout Routes */}
+                  <Route
+                    path="/organizer/*"
+                    element={
+                      <PrivateRoute requiredRoles={["organizer"]}>
+                        <OrganizerLayout />
+                      </PrivateRoute>
+                    }
+                  >
+                    {OrganizerRoutes()}{" "}
+                    {/* ⬅ вызываем как функцию, не компонент */}
+                  </Route>
+
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+
+                  <Route
+                    path="/t/:id"
+                    element={
+                      <PrivateRoute requiredRoles={["organizer"]}>
+                        <QRVerification />
+                      </PrivateRoute>
+                    }
                   />
                 </Routes>
               </PrivateRoute>
