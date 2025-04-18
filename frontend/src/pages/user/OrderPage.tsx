@@ -1,9 +1,8 @@
-// src/pages/user/OrderPage.tsx
 import React, { useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { payForOrder, getMyOrders } from '../../api/orderApi';
-import {useNavigate} from "react-router-dom";
-
+import { payForOrder, getMyOrders, deleteOrder } from '../../api/orderApi'; // Предположим, что у вас есть API для удаления заказа
+import { Trash } from 'lucide-react'; // Импортируем иконку корзины для удаления
+import { getAccessToken } from "../../utils/tokenService";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 type Order = {
@@ -29,14 +28,14 @@ const OrderPage: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loadingId, setLoadingId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
-
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 const data = await getMyOrders();
-                setOrders(data);
+                // Фильтруем заказы, чтобы не показывать статус "confirmed"
+                const filteredOrders = data.filter((order: Order) => order.status !== 'confirmed');
+                setOrders(filteredOrders);
             } catch (err) {
                 console.error('Error loading orders:', err);
                 setError('Failed to load your orders.');
@@ -61,55 +60,77 @@ const OrderPage: React.FC = () => {
         }
     };
 
+    const handleDelete = async (orderId: number) => {
+        const authToken = getAccessToken(); // Пример получения токена из localStorage
+
+        if (!authToken) {
+            console.error('No auth token found');
+            return;
+        }
+
+        try {
+            const result = await deleteOrder(orderId, authToken);
+            console.log('Order deleted:', result);
+
+            // Удаляем заказ из локального состояния
+            setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.log(error.message);
+            } else {
+                console.log('Unknown error', error);
+            }
+        }
+    };
+
     return (
         <div className="pt-10">
-            <div className="max-w-4xl mx-auto bg-white p-6 shadow rounded-lg">
-                <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+            <div className="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg">
+                <h1 className="text-3xl font-semibold mb-6">My Orders</h1>
 
-                {error && (
-                    <div className="mb-4 text-red-600 font-medium">{error}</div>
-                )}
+                {error && <div className="mb-4 text-red-600 font-medium">{error}</div>}
 
                 {orders.length === 0 ? (
-                    <p>No orders found.</p>
+                    <p className="text-gray-500">No orders found.</p>
                 ) : (
                     <ul className="space-y-4">
                         {orders.map((order) => (
-                            <li key={order.id} className="border p-4 rounded shadow-sm flex justify-between items-center">
-                                <div>
-                                    <p className="font-semibold">Order #{order.id}</p>
-                                    <p>Event: {order.event?.title}</p>
-                                    <p>Total Amount: ${Number(order.total_amount).toFixed(2)}</p>
-                                    <p>Tickets: {order.ticket_count}</p>
-                                    <p className="text-sm text-gray-500">
-                                        Date: {new Date(order.createdAt).toLocaleDateString()}
-                                    </p>
-                                    <p className={`font-medium ${statusLabel[order.status].color}`}>
-                                        Status: {statusLabel[order.status].text}
+                            <li
+                                key={order.id}
+                                className="border-b py-4 flex justify-between items-center"
+                            >
+                                <div className="flex-1">
+                                    <p className="font-medium text-lg">Order #{order.id}</p>
+                                    <p className="text-sm text-gray-600">Event: {order.event?.title}</p>
+                                    <p className="text-sm text-gray-500">Amount: ${Number(order.total_amount).toFixed(2)}</p>
+                                    <p className="text-sm text-gray-400">Tickets: {order.ticket_count} </p>
+                                    <p className={`text-sm ${statusLabel[order.status].color}`}>
+                                        {statusLabel[order.status].text}
                                     </p>
                                 </div>
 
-                                {order.status === 'pending' ? (
+                                <div className="flex flex-col items-center">
+                                    {/* Иконка удаления */}
                                     <button
-                                        onClick={() => handlePay(order.id)}
-                                        disabled={loadingId === order.id}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
+                                        onClick={() => handleDelete(order.id)}
+                                        className="text-red-500 hover:text-red-600"
                                     >
-                                        {loadingId === order.id ? 'Redirecting...' : '💳 Pay Now'}
+                                        <Trash size={18} />
                                     </button>
-                                ) : order.status === 'confirmed' && order.stripe_payment_id ? (
-                                    <button
-                                        onClick={() => navigate(`/user/payment-success?session_id=${order.stripe_payment_id}`, {
-                                            state: { fromOrders: true }
-                                        })}
-                                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
-                                    >
-                                        🎟️ View Tickets
-                                    </button>
-                                ) : (
-                                    <span className="text-gray-400">Payment not available</span>
-                                )}
 
+                                    {/* Кнопка оплаты */}
+                                    {order.status === 'pending' ? (
+                                        <button
+                                            onClick={() => handlePay(order.id)}
+                                            disabled={loadingId === order.id}
+                                            className="mt-2 bg-indigo-600 text-white text-sm py-1 px-4 rounded hover:bg-indigo-700"
+                                        >
+                                            {loadingId === order.id ? 'Redirecting...' : '💳 Pay Now'}
+                                        </button>
+                                    ) : (
+                                        <span className="text-gray-400 text-sm">Payment not available</span>
+                                    )}
+                                </div>
                             </li>
                         ))}
                     </ul>
@@ -120,5 +141,3 @@ const OrderPage: React.FC = () => {
 };
 
 export default OrderPage;
-
-
