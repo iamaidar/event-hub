@@ -43,7 +43,7 @@ export class AuthService {
         });
 
         await this.userRepository.save(user);
-        return this.signTokens(user.id, user.email, user.role.name);
+        return this.signTokens(user.id, user.username, user.email, user.role.name);
       }
     } catch (error) {
       if (error.code === "23505") {
@@ -66,16 +66,18 @@ export class AuthService {
       throw new ForbiddenException("Credentials incorrect");
     }
 
-    return this.signTokens(user.id, user.email, user.role.name);
+    return this.signTokens(user.id, user.username, user.email, user.role.name);
   }
 
   async signTokens(
     userId: number,
+    username: string,
     email: string,
     role: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const payload = {
       sub: userId,
+      name: username,
       email,
       role,
     };
@@ -128,7 +130,7 @@ export class AuthService {
         throw new ForbiddenException("Access Denied");
       }
 
-      const tokens = await this.signTokens(user.id, user.email, user.role.name);
+      const tokens = await this.signTokens(user.id, user.username, user.email, user.role.name);
       await this.updateRefreshToken(user.id, tokens.refresh_token);
       return tokens;
     } catch {
@@ -234,7 +236,7 @@ export class AuthService {
 
       // Генерируем JWT-токены
       logger.debug(`Generating JWT tokens for userId: ${user.id}`);
-      return this.signTokens(user.id, user.email, user.role.name);
+      return this.signTokens(user.id,user.username, user.email, user.role.name);
     } catch (error) {
       logger.error(`Error in googleLogin: ${error.message}`, error.stack);
       throw new InternalServerErrorException(

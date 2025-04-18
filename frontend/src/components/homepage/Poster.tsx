@@ -7,20 +7,21 @@ import musicBg3 from "../../assets/images/music_3.png";
 const slides = [
     {
         imageUrl: musicBg1,
-        title: "Насладитесь музыкой на фестивале!!",
-        description: "Описание",
+        title: "Enjoy the music at the festival !!",
+        description: "Enjoy live music at the festival!\n" +
+            "Top artists, vibrant vibes, and unforgettable moments — don’t miss it!",
         link: "/events",
-        linkText: "Купить сейчас"
+        linkText: "Buy Now"
     },
     {
         imageUrl: musicBg2,
-        title: "Второй слайд",
-        description: "Описание второго слайда",
+        title: " Feel the Beat Festival",
+        description: "Catch the rhythm, dance to the vibe, and enjoy a night full of energy and live performances!" ,
     },
     {
         imageUrl: musicBg3,
-        title: "Третий слайд",
-        description: "Описание третьего слайда",
+        title: "Night Rhythms",
+        description: "The energy of the dance floor, DJs, lights, and the beat — the perfect place to lose yourself in dance until sunrise.",
     },
 ];
 

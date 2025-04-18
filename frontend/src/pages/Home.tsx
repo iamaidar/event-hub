@@ -41,7 +41,7 @@ const Home = () => {
         <p className="text-center mt-5">Загрузка...</p>
       ) : (
         <EventList
-          title="Лучшие Предложения Рядом С Вами"
+          title="Best Deals Near You"
           initialEvents={events}
         />
       )}

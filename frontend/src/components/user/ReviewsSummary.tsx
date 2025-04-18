@@ -59,34 +59,49 @@ const ReviewsSummary = ({
         onClick={() => setModalOpen(true)}
       />
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <h2 className="text-xl font-bold mb-4">Оставить отзыв</h2>
-        <div className="flex mb-4">
-          {[...Array(5)].map((_, i) => (
-            <span
-              key={i}
-              className={`text-3xl cursor-pointer ${
-                i < rating ? "text-yellow-400" : "text-gray-300"
-              }`}
-              onClick={() => setRating(i + 1)}
-            >
-              ★
-            </span>
-          ))}
-        </div>
+        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
+            <div className="max-w-md w-full mx-auto p-6">
+                <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Оставить отзыв</h2>
 
-        <textarea
-          className="w-full p-2 border rounded-md"
-          placeholder="Напишите ваш отзыв..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-        <Button
-          className="mt-4 bg-purple-500 text-white px-4 py-2 rounded-xl"
-          text="Отправить"
-          onClick={handleSubmit}
-        />
-      </Modal>
+                {/* Рейтинг звездами */}
+                <div className="flex justify-center mb-6">
+                    {[...Array(5)].map((_, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            className={`text-4xl mx-1 transition-transform hover:scale-110 ${
+                                i < rating ? "text-yellow-400" : "text-gray-200"
+                            }`}
+                            onClick={() => setRating(i + 1)}
+                            aria-label={`Оценка ${i + 1}`}
+                        >
+                            ★
+                        </button>
+                    ))}
+                </div>
+
+                {/* Поле для отзыва */}
+                <textarea
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors duration-200 mb-4"
+                    rows={4}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                />
+
+                {/* Кнопка отправки */}
+                <button
+                    onClick={handleSubmit}
+                    disabled={!rating || !comment.trim()}
+                    className={`w-full py-3 px-6 rounded-xl font-medium text-white transition-all ${
+                        rating && comment.trim()
+                            ? "bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg"
+                            : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                >
+                    Отправить отзыв
+                </button>
+            </div>
+        </Modal>
     </div>
   );
 };

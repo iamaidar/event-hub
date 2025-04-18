@@ -19,7 +19,6 @@ import PrivateRoute from "./routes/PrivateRoute";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 import { setupAxiosInterceptors } from "./api/axiosInstance";
 import ViewDetails from "./pages/user/ViewDetails.tsx";
-import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -47,6 +46,11 @@ import OrganizerRoutes from "./routes/OrganizerRoutes";
 import Dashboard from "./pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
+import MyGroupsPage from "./pages/user/profile/MuGroupPage.tsx";
+import MyProfilePage from "./pages/user/profile/MyProfilePage.tsx";
+import MyTicketsPage from "./pages/user/profile/MyTicketsPage.tsx";
+import ProfilePage from "./components/homepage/ ProfilePage.tsx";
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -103,8 +107,12 @@ const AppContent = () => {
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="orders/my" element={<OrderPage />} />
                   <Route path="payment-success" element={<PaymentSuccess />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                  <Route
+                    <Route path="profile" element={<ProfilePage />}>
+                        <Route index element={<Navigate to="my-info" replace />} />
+                        <Route path="my-info" element={<MyProfilePage />} />
+                        <Route path="my-tickets" element={<MyTicketsPage />} />
+                        <Route path="my-groups" element={<MyGroupsPage />} />
+                    </Route>                  <Route
                     path="payment-cancel"
                     element={<p>❌ Payment is not completed</p>}
                   />

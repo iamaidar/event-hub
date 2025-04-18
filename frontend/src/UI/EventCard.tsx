@@ -98,7 +98,7 @@ const EventCard: React.FC<EventCardProps> = ({
                   {ticketPrice.toLocaleString("en-US", {
                     style: "currency",
                     currency: "USD",
-                  })}
+                  })}$
                 </p>
             )}
             {availableTickets !== null && (
@@ -114,43 +114,76 @@ const EventCard: React.FC<EventCardProps> = ({
         </div>
 
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-          <h2 className="text-xl font-bold mb-4">Book Tickets</h2>
-          {availableTickets !== null ? (
-              <>
-                <p className="mb-2 text-sm text-gray-700">
-                  Tickets Available: {availableTickets}
-                </p>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Number of Tickets:
-                </label>
-                <input
-                    type="number"
-                    value={ticketCount}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
-                      if (value > (availableTickets ?? 1)) {
-                        setTicketCount(availableTickets!);
-                      } else if (value < 1) {
-                        setTicketCount(1);
-                      } else {
-                        setTicketCount(value);
-                      }
-                    }}
-                    min={1}
-                    max={availableTickets ?? 1}
-                    className="border px-2 py-1 rounded w-full mb-4"
-                />
-                <p className="mb-4 text-sm text-gray-700">
-                  Total Price: {totalPrice.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                })}
-                </p>
-                <Button text="Submit Order" onClick={handleOrderSubmit} variant="solid" />
-              </>
-          ) : (
-              <p>Loading ticket availability...</p>
-          )}
+          <div className="max-w-md w-full mx-auto p-6">
+            <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Book Tickets</h2>
+
+            {availableTickets !== null ? (
+                <div className="space-y-4">
+                  {/* Available tickets */}
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-600">Tickets Available:</span>
+                    <span className="font-medium">{availableTickets}</span>
+                  </div>
+
+                  {/* Ticket counter */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Number of Tickets:
+                    </label>
+                    <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                          onClick={() => setTicketCount(prev => Math.max(1, prev - 1))}
+                          className="px-3 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                          disabled={ticketCount <= 1}
+                      >
+                        -
+                      </button>
+                      <input
+                          type="number"
+                          value={ticketCount}
+                          onChange={(e) => {
+                            const value = Math.min(
+                                Math.max(1, Number(e.target.value)),
+                                availableTickets
+                            );
+                            setTicketCount(value);
+                          }}
+                          min={1}
+                          max={availableTickets}
+                          className="flex-1 text-center border-0 focus:ring-0"
+                      />
+                      <button
+                          onClick={() => setTicketCount(prev => Math.min(availableTickets, prev + 1))}
+                          className="px-3 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                          disabled={ticketCount >= availableTickets}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Total price */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Total Price:</span>
+                      <span className="font-medium">
+              {totalPrice.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })}
+            </span>
+                    </div>
+                  </div>
+
+                  <Button text="Submit Order" onClick={handleOrderSubmit} variant="solid" />
+
+                </div>
+            ) : (
+                <div className="flex justify-center items-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                </div>
+            )}
+          </div>
         </Modal>
       </div>
   );

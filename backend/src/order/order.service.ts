@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  BadRequestException, ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -211,4 +211,27 @@ export class OrderService {
     if (!ticket) throw new NotFoundException("Ticket not found");
     return ticket;
   }
+  async deleteOrder(userId: string, orderId: number): Promise<void> {
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: ["user", "tickets"],
+    });
+
+    if (!order) {
+      throw new NotFoundException("Order not found");
+    }
+
+    if (order.user.id !== Number(userId)) {
+      throw new ForbiddenException("You can only delete your own orders");
+    }
+
+    if (order.tickets?.length) {
+      await this.ticketRepo.remove(order.tickets);
+    }
+
+    await this.orderRepo.remove(order);
+
+  }
+
+
 }

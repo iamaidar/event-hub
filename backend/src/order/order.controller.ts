@@ -1,4 +1,3 @@
-// src/order/order.controller.ts
 import {
   BadRequestException,
   Body,
@@ -8,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Delete,  // Импортируем декоратор Delete для метода удаления
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -23,7 +23,7 @@ import { OrderService } from "./order.service";
 import { StripeService } from "../stripe/stripe.service";
 import { Request } from "express";
 import { JwtGuard } from "../auth/guard";
-import { Roles} from "../auth/decorator";
+import { Roles } from "../auth/decorator";
 import { RolesGuard } from "../auth/guard/roles.guard";
 
 @ApiTags("Orders")
@@ -31,8 +31,8 @@ import { RolesGuard } from "../auth/guard/roles.guard";
 @Controller("orders")
 export class OrderController {
   constructor(
-    private readonly orderService: OrderService,
-    private readonly stripeService: StripeService,
+      private readonly orderService: OrderService,
+      private readonly stripeService: StripeService,
   ) {}
 
   @Post()
@@ -66,8 +66,8 @@ export class OrderController {
     if (order.status !== "pending")
       throw new BadRequestException("Order already processed");
     const session = await this.stripeService.createCheckoutSession(
-      order.total_amount,
-      order.id,
+        order.total_amount,
+        order.id,
     );
 
     return { sessionId: session["id"] };
@@ -98,10 +98,34 @@ export class OrderController {
   })
   async getUserOrders(@Req() req: Request) {
     if (!req.user) {
-      throw new ForbiddenException("Access danied");
+      throw new ForbiddenException("Access denied");
     } else if (!req.user["role"]) {
       throw new ForbiddenException("You don't have permission to access this page");
     }
     return this.orderService.getMyOrders(req.user['id']);
   }
+
+  @Delete(":orderId")
+  @ApiOperation({ summary: "Delete an order" })
+  @ApiParam({ name: "orderId", description: "Order identifier" })
+  @ApiResponse({
+    status: 200,
+    description: "Order successfully deleted",
+  })
+  async deleteOrder(@Req() req: Request, @Param("orderId") orderId: number) {
+    const userId = req.user?.["id"];
+
+    if (!userId) {
+      throw new ForbiddenException("You must be logged in to delete an order");
+    }
+
+    try {
+      await this.orderService.deleteOrder(userId, orderId);
+      return { message: "Order successfully deleted" };
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      throw new ForbiddenException("You cannot delete this order");
+    }
+  }
+
 }
