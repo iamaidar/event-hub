@@ -19,7 +19,6 @@ import PrivateRoute from "./routes/PrivateRoute";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 import { setupAxiosInterceptors } from "./api/axiosInstance";
 import ViewDetails from "./pages/user/ViewDetails.tsx";
-import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -48,9 +47,9 @@ import Dashboard from "./pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
 import MyGroupsPage from "./pages/user/profile/MuGroupPage.tsx";
-import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 import MyProfilePage from "./pages/user/profile/MyProfilePage.tsx";
 import MyTicketsPage from "./pages/user/profile/MyTicketsPage.tsx";
+import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 
 
 const AppContent = () => {
