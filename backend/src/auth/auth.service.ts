@@ -1,6 +1,8 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from "@nestjs/common";
 import { SignInDto, SignupDto } from "./dto";
@@ -141,38 +143,105 @@ export class AuthService {
     return {};
   }
 
-  // Новый метод для Google OAuth
   async googleLogin(googleUser: any) {
-    // Ищем пользователя по email или googleId
-    let user = await this.userRepository.findOne({
-      where: [{ email: googleUser.email }, { google_id: googleUser.googleId }],
-      relations: ["role"], // Загружаем роль
-    });
+    const logger = new Logger("AuthService");
+    logger.log(
+      `Processing Google login for email: ${googleUser?.email || "unknown"}, googleId: ${googleUser?.googleId || "unknown"}`,
+    );
+    logger.debug(`Received googleUser: ${JSON.stringify(googleUser)}`);
 
-    // Если пользователя нет, создаем нового с ролью по умолчанию (например, "user")
-    if (!user) {
-      const defaultRole = await this.roleRepository.findOne({
-        where: { name: "user" }, // Предполагаемая роль по умолчанию
-      });
-
-      if (!defaultRole) {
-        throw new ForbiddenException("Default role not found");
-      }
-
-      user = this.userRepository.create({
-        email: googleUser.email,
-        username: googleUser.email.split("@")[0], // Генерируем username из email
-        firstname: googleUser.firstName,
-        lastname: googleUser.lastName,
-        google_id: googleUser.googleId,
-        role: defaultRole,
-        is_active: true,
-      });
-
-      await this.userRepository.save(user);
+    // Проверяем наличие обязательных полей
+    if (!googleUser?.email) {
+      logger.error("googleUser.email is missing");
+      throw new InternalServerErrorException("Google user email is missing");
+    }
+    if (!googleUser?.googleId) {
+      logger.error("googleUser.googleId is missing");
+      throw new InternalServerErrorException("Google user ID is missing");
+    }
+    if (!googleUser?.googleAccessToken) {
+      logger.error("googleUser.googleAccessToken is missing");
+      throw new InternalServerErrorException("Google access token is missing");
+    }
+    if (!googleUser?.googleRefreshToken) {
+      logger.warn(
+        "googleUser.googleRefreshToken is missing. Refresh token will not be saved.",
+      );
     }
 
-    // Генерируем токены с использованием существующего метода
-    return this.signTokens(user.id, user.username, user.email, user.role.name);
+    try {
+      // Ищем пользователя по email или googleId
+      let user = await this.userRepository.findOne({
+        where: [
+          { email: googleUser.email },
+          { google_id: googleUser.googleId },
+        ],
+        relations: ["role"],
+      });
+
+      if (user) {
+        // Обновляем токены и данные
+        logger.debug(`Found existing user with id: ${user.id}`);
+        user.google_access_token = googleUser.googleAccessToken;
+        user.google_refresh_token =
+          googleUser.googleRefreshToken || user.google_refresh_token;
+        user.google_id = googleUser.googleId;
+        user.firstname = googleUser.firstName || user.firstname;
+        user.lastname = googleUser.lastName || user.lastname;
+        await this.userRepository.save(user);
+        logger.log(`Updated tokens for userId: ${user.id}`);
+      } else {
+        // Создаём нового пользователя
+        logger.log(`Creating new user for email: ${googleUser.email}`);
+        const defaultRole = await this.roleRepository.findOne({
+          where: { name: "user" },
+        });
+
+        if (!defaultRole) {
+          logger.error('Default role "user" not found');
+          throw new ForbiddenException("Default role not found");
+        }
+
+        user = this.userRepository.create({
+          email: googleUser.email,
+          username: googleUser.email.split("@")[0],
+          firstname: googleUser.firstName || "",
+          lastname: googleUser.lastName || "",
+          google_id: googleUser.googleId,
+          google_access_token: googleUser.googleAccessToken,
+          google_refresh_token: googleUser.googleRefreshToken,
+          role: defaultRole,
+          is_active: true,
+        });
+
+        await this.userRepository.save(user);
+        logger.log(`Created new user with id: ${user.id}`);
+      }
+
+      // Проверяем сохранение токенов
+      const savedUser = await this.userRepository.findOne({
+        where: { id: user.id },
+      });
+      if (!savedUser?.google_access_token) {
+        logger.error(`google_access_token not saved for userId: ${user.id}`);
+        throw new InternalServerErrorException(
+          "Failed to save Google access token",
+        );
+      }
+      if (!savedUser.google_refresh_token) {
+        logger.warn(`google_refresh_token not saved for userId: ${user.id}`);
+      } else {
+        logger.debug(`google_refresh_token saved for userId: ${user.id}`);
+      }
+
+      // Генерируем JWT-токены
+      logger.debug(`Generating JWT tokens for userId: ${user.id}`);
+      return this.signTokens(user.id,user.username, user.email, user.role.name);
+    } catch (error) {
+      logger.error(`Error in googleLogin: ${error.message}`, error.stack);
+      throw new InternalServerErrorException(
+        `Google login failed: ${error.message}`,
+      );
+    }
   }
 }

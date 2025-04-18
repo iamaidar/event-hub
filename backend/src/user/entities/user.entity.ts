@@ -31,6 +31,12 @@ export class User extends AppBaseEntity {
   @Column({ type: "varchar", length: 255, nullable: true, unique: true })
   google_id?: string;
 
+  @Column({ type: "varchar", nullable: true })
+  google_access_token?: string;
+
+  @Column({ type: "varchar", nullable: true })
+  google_refresh_token?: string;
+
   @ManyToOne(() => Role, (role) => role.users, { eager: true })
   @JoinColumn({ name: "role_id" })
   role: Role;

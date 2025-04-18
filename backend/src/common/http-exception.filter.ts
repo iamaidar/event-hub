@@ -1,52 +1,41 @@
 import {
-    ArgumentsHost,
-    Catch,
     ExceptionFilter,
+    Catch,
+    ArgumentsHost,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-    catch(exception: any, host: ArgumentsHost) {
+    catch(exception: unknown, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
-        const response = ctx.getResponse();
-        const request = ctx.getRequest();
+        const response = ctx.getResponse<Response>();
+        const request = ctx.getRequest<Request>();
 
-        // Для HttpException извлекаем статус
         const status =
             exception instanceof HttpException
                 ? exception.getStatus()
                 : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        // Для HttpException можно достать сообщение
-        const errorResponse =
-            exception instanceof HttpException
-                ? exception.getResponse()
-                : null;
+        console.error('🔥 EXCEPTION CAUGHT 🔥', {
+            url: request.url,
+            method: request.method,
+            status,
+            message: exception instanceof HttpException ? exception.getResponse() : exception,
+            stack: exception instanceof Error ? exception.stack : null,
+        });
 
-        // Можно формировать сообщение
-        // Если Nest выбрасывает HttpException, там обычно лежит
-        // либо строка (message), либо объект { message, error, etc. }
-        let message = 'Internal server error';
-        if (errorResponse) {
-            if (typeof errorResponse === 'string') {
-                message = errorResponse;
-            } else if (typeof errorResponse === 'object') {
-                message = (errorResponse as any).message || JSON.stringify(errorResponse);
-            }
-        }
-
-        // Формируем структуру
-        const responseBody = {
+        response.status(status).json({
             success: false,
-            message: message,
             statusCode: status,
-            timestamp: new Date().toISOString(),
             path: request.url,
-            // Можно добавить другие поля, если нужно
-        };
-
-        response.status(status).json(responseBody);
+            message:
+                exception instanceof HttpException
+                    ? exception.message
+                    : 'Internal server error',
+            timestamp: new Date().toISOString(),
+        });
     }
 }

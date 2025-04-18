@@ -41,6 +41,7 @@ export class EmailService {
       qrCodeBase64: string;
       cid: string;
       qrBuffer: Buffer;
+      secretCode: string;
     }[],
   ) {
     const attachments = tickets.map((ticket) => ({

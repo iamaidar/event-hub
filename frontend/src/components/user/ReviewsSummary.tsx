@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../../UI/Button";
 import Modal from "../../components/Modal";
+import { createReview } from "../../api/reviewApi";
 
 interface Review {
   user: { username: string };
@@ -9,10 +10,16 @@ interface Review {
 }
 
 interface ReviewsSummaryProps {
+  event_id: number;
   reviews: Review[];
+  onReviewAdded?: () => void; // Новый проп для уведомления
 }
 
-const ReviewsSummary = ({ reviews }: ReviewsSummaryProps) => {
+const ReviewsSummary = ({
+  reviews,
+  event_id,
+  onReviewAdded,
+}: ReviewsSummaryProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -22,8 +29,18 @@ const ReviewsSummary = ({ reviews }: ReviewsSummaryProps) => {
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
 
-  const handleSubmit = () => {
-    setModalOpen(false);
+  const handleSubmit = async () => {
+    try {
+      await createReview({ rating, comment, event_id });
+      setModalOpen(false);
+      setRating(0);
+      setComment("");
+      if (onReviewAdded) {
+        onReviewAdded(); // Уведомляем родителя
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+    }
   };
 
   return (

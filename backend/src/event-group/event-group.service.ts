@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -14,6 +16,7 @@ import { User } from "src/user/entities/user.entity";
 import { GroupMember } from "src/group-member/entities/group-member.entity";
 import { PaginationService } from "src/common/services/pagination.service";
 import { PaginationDto } from "src/common/dto/pagination.dto";
+import { Order } from "src/order/entities/order.entity";
 
 @Injectable()
 export class EventGroupService {
@@ -24,6 +27,8 @@ export class EventGroupService {
     private readonly eventRepository: Repository<Event>,
     @InjectRepository(GroupMember)
     private readonly groupMemberRepository: Repository<GroupMember>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
   ) {}
 
   async findAllPaginated(
@@ -38,20 +43,61 @@ export class EventGroupService {
     totalPages: number;
     nextPage: number | null;
   }> {
-    const query = this.eventGroupRepository
-      .createQueryBuilder("group")
-      .leftJoinAndSelect("group.event", "event")
-      .leftJoin("group.creator", "creator")
-      .addSelect(["creator.id", "creator.username", "creator.email"])
-      .leftJoinAndSelect("group.members", "members")
-      .leftJoinAndSelect("members.user", "memberUser")
-      .where("1=1"); // базовое условие
+    try {
+      console.log("findAllPaginated - Input parameters:", {
+        paginationDto,
+        currentUser: currentUser
+          ? { id: currentUser.id, username: currentUser.username }
+          : null,
+        eventId,
+      });
 
-    if (eventId) {
-      query.andWhere("event.id = :eventId", { eventId });
+      const query = this.eventGroupRepository
+        .createQueryBuilder("group")
+        .leftJoinAndSelect("group.event", "event")
+        .leftJoin("group.creator", "creator")
+        .addSelect(["creator.id", "creator.username", "creator.email"])
+        .leftJoinAndSelect("group.members", "members")
+        .leftJoinAndSelect("members.user", "memberUser")
+        .where("1=1");
+
+      if (eventId) {
+        query.andWhere("event.id = :eventId", { eventId });
+        console.log("Applied eventId filter:", { eventId });
+      }
+
+      // Фильтрация по members_limit <= количеству участников через подзапрос
+      query.andWhere(
+        "group.members_limit > (SELECT COUNT(m.id) FROM group_members m WHERE m.group_id = group.id)",
+      );
+
+      // Логируем SQL-запрос
+      console.log("Generated SQL Query:", await query.getQueryAndParameters());
+
+      // Выполняем запрос
+      console.log("Calling PaginationService.paginate...");
+      const result = await PaginationService.paginate(query, paginationDto);
+
+      // Логируем результат
+      console.log("findAllPaginated - Result:", {
+        dataLength: result.data?.length,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        nextPage: result.nextPage,
+      });
+
+      return result;
+    } catch (error) {
+      console.error("findAllPaginated - Error:", {
+        message: error.message,
+        stack: error.stack,
+        paginationDto,
+        eventId,
+      });
+      throw error;
     }
-
-    return PaginationService.paginate(query, paginationDto);
   }
 
   async create(dto: CreateEventGroupDto, user: User) {
@@ -79,6 +125,7 @@ export class EventGroupService {
         genderRequirement: dto.genderRequirement,
         minAge: dto.minAge,
         maxAge: dto.maxAge,
+        members_limit: dto.members_limit,
       });
 
       const savedEventGroup =
@@ -127,5 +174,141 @@ export class EventGroupService {
     if (!group) throw new NotFoundException("EventGroup not found");
 
     await this.eventGroupRepository.remove(group);
+  }
+
+  async checkIsUserBoughtTicket(
+    eventId: number,
+    user: User | undefined | null,
+  ): Promise<boolean> {
+    if (!user?.id) {
+      return false;
+    }
+
+    const orders = await this.orderRepository.find({
+      where: {
+        event: { id: eventId },
+        status: "confirmed",
+        user: { id: user?.id },
+      },
+    });
+
+    return orders.length > 0;
+  }
+
+  async joinToGroup(id: number, user: User) {
+    try {
+      // Загружаем группу с необходимыми полями
+      const group = await this.eventGroupRepository.findOne({
+        where: { id },
+        relations: ["event", "creator", "members", "members.user"], // Загружаем связанные данные, если нужно
+      });
+
+      if (!group) {
+        throw new NotFoundException("Group Not Found");
+      }
+
+      console.log("Group data:", {
+        id: group.id,
+        minAge: group.minAge,
+        maxAge: group.maxAge,
+        genderRequirement: group.genderRequirement,
+        members_limit: group.members_limit,
+      });
+
+      console.log("User data:", {
+        id: user.id,
+        age: user.age,
+        gender: user.gender,
+      });
+
+      // Проверка возраста, если minAge или maxAge заданы
+      if (group.minAge !== undefined && group.minAge !== null) {
+        if (!user.age || user.age < group.minAge) {
+          throw new BadRequestException(
+            `User age (${user.age || "not specified"}) does not meet the minimum age requirement (${group.minAge})`,
+          );
+        }
+      }
+
+      if (group.maxAge !== undefined && group.maxAge !== null) {
+        if (!user.age || user.age > group.maxAge) {
+          throw new BadRequestException(
+            `User age (${user.age || "not specified"}) exceeds the maximum age requirement (${group.maxAge})`,
+          );
+        }
+      }
+
+      // Проверка пола, если genderRequirement задан и не "any"
+      if (group.genderRequirement && group.genderRequirement !== "any") {
+        if (!user.gender) {
+          throw new BadRequestException(
+            `User gender not specified, but group requires ${group.genderRequirement}`,
+          );
+        }
+        if (
+          user.gender.toLowerCase() !== group.genderRequirement.toLowerCase()
+        ) {
+          throw new BadRequestException(
+            `User gender (${user.gender}) does not match group requirement (${group.genderRequirement})`,
+          );
+        }
+      }
+
+      console.log(group.members);
+      if (group.members.some((member) => member.user.id === user.id)) {
+        throw new BadRequestException("User is already a member of this group");
+      }
+
+      if (group.status === "closed") {
+        throw new BadRequestException("Cannot join a closed group");
+      }
+
+      if (group.members && group.members.length >= group.members_limit) {
+        throw new BadRequestException(
+          `Group has reached its member limit (${group.members_limit})`,
+        );
+      }
+
+      // Пример: создание записи в GroupMember (предполагается, что есть GroupMemberRepository)
+      const groupMember = this.groupMemberRepository.create({
+        group,
+        user,
+      });
+      await this.groupMemberRepository.save(groupMember);
+
+      return { message: "Successfully joined the group", groupId: id };
+    } catch (error) {
+      console.error("Error in joinToGroup:", {
+        message: error.message,
+        stack: error.stack,
+        groupId: id,
+        userId: user.id,
+      });
+      throw error; // Перебрасываем ошибку, чтобы она дошла до контроллера
+    }
+  }
+
+  async isUserInAnyGroupByEventId(eventId: number, userId: number) {
+    try {
+      const groupMember = await this.groupMemberRepository.findOne({
+        where: {
+          group: { event: { id: eventId } },
+          user: { id: userId },
+        },
+        relations: ["group", "group.event"],
+      });
+
+      return !!groupMember;
+    } catch (error) {
+      console.error("Error in isUserInAnyGroupByEventId:", {
+        message: error.message,
+        stack: error.stack,
+        eventId,
+        userId,
+      });
+      throw new InternalServerErrorException(
+        "Failed to check group membership",
+      );
+    }
   }
 }

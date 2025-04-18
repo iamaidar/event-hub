@@ -14,6 +14,7 @@ export interface EventGroupType {
   genderRequirement?: string;
   minAge?: number;
   maxAge?: number;
+  members_limit: number;
   members: GroupMember[];
 }
 
@@ -69,4 +70,18 @@ export const fetchPaginatedEventGroups = async (
     totalPages: paginatedData.totalPages,
     nextPage: paginatedData.nextPage,
   };
+};
+
+export const isUserBoughtTicket = async (eventId: string) => {
+  const response = await api.get("/event-group/check-is-ticket-bought", {
+    params: { eventId: eventId },
+  });
+
+  return response.data.data;
+};
+
+export const joinToGroup = async (eventGroupId: string | number) => {
+  const response = await api.post(`/event-group/join/${eventGroupId}`);
+
+  return response.data.data;
 };

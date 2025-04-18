@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
-  fetchPaginatedEvents,
   deleteEvent,
-  EventType,
+  EventType, fetchPaginatedEventsAdmin,
 } from "../../../api/eventApi";
 import EventTable from "../../../components/admin/event/EventTable.tsx";
-import Button from "../../../UI/Button.tsx";
 
 const EventList: React.FC = () => {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -17,7 +15,7 @@ const EventList: React.FC = () => {
   const loadEvents = async (page: number) => {
     setLoading(true);
     try {
-      const result = await fetchPaginatedEvents(page, 10);
+      const result = await fetchPaginatedEventsAdmin(page, 10);
       setEvents(result.data);
       setTotalPages(result.totalPages);
       setLoading(false);
@@ -65,10 +63,6 @@ const EventList: React.FC = () => {
 
   return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Events</h1>
-          <Button text="Create Event" to="/admin/events/create" variant="green" />
-        </div>
 
         <EventTable events={events} onDelete={handleDelete} />
 

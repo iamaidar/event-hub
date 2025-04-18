@@ -17,7 +17,8 @@ import { PaginationDto } from "../common/dto/pagination.dto";
 import { PaginationService } from "../common/services/pagination.service";
 import { Order } from "../order/entities/order.entity";
 import { EmailService } from "src/email/email.service";
-import {EventStatus} from "./event-status.enum";
+import { EventStatus } from "./event-status.enum";
+import { CalendarService } from "src/calendar/calendar.service";
 
 @Injectable()
 export class EventService {
@@ -28,11 +29,11 @@ export class EventService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-    private readonly emailService: EmailService,
+    private readonly calendarService: CalendarService,
   ) {}
 
   // Получение всех событий с пагинацией
-  async findAllPaginated(paginationDto: PaginationDto): Promise<{
+  async findAllPaginated(paginationDto: PaginationDto,isAdmin:boolean=false): Promise<{
     data: Event[];
     total: number;
     page: number;
@@ -44,8 +45,13 @@ export class EventService {
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.category', 'category')
         .leftJoin('event.organizer', 'organizer')
-        .addSelect(['organizer.id', 'organizer.username', 'organizer.email'])
-        .where('event.status != :deleted', { deleted: EventStatus.DELETED });
+        .addSelect(['organizer.id', 'organizer.username', 'organizer.email']);
+
+    if (!isAdmin) {
+      query.where('event.status = :published', {
+        published: EventStatus.PUBLISHED,
+      });
+    }
 
     return PaginationService.paginate(query, paginationDto);
   }
@@ -62,8 +68,8 @@ export class EventService {
 
   // Фильтрация событий с пагинацией
   async filterEventsPaginated(
-      filterDto: FilterEventDto,
-      paginationDto: PaginationDto,
+    filterDto: FilterEventDto,
+    paginationDto: PaginationDto,
   ): Promise<{
     data: Event[];
     total: number;
@@ -72,50 +78,72 @@ export class EventService {
     totalPages: number;
     nextPage: number | null;
   }> {
-    const { title, categoryId, organizerId, dateFrom, dateTo, location, status, isVerified } = filterDto;
+    const {
+      title,
+      categoryId,
+      organizerId,
+      dateFrom,
+      dateTo,
+      location,
+      status,
+      isVerified,
+    } = filterDto;
 
     const query = this.eventRepository
-        .createQueryBuilder('events')
-        .leftJoinAndSelect('events.category', 'categories')
-        .leftJoin('events.organizer', 'users')
-        .addSelect(['users.id', 'users.username', 'users.email']);
+      .createQueryBuilder("events")
+      .leftJoinAndSelect("events.category", "categories")
+      .leftJoin("events.organizer", "users")
+      .addSelect(["users.id", "users.username", "users.email"]);
 
     if (status) {
-      query.andWhere('events.status IN (:...status)', { status });
+      query.andWhere("events.status IN (:...status)", { status });
     }
 
     if (isVerified !== undefined) {
-      query.andWhere('events.is_verified = :isVerified', { isVerified });
+      query.andWhere("events.is_verified = :isVerified", { isVerified });
     }
 
     if (title) {
-      query.andWhere('events.title ILIKE :title', { title: `%${title}%` });
+      query.andWhere("events.title ILIKE :title", { title: `%${title}%` });
     }
     if (categoryId) {
-      query.andWhere('categories.id = :category_id', { category_id: categoryId });
+      query.andWhere("categories.id = :category_id", {
+        category_id: categoryId,
+      });
     }
     if (organizerId) {
-      query.andWhere('users.id = :organizer_id', { organizer_id: organizerId });
+      query.andWhere("users.id = :organizer_id", { organizer_id: organizerId });
     }
     if (dateFrom) {
-      query.andWhere('events.date_time >= :dateFrom', { dateFrom });
+      query.andWhere("events.date_time >= :dateFrom", { dateFrom });
     }
     if (dateTo) {
-      query.andWhere('events.date_time <= :dateTo', { dateTo });
+      query.andWhere("events.date_time <= :dateTo", { dateTo });
     }
     if (location) {
-      query.andWhere('events.location ILIKE :location', { location: `%${location}%` });
+      query.andWhere("events.location ILIKE :location", {
+        location: `%${location}%`,
+      });
     }
 
     return PaginationService.paginate(query, paginationDto);
   }
 
-
-  async create(createEventDto: CreateEventDto, organizer: User): Promise<Event> {
-    const { categoryId, date_time, image_base64, price, total_tickets, ...rest } = createEventDto;
+  async create(
+    createEventDto: CreateEventDto,
+    organizer: User,
+  ): Promise<Event> {
+    const {
+      categoryId,
+      date_time,
+      image_base64,
+      price,
+      total_tickets,
+      ...rest
+    } = createEventDto;
 
     if (image_base64 && !this.isBase64(image_base64)) {
-      throw new BadRequestException('Неверный формат base64 для фотографии');
+      throw new BadRequestException("Неверный формат base64 для фотографии");
     }
 
     const newEvent = this.eventRepository.create({
@@ -130,7 +158,9 @@ export class EventService {
     });
 
     if (categoryId) {
-      const category = await this.categoryRepository.findOne({ where: { id: Number(categoryId) } });
+      const category = await this.categoryRepository.findOne({
+        where: { id: Number(categoryId) },
+      });
       if (!category) {
         throw new NotFoundException(`Категория с ID ${categoryId} не найдена`);
       }
@@ -157,7 +187,7 @@ export class EventService {
     return event;
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
+  async update(id: number, updateEventDto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id: Number(id) },
     });
@@ -165,7 +195,8 @@ export class EventService {
       throw new NotFoundException("Event not found");
     }
 
-    const { categoryId, date_time, image_base64, ...rest } = updateEventDto;
+    // Деструктурируем поля, включая status и is_verified для администратора
+    const { categoryId, date_time, image_base64, status, is_verified, ...rest } = updateEventDto;
     Object.assign(event, rest);
 
     if (date_time) {
@@ -188,6 +219,21 @@ export class EventService {
       }
       event.category = category;
     }
+    if (is_verified !== undefined) {
+      event.is_verified = is_verified;
+    }
+    if (status) {
+      console.log(status);
+      const allowedStatuses = Object.values(EventStatus);
+
+      if (!allowedStatuses.includes(status as EventStatus)) {
+        throw new BadRequestException(
+            `Invalid status`
+        );
+      }
+
+      event.status = status as EventStatus;
+    }
 
     return this.eventRepository.save(event);
   }
@@ -197,7 +243,7 @@ export class EventService {
       where: { id: Number(id) },
     });
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException("Event not found");
     }
 
     await this.eventRepository.softDelete(id);
@@ -219,17 +265,24 @@ export class EventService {
 
   async getEventDetailsById(eventId: number) {
     // Получаем мероприятие по его id
-    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
     if (!event) {
       throw new NotFoundException(`Мероприятие с id ${eventId} не найдено`);
     }
 
     // Получаем все заказы, связанные с данным мероприятием
     // Предполагается, что в Order есть связь с Event (например, через поле event)
-    const orders = await this.orderRepository.find({ where: { event: { id: eventId } } });
+    const orders = await this.orderRepository.find({
+      where: { event: { id: eventId } },
+    });
 
     // Подсчитываем общее количество проданных билетов
-    const ticketsSold = orders.reduce((sum, order) => sum + order.ticket_count, 0);
+    const ticketsSold = orders.reduce(
+      (sum, order) => sum + order.ticket_count,
+      0,
+    );
 
     // Рассчитываем оставшиеся билеты, если в мероприятии указано общее количество билетов (totalTickets)
     const ticketsRemaining = event.total_tickets - ticketsSold;
@@ -237,8 +290,8 @@ export class EventService {
     // Возвращаем информацию о мероприятии с дополнительными данными
     return {
       ...event, // данные мероприятия
-      ticketsSold,       // куплено билетов
-      ticketsRemaining,  // осталось билетов
+      ticketsSold, // куплено билетов
+      ticketsRemaining, // осталось билетов
       ordersCount: orders.length, // количество заказов
     };
   }
@@ -286,7 +339,7 @@ export class EventService {
     } = dto;
 
     if (image_base64 && !this.isBase64(image_base64)) {
-      throw new BadRequestException('Invalid base64 format for image');
+      throw new BadRequestException("Invalid base64 format for image");
     }
 
     const event = this.eventRepository.create({
@@ -313,20 +366,19 @@ export class EventService {
     return this.eventRepository.save(event);
   }
 
-
   async updateByOrganizer(id: number, dto: UpdateEventDto): Promise<Event> {
     const event = await this.eventRepository.findOne({
-      where: { id},
+      where: { id },
     });
 
     if (!event) {
-      throw new NotFoundException('Event not found or not owned by organizer');
+      throw new NotFoundException("Event not found or not owned by organizer");
     }
 
     const { categoryId, image_base64, date_time, ...rest } = dto;
 
     if (image_base64 && !this.isBase64(image_base64)) {
-      throw new BadRequestException('Invalid base64 format for image');
+      throw new BadRequestException("Invalid base64 format for image");
     }
 
     Object.assign(event, rest);
@@ -340,7 +392,9 @@ export class EventService {
     }
 
     if (categoryId) {
-      const category = await this.categoryRepository.findOne({ where: { id: Number(categoryId) } });
+      const category = await this.categoryRepository.findOne({
+        where: { id: Number(categoryId) },
+      });
       if (!category) {
         throw new NotFoundException(`Category with ID ${categoryId} not found`);
       }
@@ -357,11 +411,11 @@ export class EventService {
   async softRemoveByOrganizer(id: number): Promise<{ message: string }> {
     const event = await this.eventRepository.findOne({
       where: { id },
-      relations: ['reviews', 'orders'],
+      relations: ["reviews", "orders"],
     });
 
     if (!event) {
-      throw new NotFoundException('Событие не найдено');
+      throw new NotFoundException("Событие не найдено");
     }
 
     const hasReviews = event.reviews?.length > 0;
@@ -369,13 +423,16 @@ export class EventService {
 
     if (!hasReviews && !hasOrders) {
       await this.eventRepository.softDelete(id);
-      return { message: 'Событие было полностью удалено (без связанных данных).' };
+      return {
+        message: "Событие было полностью удалено (без связанных данных).",
+      };
     }
 
     await this.eventRepository.update(id, { status: EventStatus.INACTIVE });
 
     return {
-      message: 'Событие не может быть удалено из-за связанных данных (отзывы или заказы). Оно было помечено как неактивное.',
+      message:
+        "Событие не может быть удалено из-за связанных данных (отзывы или заказы). Оно было помечено как неактивное.",
     };
   }
 
@@ -398,5 +455,28 @@ export class EventService {
       .where("organizer.id = :userId", { userId: userId });
 
     return PaginationService.paginate(query, paginationDto);
+  }
+
+  async addEventToCalendar(eventId: number, user: User) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new Error("Событие не найдено");
+    }
+
+    const eventDto = {
+      summary: event.title || "Без названия",
+      description: event.description || "",
+      location: event.location || "",
+      startDateTime: event.date_time.toISOString(),
+      endDateTime: new Date(
+        event.date_time.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString(),
+      timeZone: "Asia/Bishkek",
+    };
+
+    return this.calendarService.createEvent(user.id, eventDto);
   }
 }

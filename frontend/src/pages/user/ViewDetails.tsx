@@ -1,22 +1,23 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAvailableTickets, createOrder } from "../../api/orderApi";
-import { EventType, fetchEventById } from "../../api/eventApi";
+import { addToCalendar, EventType, fetchEventById } from "../../api/eventApi";
 import { fetchPaginatedReviews, ReviewType } from "../../api/reviewApi";
 import Button from "../../UI/Button";
-import { useAuth } from "../../hooks/useAuth";
 import Modal from "../../components/Modal";
 import ReviewsSlider from "../../components/user/ReviewsSlider.tsx";
 import ReviewsSummary from "../../components/user/ReviewsSummary.tsx";
 import { Calendar, MapPin, DollarSign } from "lucide-react";
-import { fetchUserById, User } from "../../api/userApi.tsx";
 import SocialIntegration from "../../components/user/SocialIntegration.tsx";
+import { isUserBoughtTicket } from "../../api/eventGroupApi.tsx";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { getCurrentUser, User } from "../../api/userApi.tsx";
 
 const ViewDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
-  const isMounted = useRef(false); // Флаг для предотвращения двойного вызова
+  const authUser = useAuth();
+  const isMounted = useRef(false);
 
   const [eventState, setEventState] = useState({
     event: null as EventType | null,
@@ -34,7 +35,10 @@ const ViewDetails = () => {
     isLoading: false,
   });
 
+  const [isTicketBoughtAndIsSocial, setIsTicketBoughtAndIsSocial] =
+    useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isTicketBought, setIsTicketBought] = useState<boolean>(false);
 
   const fetchEventData = useCallback(async () => {
     try {
@@ -56,13 +60,15 @@ const ViewDetails = () => {
   }, [id]);
 
   const fetchReviewsData = useCallback(
-    async (page: number) => {
+    async (page: number, reset: boolean = false) => {
       setReviewsState((prev) => ({ ...prev, isLoading: true }));
       try {
         const reviewData = await fetchPaginatedReviews(page, 4, Number(id));
         setReviewsState((prev) => ({
           ...prev,
-          reviews: prev.reviews.concat(reviewData.data || []),
+          reviews: reset
+            ? reviewData.data || []
+            : prev.reviews.concat(reviewData.data || []),
           totalPages: reviewData.totalPages || 0,
           reviewPage: page,
           isLoading: false,
@@ -75,27 +81,63 @@ const ViewDetails = () => {
     [id],
   );
 
+  const handleReviewAdded = useCallback(() => {
+    setReviewsState((prev) => ({ ...prev, reviews: [], reviewPage: 1 }));
+    fetchReviewsData(1, true);
+  }, [fetchReviewsData]);
+
   useEffect(() => {
-    if (authUser) {
-      fetchUserById(authUser.sub)
-        .then(setUser)
-        .catch((err) => console.error("Error fetching user:", err));
+    if (authUser.user && id && !isNaN(Number(id))) {
+      getCurrentUser().then((data) => {
+        setUser(data);
+      });
     }
-  }, [authUser]);
+  }, [id, authUser.user]);
+
+  useEffect(() => {
+    if (user && id && !isNaN(Number(id))) {
+      isUserBoughtTicket(id)
+        .then((data) => {
+          setIsTicketBought(data);
+          setIsTicketBoughtAndIsSocial(data && user.is_social);
+        })
+        .catch((error) => {
+          console.error(`Error while getting data from api: ${error}`);
+        });
+    }
+  }, [user, id]);
 
   useEffect(() => {
     if (!isMounted.current) {
       fetchEventData();
-      fetchReviewsData(1); // Загружаем первую страницу только один раз
+      fetchReviewsData(1);
       isMounted.current = true;
     }
   }, [fetchEventData, fetchReviewsData]);
 
   const handleBookClick = () => {
-    if (!authUser) {
+    if (!authUser.user) {
       navigate("/login");
     } else {
       setEventState((prev) => ({ ...prev, ticketCount: 1, modalOpen: true }));
+    }
+  };
+
+  const handleAddToCalendar = async () => {
+    if (!authUser.user) {
+      navigate("/login"); // Если пользователь не авторизован, перенаправляем на логин
+      return;
+    }
+
+    try {
+      await addToCalendar(Number(id)); // Вызываем addToCalendar
+      alert("Event successfully added to Google Calendar!");
+    } catch (error: any) {
+      console.error("Error when adding to the calendar:", error);
+      alert(
+        error.response?.data?.message ||
+          "Couldn't add an event to the calendar. Make sure that you are logged in via Google.",
+      );
     }
   };
 
@@ -151,7 +193,7 @@ const ViewDetails = () => {
     <div className="max-w-6xl mx-auto px-6 py-8 bg-gray-100 rounded-lg">
       <div className="flex flex-col md:flex-row items-center gap-6">
         <img
-          src={eventState.event.image_base64}
+          src={eventState.event.image_base64 as string}
           alt={eventState.event.title}
           loading="lazy"
           className="w-full md:w-1/2 rounded-lg shadow-md object-cover"
@@ -178,13 +220,27 @@ const ViewDetails = () => {
               </p>
             </div>
           )}
-          <Button
-            text="Buy Now"
-            onClick={handleBookClick}
-            variant="solid"
-            className="mt-4"
+          <div className="flex gap-4 mt-4">
+            <Button
+              text="Buy Now"
+              onClick={handleBookClick}
+              variant="solid"
+              className=""
+            />
+            {isTicketBought && (
+              <Button
+                text="Add to Calendar"
+                onClick={handleAddToCalendar}
+                variant="outline"
+                className=""
+              />
+            )}
+          </div>
+          <ReviewsSummary
+            event_id={Number(id)}
+            reviews={reviewsState.reviews}
+            onReviewAdded={handleReviewAdded}
           />
-          <ReviewsSummary reviews={reviewsState.reviews} />
         </div>
       </div>
 
@@ -198,17 +254,21 @@ const ViewDetails = () => {
       <h2 className="mt-8 text-2xl text-center font-bold text-purple-500">
         Reviews
       </h2>
-      <ReviewsSlider
-        reviews={reviewsState.reviews}
-        onReachEnd={handleReachEnd}
-      />
+      {reviewsState.reviews.length > 0 ? (
+        <ReviewsSlider
+          reviews={reviewsState.reviews}
+          onReachEnd={handleReachEnd}
+        />
+      ) : (
+        <p className="text-center text-gray-500 mt-4">No reviews yet.</p>
+      )}
 
-      {user?.is_social && (
+      {isTicketBoughtAndIsSocial && (
         <div className="mt-8">
           <h2 className="mt-8 text-2xl text-center font-bold text-purple-500">
             Social Integration
           </h2>
-          <SocialIntegration eventId={Number(id)} user={user} />
+          <SocialIntegration eventId={Number(id)} />
         </div>
       )}
 

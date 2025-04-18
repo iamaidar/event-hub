@@ -16,6 +16,8 @@ type TicketData = {
                 date_time: string;
             };
         };
+        secret_code: string;
+
     };
 };
 
@@ -101,11 +103,14 @@ export default function QRVerification() {
                             {ticketStatus === "used" && <TicketStatusMessage status="used" />}
 
                             {ticketData && (
-                                <div className="text-left mt-4">
+                                <div className="text-left mt-4 space-y-2">
                                     <p><strong>User Email:</strong> {ticketData.ticket.order.user.email}</p>
                                     <p><strong>Event:</strong> {ticketData.ticket.order.event.title}</p>
                                     <p><strong>Date:</strong> {new Date(ticketData.ticket.order.event.date_time).toLocaleString()}</p>
                                     <p><strong>Status:</strong> {ticketData.ticket.is_used ? "Already used" : "Not yet used"}</p>
+                                    <p className="text-lg font-semibold text-blue-700 bg-blue-100 px-4 py-2 rounded">
+                                        Secret Code: {ticketData.ticket.secret_code}
+                                    </p>
                                 </div>
                             )}
 

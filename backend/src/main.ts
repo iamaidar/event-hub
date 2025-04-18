@@ -13,6 +13,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      transform: true,
     }),
   );
   app.use(
@@ -42,6 +43,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  app.use(bodyParser.json({ limit: '10mb' }));
 
   await app.listen(process.env.PORT ?? 3000);
 }
