@@ -11,20 +11,26 @@ import { User } from "../user/entities/user.entity";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { Ticket } from "../ticket/entities/ticket.entity";
 import { EmailService } from "src/email/email.service";
-import {EventStatus} from "../event/event-status.enum";
+import { EventStatus } from "../event/event-status.enum";
 
 @Injectable()
 export class OrderService {
+  getOrder(arg0: string) {
+    throw new Error("Method not implemented.");
+  }
+  updateOrderStatus(arg0: string, dto: { status: any }) {
+    throw new Error("Method not implemented.");
+  }
   constructor(
-      @InjectRepository(Order)
-      private readonly orderRepo: Repository<Order>,
-      @InjectRepository(Ticket)
-      private readonly ticketRepo: Repository<Ticket>,
-      @InjectRepository(Event)
-      private readonly eventRepo: Repository<Event>,
-      @InjectRepository(User)
-      private readonly userRepo: Repository<User>,
-      private readonly emailService: EmailService,
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepo: Repository<Ticket>,
+    @InjectRepository(Event)
+    private readonly eventRepo: Repository<Event>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+    private readonly emailService: EmailService,
   ) {}
 
   // Создание заказа
@@ -47,16 +53,18 @@ export class OrderService {
       }
 
       const soldTickets = await this.orderRepo
-          .createQueryBuilder("o")
-          .select("SUM(o.ticket_count)", "sum")
-          .where("o.event_id = :eventId", { eventId: event.id })
-          .andWhere("o.status IN (:...statuses)", { statuses: ["confirmed"] })
-          .getRawOne();
+        .createQueryBuilder("o")
+        .select("SUM(o.ticket_count)", "sum")
+        .where("o.event_id = :eventId", { eventId: event.id })
+        .andWhere("o.status IN (:...statuses)", { statuses: ["confirmed"] })
+        .getRawOne();
 
       const totalSold = Number(soldTickets.sum) || 0;
 
       if (totalSold + ticketCount > event.total_tickets) {
-        throw new BadRequestException("Not enough tickets available for this event");
+        throw new BadRequestException(
+          "Not enough tickets available for this event",
+        );
       }
 
       const totalAmount = event.price * ticketCount;
@@ -72,12 +80,14 @@ export class OrderService {
       return await this.orderRepo.save(order);
     } catch (error) {
       if (
-          error instanceof BadRequestException ||
-          error instanceof NotFoundException
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
       ) {
         throw error;
       }
-      throw new BadRequestException("An error occurred while creating the order");
+      throw new BadRequestException(
+        "An error occurred while creating the order",
+      );
     }
   }
 
@@ -114,9 +124,9 @@ export class OrderService {
     }));
 
     await this.emailService.sendTicketEmail(
-        order.user.email,
-        order.event.title,
-        ticketsWithQr,
+      order.user.email,
+      order.event.title,
+      ticketsWithQr,
     );
   }
 
@@ -141,8 +151,7 @@ export class OrderService {
         order,
         ticket_code: ticketCode,
         qr_code_data: qrData,
-        secret_code : this.generateFiveDigitCode()
-
+        secret_code: this.generateFiveDigitCode(),
       });
 
       tickets.push(ticket);

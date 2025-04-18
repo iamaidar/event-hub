@@ -33,7 +33,10 @@ export class EventService {
   ) {}
 
   // Получение всех событий с пагинацией
-  async findAllPaginated(paginationDto: PaginationDto,isAdmin:boolean=false): Promise<{
+  async findAllPaginated(
+    paginationDto: PaginationDto,
+    isAdmin: boolean = false,
+  ): Promise<{
     data: Event[];
     total: number;
     page: number;
@@ -42,13 +45,13 @@ export class EventService {
     nextPage: number | null;
   }> {
     const query = this.eventRepository
-        .createQueryBuilder('event')
-        .leftJoinAndSelect('event.category', 'category')
-        .leftJoin('event.organizer', 'organizer')
-        .addSelect(['organizer.id', 'organizer.username', 'organizer.email']);
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.category", "category")
+      .leftJoin("event.organizer", "organizer")
+      .addSelect(["organizer.id", "organizer.username", "organizer.email"]);
 
     if (!isAdmin) {
-      query.where('event.status = :published', {
+      query.where("event.status = :published", {
         published: EventStatus.PUBLISHED,
       });
     }
@@ -196,7 +199,14 @@ export class EventService {
     }
 
     // Деструктурируем поля, включая status и is_verified для администратора
-    const { categoryId, date_time, image_base64, status, is_verified, ...rest } = updateEventDto;
+    const {
+      categoryId,
+      date_time,
+      image_base64,
+      status,
+      is_verified,
+      ...rest
+    } = updateEventDto;
     Object.assign(event, rest);
 
     if (date_time) {
@@ -227,9 +237,7 @@ export class EventService {
       const allowedStatuses = Object.values(EventStatus);
 
       if (!allowedStatuses.includes(status as EventStatus)) {
-        throw new BadRequestException(
-            `Invalid status`
-        );
+        throw new BadRequestException(`Invalid status`);
       }
 
       event.status = status as EventStatus;
