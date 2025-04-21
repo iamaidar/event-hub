@@ -10,94 +10,93 @@ export default function OrganizerDashboardPage() {
   const [stats, setStats] = useState<OrganizerStatData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const authContext = useContext(AuthContext);
-  const user = authContext?.user;
+  const { user } = useContext(AuthContext) ?? {};
 
+  /* ------------------ DATA FETCH ------------------ */
   useEffect(() => {
-    const getStats = async () => {
+    (async () => {
       if (!user) {
         setError("Пользователь не авторизован");
         setLoading(false);
         return;
       }
-
       try {
-        const data = await fetchOrganizerStats(user.sub); // передаем ID организатора
-        console.log(data);
+        const data = await fetchOrganizerStats(user.sub);
         setStats(data);
-      } catch (err) {
+      } catch {
         setError("Ошибка загрузки данных");
-        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
+    })();
+  }, [user]);
 
-    getStats();
-  }, [user]); // добавляем `user` как зависимость, чтобы перезагружать при изменении пользователя
-
+  /* ------------------ RENDER STATES ------------------ */
   if (loading)
     return (
-      <div className="flex justify-center items-center h-64">
-        <p>Загрузка...</p>
-      </div>
+        <div className="flex items-center justify-center h-64">
+          <p>Загрузка...</p>
+        </div>
     );
-  if (error) return <p className="text-red-500 text-center mt-8">{error}</p>;
-  if (!stats)
-    return <p className="text-gray-500 text-center mt-8">Данные не найдены</p>;
 
-  // Защищаем от NaN
+  if (error)
+    return <p className="mt-8 text-center text-red-500">{error}</p>;
+
+  if (!stats)
+    return <p className="mt-8 text-center text-gray-500">Данные не найдены</p>;
+
+  /* ------------------ CHART DATA ------------------ */
   const eventsData = [
-    {
-      name: "Events without reviews",
-      value: stats?.eventsWithoutReviewsCount ?? 0,
-      color: "#8B5CF6",
-    },
-    {
-      name: "Events with reviews",
-      value: stats?.eventsCreated - stats?.eventsWithoutReviewsCount,
-      color: "#8B5CF6",
-    },
+    { name: "Events without reviews", value: stats.eventsWithoutReviewsCount, color: "#8B5CF6" },
+    { name: "Events with reviews",    value: stats.eventsCreated - stats.eventsWithoutReviewsCount, color: "#8B5CF6" },
   ];
 
   const ratingData = [
-    {
-      name: "Average rating",
-      value: stats?.averageReviewScore ?? 0,
-      color: "#9683EC",
-    },
-    {
-      name: "To the maximum",
-      value: 5 - (stats?.averageReviewScore ?? 0),
-      color: "#D1D5DB",
-    },
+    { name: "Average rating", value: stats.averageReviewScore, color: "#9683EC" },
+    { name: "To the maximum", value: 5 - stats.averageReviewScore, color: "#D1D5DB" },
   ];
 
-  return (
-    <div className="px-4 py-6 space-y-8 max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          title="Total events"
-          value={stats?.eventsCreated ?? 0}
-          backgroundColor="#ede9fe"
-        />
-        <StatCard
-          title="Total participants"
-          value={stats?.participantsCount ?? 0}
-          backgroundColor="#ddd6fe"
-        />
-        <ReviewsCard
-          averageRating={stats?.averageReviewScore ?? 0}
-          totalReviews={stats?.reviewsReceived ?? 0}
-          backgroundColor="#d6b1fa"
-        />
-      </div>
+  const orderStatusData = [
+    { name: "Pending",    value: stats.ordersPending,   color: "#c7d2fe" },
+    { name: "Confirmed",  value: stats.ordersConfirmed, color: "#a5b4fc" },
+    { name: "Cancelled",  value: stats.ordersCancelled, color: "#818cf8" },
+    { name: "Refunded",   value: stats.ordersRefunded,  color: "#6366f1" },
+  ];
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PieChart title="Total participants" data={eventsData} />
-        <PieChart data={ratingData} title="Organizer rating" />
-      </div>
-      <MonthlyTicketSalesChart />
-    </div>
+  /* ------------------ JSX ------------------ */
+  return (
+      <section className="mx-auto max-w-7xl px-4 py-6 space-y-8">
+        {/* --- TOP CARDS & ORDER STATUS PIE --- */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {/* 1‑я ячейка на больших экранах займёт 2 колонки, чтобы круговой график не был тесным */}
+          <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+            <PieChart title="Order statuses" data={orderStatusData} />
+          </div>
+
+          <StatCard title="Total events" value={stats.eventsCreated} backgroundColor="#ede9fe" />
+          <StatCard title="Total orders" value={stats.ordersTotal} backgroundColor="#e9d5ff" />
+          <StatCard
+              title="Revenue (KGS)"
+              value={stats.ordersTotalAmount.toLocaleString()}
+              backgroundColor="#d8b4fe"
+          />
+          <StatCard title="Tickets cancelled" value={stats.ticketsCancelled} backgroundColor="#c084fc" />
+          <StatCard title="Total participants" value={stats.participantsCount} backgroundColor="#ddd6fe" />
+          <ReviewsCard
+              averageRating={stats.averageReviewScore}
+              totalReviews={stats.reviewsReceived}
+              backgroundColor="#d6b1fa"
+          />
+        </div>
+
+        {/* --- SECOND ROW OF PIE CHARTS --- */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <PieChart title="Total participants" data={eventsData} />
+          <PieChart title="Organizer rating" data={ratingData} />
+        </div>
+
+        {/* --- BAR CHART --- */}
+        <MonthlyTicketSalesChart ticketSales={stats.monthlyTicketSales} />
+      </section>
   );
 }
