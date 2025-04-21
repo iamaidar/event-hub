@@ -54,3 +54,23 @@ export const getAvailableTickets = async (eventId: number): Promise<{
     return res.data.data;
 };
 
+export const deleteOrder = async (orderId: number, authToken: string) => {
+    try {
+        // Отправка DELETE запроса для удаления заказа
+        const response = await api.delete(`/orders/${orderId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        // Проверка успешности ответа
+        if (response.status === 200) {
+            return response.data; // Возвращаем данные о результате
+        } else {
+            throw new Error(`Failed to delete order. Status: ${response.status}`);
+        }
+    } catch (error) {
+        throw new Error('Failed to delete order');
+    }
+};

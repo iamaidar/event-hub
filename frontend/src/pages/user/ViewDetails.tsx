@@ -91,17 +91,21 @@ const ViewDetails = () => {
       getCurrentUser().then((data) => {
         setUser(data);
       });
+    }
+  }, [id, authUser.user]);
 
+  useEffect(() => {
+    if (user && id && !isNaN(Number(id))) {
       isUserBoughtTicket(id)
         .then((data) => {
           setIsTicketBought(data);
-          setIsTicketBoughtAndIsSocial(data && user?.is_social);
+          setIsTicketBoughtAndIsSocial(data && user.is_social);
         })
         .catch((error) => {
           console.error(`Error while getting data from api: ${error}`);
         });
     }
-  }, [id, authUser.user]);
+  }, [user, id]);
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -126,14 +130,13 @@ const ViewDetails = () => {
     }
 
     try {
-      const response = await addToCalendar(Number(id)); // Вызываем addToCalendar
-      alert("Событие успешно добавлено в Google Calendar!");
-      console.log("Создано событие:", response);
+      await addToCalendar(Number(id)); // Вызываем addToCalendar
+      alert("Event successfully added to Google Calendar!");
     } catch (error: any) {
-      console.error("Ошибка при добавлении в календарь:", error);
+      console.error("Error when adding to the calendar:", error);
       alert(
         error.response?.data?.message ||
-          "Не удалось добавить событие в календарь. Убедитесь, что вы авторизованы через Google.",
+          "Couldn't add an event to the calendar. Make sure that you are logged in via Google.",
       );
     }
   };
@@ -190,7 +193,7 @@ const ViewDetails = () => {
     <div className="max-w-6xl mx-auto px-6 py-8 bg-gray-100 rounded-lg">
       <div className="flex flex-col md:flex-row items-center gap-6">
         <img
-          src={eventState.event.image_base64 ?? "/placeholder.png"}
+          src={eventState.event.image_base64 as string}
           alt={eventState.event.title}
           loading="lazy"
           className="w-full md:w-1/2 rounded-lg shadow-md object-cover"
@@ -222,14 +225,14 @@ const ViewDetails = () => {
               text="Buy Now"
               onClick={handleBookClick}
               variant="solid"
-              className="flex-1"
+              className=""
             />
             {isTicketBought && (
               <Button
                 text="Add to Calendar"
                 onClick={handleAddToCalendar}
                 variant="outline"
-                className="flex-1"
+                className=""
               />
             )}
           </div>
@@ -251,10 +254,14 @@ const ViewDetails = () => {
       <h2 className="mt-8 text-2xl text-center font-bold text-purple-500">
         Reviews
       </h2>
-      <ReviewsSlider
-        reviews={reviewsState.reviews}
-        onReachEnd={handleReachEnd}
-      />
+      {reviewsState.reviews.length > 0 ? (
+        <ReviewsSlider
+          reviews={reviewsState.reviews}
+          onReachEnd={handleReachEnd}
+        />
+      ) : (
+        <p className="text-center text-gray-500 mt-4">No reviews yet.</p>
+      )}
 
       {isTicketBoughtAndIsSocial && (
         <div className="mt-8">

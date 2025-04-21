@@ -31,8 +31,8 @@ const CategoryCard = () => {
   return (
     <div className="mt-8 text-center">
       <div className="flex justify-between items-center px-6">
-        <h3 className="text-2xl font-bold">Просмотр По Категориям</h3>
-        <Button text="Посмотреть больше" to="/more" variant="outline" />
+        <h3 className="text-2xl font-bold">Browse By Category</h3>
+        <Button text="View more" to="/more" variant="outline" />
       </div>
 
       <div className="flex justify-center gap-6 mt-6">

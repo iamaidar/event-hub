@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ShoppingCart, Menu, X, User, Settings, Ticket, Users, LogOut, Tickets } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Ticket, Users, LogOut, Tickets } from "lucide-react";
 import "./Header.css";
 import Filter from "./homepage/Filter";
 
@@ -92,25 +92,19 @@ const Header = () => {
                           <p className="text-gray-500 text-sm">{authContext.user.email}</p>
                         </div>
                         <div className="py-2">
-                          <Link to="/user/profile" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
+                          <Link to="/user/profile/my-info" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
                             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                               <User className="text-purple-600 w-4 h-4" />
                             </div>
                             <span>My profile</span>
                           </Link>
-                          <Link to="/settings" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
-                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                              <Settings className="text-purple-600 w-4 h-4" />
-                            </div>
-                            <span>Settings</span>
-                          </Link>
-                          <Link to="/my-tickets" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
+                          <Link to="/user/profile/my-tickets" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
                             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                               <Tickets className="text-purple-600 w-4 h-4" />
                             </div>
                             <span>My tickets</span>
                           </Link>
-                          <Link to="/my-groups" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
+                          <Link to="/user/profile/my-groups" className="flex items-center px-4 py-3 hover:bg-gray-50" onClick={() => setIsProfileDropdownOpen(false)}>
                             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                               <Users className="text-purple-600 w-4 h-4" />
                             </div>
@@ -180,19 +174,15 @@ const Header = () => {
                     </div>
 
                     {/* Profile Links */}
-                    <Link to="/profile" className="flex items-center py-3 text-purple-600 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
+                    <Link to="/user/profile/my-info" className="flex items-center py-3 text-purple-600 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
                       <User className="w-5 h-5 mr-3" />
                       <span>My profile</span>
                     </Link>
-                    <Link to="/settings" className="flex items-center py-3 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
-                      <Settings className="w-5 h-5 mr-3" />
-                      <span>Settings</span>
-                    </Link>
-                    <Link to="/my-tickets" className="flex items-center py-3 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
+                    <Link to="/user/profile/my-tickets" className="flex items-center py-3 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
                       <Ticket className="w-5 h-5 mr-3" />
                       <span>My tickets</span>
                     </Link>
-                    <Link to="/my-groups" className="flex items-center py-3 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
+                    <Link to="/user/profile/my-groups" className="flex items-center py-3 hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
                       <Users className="w-5 h-5 mr-3" />
                       <span>My groups</span>
                     </Link>
