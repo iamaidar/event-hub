@@ -12,11 +12,20 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as mime from "mime-types";
 import { EventStatus } from "../event/event-status.enum";
+import {Stripe} from "stripe";
+import {Ticket} from "../ticket/entities/ticket.entity";
+import {Order} from "../order/entities/order.entity";
+const TICKET_PRICE_MIN = 1_000;
+const TICKET_PRICE_MAX = 3_000;                // верхний порог
+
+const ORDER_STATUSES = ['pending', 'confirmed', 'cancelled', 'refunded'] as const;
+
 
 @Injectable()
 export class SeedService {
   private defaultUserImageBase64: string;
   private defaultImageBase64: string;
+
 
   constructor(
     @InjectRepository(Category)
@@ -27,6 +36,10 @@ export class SeedService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepository: Repository<Ticket>,
   ) {}
 
   // Создаём одного тестового пользователя
@@ -115,7 +128,7 @@ export class SeedService {
         description: faker.lorem.paragraph(),
         date_time: faker.date.future(),
         location: faker.location.city(),
-        price: Number(faker.commerce.price({ min: 1000, max: 20000 })),
+        price: faker.number.int({ min: TICKET_PRICE_MIN, max: TICKET_PRICE_MAX }),
         total_tickets: faker.helpers.rangeToNumber({ min: 10, max: 200 }),
         status,
         is_verified,
@@ -131,6 +144,74 @@ export class SeedService {
 
     return events;
   }
+
+  private async seedTickets(
+      order: Order,
+      event: Event,
+      qty: number,
+  ) {
+    const tickets: Ticket[] = [];
+
+    for (let i = 0; i < qty; i++) {
+      const ticketCode = faker.string.alphanumeric({ length: 10, casing: 'upper' });
+      const secretCode = faker.string.numeric({ length: 5 });
+      const qrData = Buffer.from(`${ticketCode}:${event.id}`).toString('base64'); // демо‑QR
+
+      tickets.push(
+          this.ticketRepository.create({
+            order,
+            ticket_code: ticketCode,
+            qr_code_data: qrData,
+            secret_code: secretCode,
+            is_used: false,
+          }),
+      );
+    }
+
+    await this.ticketRepository.save(tickets);
+  }
+
+  // Создаём заказы с билетами
+  private async seedOrders(count = 100): Promise<Order[]> {
+    const orders: Order[] = [];
+    const buyer = await this.seedUser();                         // Test‑пользователь
+    const events = await this.eventRepository.find({
+      where: { status: EventStatus.PUBLISHED },
+    });
+    if (!events.length) await this.seedEvents();                 // safety net
+
+    for (let i = 0; i < count; i++) {
+      const event = faker.helpers.arrayElement(events);
+      if (event.total_tickets === 0) continue;
+
+      const ticketsQty = Math.min(
+          faker.number.int({ min: 1, max: 5 }),
+          event.total_tickets,
+      );
+
+      const order = this.orderRepository.create({
+        user: buyer,
+        event,
+        ticket_count: ticketsQty,
+        total_amount: Number((event.price * ticketsQty).toFixed(2)),
+        status: faker.helpers.arrayElement(ORDER_STATUSES),
+        stripe_payment_id: faker.string.uuid(),
+        createdAt: faker.date.recent({ days: 60 }),
+      });
+      await this.orderRepository.save(order);
+
+      // уменьшаем остаток билетов у события
+      event.total_tickets -= ticketsQty;
+      await this.eventRepository.save(event);
+
+      await this.seedTickets(order, event, ticketsQty);          // ← билеты
+
+      orders.push(order);
+    }
+    return orders;
+  }
+
+
 
   // Создаем отзывы для событий
   async seedReviews(count = 100): Promise<Review[]> {
@@ -160,6 +241,7 @@ export class SeedService {
     await this.seedCategories();
     await this.seedEvents();
     await this.seedReviews();
+    await this.seedOrders();
     return "Seeding completed";
   }
 
