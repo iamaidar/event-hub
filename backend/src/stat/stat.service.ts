@@ -5,6 +5,8 @@ import { Review } from "src/review/entities/review.entity";
 import { Event } from "src/event/entities/event.entity";
 import { User } from "src/user/entities/user.entity";
 import {EventStatus} from "../event/event-status.enum";
+import {OrganizerStatDto} from "./dto/ticket-sale.dto";
+import {Ticket} from "../ticket/entities/ticket.entity";
 
 @Injectable()
 export class StatService {
@@ -15,6 +17,8 @@ export class StatService {
       private readonly eventRepository: Repository<Event>,
       @InjectRepository(User)
       private readonly userRepository: Repository<User>,
+      @InjectRepository(Ticket)
+      private readonly ticketRepository: Repository<Ticket>
   ) {}
 
   async getAdminStats() {
@@ -114,7 +118,7 @@ export class StatService {
     };
   }
 
-  async getOrganizerStats(organizerId: string) {
+  async getOrganizerStats(organizerId: string): Promise<OrganizerStatDto> {
     const logger = new Logger("OrganizerStatLogger");
 
     try {
@@ -138,6 +142,7 @@ export class StatService {
           participantsCount: 0,
           averageReviewScore: 0,
           eventsWithoutReviewsCount: 0,
+          monthlyTicketSales:[]
         };
       }
 
@@ -147,10 +152,6 @@ export class StatService {
           .where("event.id IN (:...ids)", { ids: organizerEventIds })
           .getCount();
 
-      const participantsCount = organizerEvents.reduce(
-          (sum, event) => sum + (event["participants"] || 0),
-          0,
-      );
 
       const organizerReviews = await this.reviewRepository
           .createQueryBuilder("review")
@@ -170,6 +171,34 @@ export class StatService {
           .andWhere("event.id NOT IN (SELECT review.event_id FROM reviews review)")
           .getMany();
 
+      const rawSales = await this.ticketRepository
+          .createQueryBuilder('ticket')
+          // ticket -> order
+          .innerJoin('ticket.order', 'ord')
+          // order -> event
+          .innerJoin('ord.event', 'evt')
+          // event -> organizer
+          .innerJoin('evt.organizer', 'org')
+          .where('org.id = :organizerIdNumber', { organizerIdNumber })
+          .select("TO_CHAR(DATE_TRUNC('month', ord.created_at), 'YYYY-MM')", 'month')
+          .addSelect('COUNT(*)', 'ticketsSold')
+          .groupBy('month')
+          .orderBy('month', 'ASC')
+          .getRawMany<{ month: string; ticketsSold: string }>();
+
+      const monthlyTicketSales = rawSales.map(r => ({
+        month: r.month,
+        ticketsSold: Number(r.ticketsSold),
+      }));
+
+      const participantsCount = await this.ticketRepository
+          .createQueryBuilder('ticket')
+          .innerJoin('ticket.order', 'ord')
+          .innerJoin('ord.event', 'evt')
+          .innerJoin('evt.organizer', 'org')
+          .where('org.id = :organizerIdNumber', { organizerIdNumber })
+          .getCount();
+
       return {
         organizerId: organizerIdNumber,
         eventsCreated,
@@ -177,6 +206,7 @@ export class StatService {
         participantsCount,
         averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
         eventsWithoutReviewsCount: eventsWithoutReviews.length,
+        monthlyTicketSales
       };
     } catch (error) {
       logger.error(`Ошибка при получении статистики для организатора ID: ${organizerId}`, error);

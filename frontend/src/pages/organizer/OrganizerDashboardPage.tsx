@@ -97,7 +97,6 @@ export default function OrganizerDashboardPage() {
         <PieChart title="Total participants" data={eventsData} />
         <PieChart data={ratingData} title="Organizer rating" />
       </div>
-      <MonthlyTicketSalesChart />
-    </div>
+      <MonthlyTicketSalesChart ticketSales={stats.monthlyTicketSales ?? []} />    </div>
   );
 }
