@@ -6,7 +6,8 @@ import { Event } from "src/event/entities/event.entity";
 import { User } from "src/user/entities/user.entity";
 import {EventStatus} from "../event/event-status.enum";
 import {OrganizerStatDto} from "./dto/ticket-sale.dto";
-import {Ticket} from "../ticket/entities/ticket.entity";
+import { Ticket } from "../ticket/entities/ticket.entity";
+import { Order } from "src/order/entities/order.entity";
 
 @Injectable()
 export class StatService {
@@ -18,7 +19,9 @@ export class StatService {
       @InjectRepository(User)
       private readonly userRepository: Repository<User>,
       @InjectRepository(Ticket)
-      private readonly ticketRepository: Repository<Ticket>
+      private readonly ticketRepository: Repository<Ticket>,
+      @InjectRepository(Order)
+      private readonly orderRepository: Repository<Order>,
   ) {}
 
   async getAdminStats() {
@@ -142,7 +145,16 @@ export class StatService {
           participantsCount: 0,
           averageReviewScore: 0,
           eventsWithoutReviewsCount: 0,
-          monthlyTicketSales:[]
+          monthlyTicketSales: [],
+          ordersTotal: 0,
+          ordersPending: 0,
+          ordersConfirmed: 0,
+          ordersCancelled: 0,
+          ordersRefunded: 0,
+          ordersTotalAmount: 0,
+          ticketsTotal: 0,
+          ticketsCancelled: 0,
+          ticketsSold: 0,
         };
       }
 
@@ -199,6 +211,42 @@ export class StatService {
           .where('org.id = :organizerIdNumber', { organizerIdNumber })
           .getCount();
 
+      const ordersAgg = await this.orderRepository
+          .createQueryBuilder('ord')
+          .innerJoin('ord.event', 'evt')
+          .innerJoin('evt.organizer', 'org')
+          .where('org.id = :orgId', { orgId: organizerIdNumber })
+          .select('COUNT(*)', 'ordersTotal')
+          .addSelect(`SUM(ord.total_amount)`, 'ordersTotalAmount')
+          .addSelect(`SUM(CASE WHEN ord.status = 'pending'    THEN 1 ELSE 0 END)`, 'ordersPending')
+          .addSelect(`SUM(CASE WHEN ord.status = 'confirmed'  THEN 1 ELSE 0 END)`, 'ordersConfirmed')
+          .addSelect(`SUM(CASE WHEN ord.status = 'cancelled'  THEN 1 ELSE 0 END)`, 'ordersCancelled')
+          .addSelect(`SUM(CASE WHEN ord.status = 'refunded'   THEN 1 ELSE 0 END)`, 'ordersRefunded')
+          .getRawOne<{
+            ordersTotal: string;
+            ordersTotalAmount: string;
+            ordersPending: string;
+            ordersConfirmed: string;
+            ordersCancelled: string;
+            ordersRefunded: string;
+          }>();
+
+      const ticketsAgg = await this.ticketRepository
+          .createQueryBuilder('t')
+          .innerJoin('t.order', 'ord')
+          .innerJoin('ord.event', 'evt')
+          .innerJoin('evt.organizer', 'org')
+          .where('org.id = :orgId', { orgId: organizerIdNumber})
+          .select('COUNT(*)', 'ticketsTotal')
+          .addSelect(
+              `SUM(CASE WHEN ord.status IN ('cancelled','refunded') THEN 1 ELSE 0 END)`,
+              'ticketsCancelled',
+          )
+          .getRawOne<{ ticketsTotal: string; ticketsCancelled: string }>();
+
+      const ticketsTotal = Number(ticketsAgg?.ticketsTotal ?? '0');
+      const ticketsCancelled = Number(ticketsAgg?.ticketsCancelled ?? '0');
+      
       return {
         organizerId: organizerIdNumber,
         eventsCreated,
@@ -206,7 +254,17 @@ export class StatService {
         participantsCount,
         averageReviewScore: parseFloat(averageReviewScore.toFixed(2)),
         eventsWithoutReviewsCount: eventsWithoutReviews.length,
-        monthlyTicketSales
+        monthlyTicketSales,
+        ordersTotal: Number(ordersAgg?.ordersTotal ?? '0'),
+        ordersPending: Number(ordersAgg?.ordersPending ?? '0'),
+        ordersConfirmed: Number(ordersAgg?.ordersConfirmed ?? '0'),
+        ordersCancelled: Number(ordersAgg?.ordersCancelled ?? '0'),
+        ordersRefunded: Number(ordersAgg?.ordersRefunded ?? '0'),
+        ordersTotalAmount: Number(ordersAgg?.ordersTotalAmount ?? '0'),
+
+        ticketsTotal,
+        ticketsCancelled,
+        ticketsSold: ticketsTotal - ticketsCancelled,
       };
     } catch (error) {
       logger.error(`Ошибка при получении статистики для организатора ID: ${organizerId}`, error);

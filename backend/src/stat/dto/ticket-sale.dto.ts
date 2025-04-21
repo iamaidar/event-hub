@@ -10,5 +10,18 @@ export interface OrganizerStatDto {
   participantsCount: number;
   averageReviewScore: number;
   eventsWithoutReviewsCount: number;
-  monthlyTicketSales: TicketSaleDto[];   // ← новое поле
+  monthlyTicketSales: TicketSaleDto[];
+
+  // Заказы
+  ordersTotal: number;
+  ordersPending: number;
+  ordersConfirmed: number;
+  ordersCancelled: number;
+  ordersRefunded: number;
+  ordersTotalAmount: number;       // сумма всех заказов
+
+  // Билеты
+  ticketsTotal: number;
+  ticketsCancelled: number;
+  ticketsSold: number;             // ticketsTotal - ticketsCancelled
 }

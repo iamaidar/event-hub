@@ -33,7 +33,18 @@ export interface OrganizerStatData {
   participantsCount: number;
   averageReviewScore: number;
   eventsWithoutReviewsCount: number;
-  monthlyTicketSales: TicketSale[]
+  ordersTotal: number;
+  ordersPending: number;
+  ordersConfirmed: number;
+  ordersCancelled: number;
+  ordersRefunded: number;
+  ordersTotalAmount: number;
+
+  ticketsTotal: number;
+  ticketsCancelled: number;
+  ticketsSold: number;
+
+  monthlyTicketSales: TicketSale[];
 }
 
 
