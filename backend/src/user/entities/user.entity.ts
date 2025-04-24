@@ -52,8 +52,8 @@ export class User extends AppBaseEntity {
   refresh_token_hash?: string;
 
   @Column({ type: "text", nullable: true })
-  avatar_base64?: string;
+  avatar_base64?: string | null | undefined;
 
   @Column({ type: "varchar", length: 50, nullable: true })
-  avatar_mime_type?: string;
+  avatar_mime_type?: string | null | undefined;
 }

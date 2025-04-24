@@ -1,103 +1,159 @@
-import React, { useState } from 'react';
-
-type ProfileField = {
-    label: string;
-    key: keyof UserProfile;
-    placeholder?: string;
-};
+import React, { useEffect, useState } from 'react';
+import { getCurrentUser, updateUserProfile } from '../../../api/userApi';
 
 type UserProfile = {
-    name: string;
+    username: string;
+    firstname: string;
+    lastname: string;
     gender: string;
-    location: string;
     age: string;
+    email: string;
 };
 
-const fields: ProfileField[] = [
-    { label: 'Name', key: 'name' },
-    { label: 'Gender', key: 'gender', placeholder: 'Not provided' },
-    { label: 'Location', key: 'location', placeholder: 'Your location' },
-    { label: 'Age', key: 'age', placeholder: 'Your age' },
-];
-
 const MyProfilePage: React.FC = () => {
-    const [profile, setProfile] = useState<UserProfile>({
-        name: 'Nurkyz',
-        gender: '',
-        location: '',
-        age: '',
-    });
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [editingField, setEditingField] = useState<keyof UserProfile | null>(null);
+    const [editValue, setEditValue] = useState<string>('');
 
-    const [editingKey, setEditingKey] = useState<keyof UserProfile | null>(null);
-    const [tempValue, setTempValue] = useState<string>('');
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const user = await getCurrentUser();
+                const data: UserProfile = {
+                    username: user.username || '',
+                    firstname: user.firstname || '',
+                    lastname: user.lastname || '',
+                    gender: user.gender || '',
+                    age: user.age ? String(user.age) : '',
+                    email: user.email || '',
+                };
+                setProfile(data);
+            } catch (error) {
+                console.error('Ошибка при получении данных пользователя:', error);
+            }
+        };
 
-    const handleEdit = (key: keyof UserProfile) => {
-        setEditingKey(key);
-        setTempValue(profile[key] || '');
-    };
+        fetchUser();
+    }, []);
 
-    const handleSave = () => {
-        if (editingKey) {
-            setProfile({ ...profile, [editingKey]: tempValue });
-            setEditingKey(null);
-        }
+    const handleEditClick = (field: keyof UserProfile) => {
+        setEditingField(field);
+        setEditValue(profile?.[field] || '');
     };
 
     const handleCancel = () => {
-        setEditingKey(null);
-        setTempValue('');
+        setEditingField(null);
+        setEditValue('');
     };
 
+    const handleSave = async () => {
+        if (!profile || !editingField) return;
+
+        const updatedProfile = { ...profile, [editingField]: editValue };
+
+        try {
+            await updateUserProfile({
+                ...updatedProfile,
+                age: Number(updatedProfile.age),
+            });
+            setProfile(updatedProfile);
+            setEditingField(null);
+        } catch (error) {
+            console.error('Ошибка при сохранении:', error);
+        }
+    };
+
+    if (!profile) return <p className="text-center mt-10">Загрузка...</p>;
+
+    const fields: { label: string; key: keyof UserProfile }[] = [
+        { label: 'Username', key: 'username' },
+        { label: 'First Name', key: 'firstname' },
+        { label: 'Last Name', key: 'lastname' },
+        { label: 'Gender', key: 'gender' },
+        { label: 'Age', key: 'age' },
+        { label: 'Email', key: 'email' },
+    ];
+
     return (
-        <div className="bg-white rounded-lg p-6 shadow-sm max-w-2xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-6">Basic Info</h2>
+        <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto ">
+            <h2 className="text-2xl font-semibold mb-4 ">My Details</h2>
 
-            <ul className="space-y-6">
-                {fields.map(({ label, key, placeholder }) => (
-                    <li key={key} className="border-b pb-4">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-sm text-gray-500">{label}</p>
-                                {editingKey === key ? (
-                                    <textarea
-                                        value={tempValue}
-                                        onChange={(e) => setTempValue(e.target.value)}
-                                        className="mt-1 w-full border rounded px-3 py-2 text-sm resize-none"
-                                    />
-                                ) : (
-                                    <p className="text-gray-800 mt-1 text-base">
-                                        {profile[key] || placeholder || 'Not provided'}
-                                    </p>
-                                )}
-                            </div>
+            <div className="space-y-6">
+                {fields.map(({ label, key }) => (
+                    <div key={key} className="border-b pb-4 flex justify-between items-center">
+                        <div className="w-full">
+                            <p className="text-sm text-gray-500">{label}</p>
+                            {editingField === key ? (
+                                <>
+                                    {key === 'gender' ? (
+                                        <select
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            className="mt-1 border border-gray-300 rounded px-3 py-1"
+                                        >
+                                            <option value="">Select gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    ) : key === 'age' ? (
+                                        <div className="flex items-center mt-1 space-x-2">
+                                            <button
+                                                onClick={() => setEditValue((prev) => String(Math.max(0, Number(prev) - 1)))}
+                                                className="px-2 py-1 bg-gray-200 rounded"
+                                            >−</button>
+                                            <input
+                                                type="number"
+                                                value={editValue}
+                                                onChange={(e) => setEditValue(e.target.value)}
+                                                className="w-16 text-center px-2 py-1 border rounded"
+                                            />
+                                            <button
+                                                onClick={() => setEditValue((prev) => String(Number(prev) + 1))}
+                                                className="px-2 py-1 bg-gray-200 rounded"
+                                            >+</button>
+                                        </div>
+                                    ) : (
+                                        <input
+                                            type={key === 'email' ? 'email' : 'text'}
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            className="mt-1 text-md text-gray-700 border-b border-gray-300 focus:outline-none focus:border-purple-500 w-full"
+                                        />
+                                    )}
 
-                            {editingKey === key ? (
-                                <div className="flex flex-col gap-1 mt-1">
-                                    <button
-                                        onClick={handleSave}
-                                        className="text-green-600 hover:underline text-sm"
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={handleCancel}
-                                        className="text-gray-500 hover:underline text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
+                                    <div className="mt-2 space-x-3">
+                                        <button
+                                            onClick={handleSave}
+                                            className="text-sm text-white bg-purple-500 px-3 py-1 rounded"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            onClick={handleCancel}
+                                            className="text-sm text-gray-600 hover:underline"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </>
                             ) : (
-                                <button
-                                    onClick={() => handleEdit(key)}
-                                    className="text-blue-600 hover:underline text-sm mt-1"
-                                >
-                                    Edit
-                                </button>
+                                <p className="text-md text-gray-800 mt-1">
+                                    {profile[key] || 'Not provided'}
+                                </p>
                             )}
                         </div>
-                    </li>
+
+                        {editingField !== key && (
+                            <button
+                                onClick={() => handleEditClick(key)}
+                                className="text-sm text-purple-600 hover:underline ml-4"
+                            >
+                                Edit
+                            </button>
+                        )}
+                    </div>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 };

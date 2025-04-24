@@ -159,4 +159,21 @@ export class UserService {
     const user = await this.findOne(id);
     await this.userRepository.remove(user);
   }
+
+  async deleteAvatar(userId: string): Promise<void> {
+    const userIdNumber = Number(userId);
+    if (isNaN(userIdNumber)) {
+      throw new Error('Invalid user ID');
+    }
+    const user = await this.userRepository.findOne({
+      where: { id: userIdNumber },
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.avatar_base64 = null;
+    user.avatar_mime_type = null;
+
+    await this.userRepository.save(user);
+  }
 }
