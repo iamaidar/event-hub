@@ -85,3 +85,17 @@ export const joinToGroup = async (eventGroupId: string | number) => {
 
   return response.data.data;
 };
+
+export const isUserInAnyGroupByEventId = async (eventId: string | number) => {
+  const response = await api.get(
+    `/event-group/user-in-group-by-event-id/${eventId}`,
+  );
+
+  return response.data.data;
+};
+
+export const getUserGroups = async (eventId: string | number) => {
+  const response = await api.get(`/event-group/user-groups/${eventId}`);
+
+  return response.data.data;
+};

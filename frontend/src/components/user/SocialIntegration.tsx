@@ -12,9 +12,13 @@ import { toast } from "react-toastify";
 
 interface SocialIntegrationProps {
   eventId: number;
+  userId: number;
 }
 
-const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
+const SocialIntegration: React.FC<SocialIntegrationProps> = ({
+  eventId,
+  userId,
+}) => {
   const isMounted = useRef(false);
 
   const [eventGroupsState, setEventGroupsState] = useState({
@@ -23,7 +27,6 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
     totalPages: 0,
     isLoading: false,
   });
-
   const [modalOpen, setModalOpen] = useState(false);
   const [newGroup, setNewGroup] = useState({
     title: "",
@@ -149,6 +152,8 @@ const SocialIntegration: React.FC<SocialIntegrationProps> = ({ eventId }) => {
             eventGroups={eventGroupsState.eventGroups}
             onReachEnd={handleReachEnd}
             onJoinNow={handleJoin}
+            eventId={eventId}
+            userId={userId}
           />
           {eventGroupsState.isLoading && (
             <p className="text-center text-gray-500 mt-4">

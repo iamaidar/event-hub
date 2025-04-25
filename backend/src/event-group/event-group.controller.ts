@@ -25,6 +25,19 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 export class EventGroupController {
   constructor(private readonly eventGroupService: EventGroupService) {}
 
+  @Get("user-groups/:id")
+  getUserGroups(@Param("id", ParseIntPipe) eventId: number, @Req() req: any) {
+    return this.eventGroupService.getUsersGroups(eventId, req.user.id);
+  }
+
+  @Get("user-in-group-by-event-id/:id")
+  isUserInGroupByEventId(
+    @Param("id", ParseIntPipe) id: number,
+    @Req() req: any,
+  ) {
+    return this.eventGroupService.isUserInAnyGroupByEventId(id, req.user.id);
+  }
+
   @Post("join/:id")
   joinToGroup(@Param("id", ParseIntPipe) id: number, @Req() req: any) {
     return this.eventGroupService.joinToGroup(id, req.user);

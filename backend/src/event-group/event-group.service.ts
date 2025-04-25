@@ -17,6 +17,7 @@ import { GroupMember } from "src/group-member/entities/group-member.entity";
 import { PaginationService } from "src/common/services/pagination.service";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { Order } from "src/order/entities/order.entity";
+import { group } from "console";
 
 @Injectable()
 export class EventGroupService {
@@ -298,7 +299,15 @@ export class EventGroupService {
         relations: ["group", "group.event"],
       });
 
-      return !!groupMember;
+      console.log({
+        result: !!groupMember,
+        groupId: groupMember?.group.id,
+      });
+
+      return {
+        result: !!groupMember,
+        groupId: groupMember?.group.id,
+      };
     } catch (error) {
       console.error("Error in isUserInAnyGroupByEventId:", {
         message: error.message,
@@ -310,5 +319,19 @@ export class EventGroupService {
         "Failed to check group membership",
       );
     }
+  }
+
+  async getUsersGroups(eventId: number, userId: number) {
+    let members = await this.groupMemberRepository.find({
+      where: {
+        user: { id: userId },
+        group: { id: eventId },
+      },
+      relations: ["user", "group"],
+    });
+
+    const groups = members.map((g) => g.group);
+
+    return groups;
   }
 }
