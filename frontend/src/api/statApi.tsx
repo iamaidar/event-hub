@@ -21,6 +21,10 @@ export interface StatData {
   totalEvents: number;
   unverifiedEvents: number;
 }
+export interface TicketSale {
+  month: string;      // например "2025‑04"
+  ticketsSold: number;
+}
 
 export interface OrganizerStatData {
   organizerId: string;
@@ -29,37 +33,28 @@ export interface OrganizerStatData {
   participantsCount: number;
   averageReviewScore: number;
   eventsWithoutReviewsCount: number;
+  ordersTotal: number;
+  ordersPending: number;
+  ordersConfirmed: number;
+  ordersCancelled: number;
+  ordersRefunded: number;
+  ordersTotalAmount: number;
+
+  ticketsTotal: number;
+  ticketsCancelled: number;
+  ticketsSold: number;
+
+  monthlyTicketSales: TicketSale[];
 }
 
-// export interface OrganizerStatData {
-//     organizerId: string;
-//     eventsCreated: number;
-//     reviewsReceived: number;
-//     participantsCount: number;
-//     averageReviewScore: number;
-//     eventsWithParticipants?: number;
-//     positiveReviewsCount?: number;
-//     neutralReviewsCount?: number;
-//     negativeReviewsCount?: number;
-//     recentReviews?: Array<{
-//         id: number;
-//         eventName: string;
-//         rating: number;
-//         comment: string;
-//         createdAt: string;
-//     }>;
-// }
+
 
 export const fetchAdminStats = async (): Promise<StatData> => {
   const response = await api.get<{ data: StatData }>("/stat/admin"); // Указываем правильный тип
   console.log("Ответ сервера:", response.data); // Проверяем, что приходит от API
   return response.data.data; // Берём `data` из `response.data`
 };
-// export const fetchOrganizerStats = async (): Promise<OrganizerStatData> => {
-//     const response = await api.get<{ data: OrganizerStatData }>("/stat/organizer");
-//     console.log("Ответ сервера:", response.data);
-//      return response.data.data;
-//  };
+
 
 export const fetchOrganizerStats = async (
   organizerId: number,

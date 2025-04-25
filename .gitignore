@@ -2,3 +2,4 @@
 /db
 docker-compose.db.yml
 .prettierrc
+docker-compose.prod.yml
