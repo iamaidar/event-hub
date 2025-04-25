@@ -12,6 +12,7 @@ import SocialIntegration from "../../components/user/SocialIntegration.tsx";
 import { isUserBoughtTicket } from "../../api/eventGroupApi.tsx";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { getCurrentUser, User } from "../../api/userApi.tsx";
+import { toast } from "react-toastify";
 
 const ViewDetails = () => {
   const { id } = useParams();
@@ -131,19 +132,22 @@ const ViewDetails = () => {
 
     try {
       await addToCalendar(Number(id)); // Вызываем addToCalendar
-      alert("Event successfully added to Google Calendar!");
+      toast.success("Event successfully added to Google Calendar!", {
+        autoClose: 3000,
+      });
     } catch (error: any) {
       console.error("Error when adding to the calendar:", error);
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Couldn't add an event to the calendar. Make sure that you are logged in via Google.",
+        { autoClose: 3000 },
       );
     }
   };
 
   const handleOrderSubmit = async () => {
     if (eventState.ticketCount > (eventState.availableTickets || 0)) {
-      alert("Not enough tickets available.");
+      toast.warning("Not enough tickets available.", { autoClose: 3000 });
       return;
     }
     try {
@@ -268,7 +272,10 @@ const ViewDetails = () => {
           <h2 className="mt-8 text-2xl text-center font-bold text-purple-500">
             Social Integration
           </h2>
-          <SocialIntegration eventId={Number(id)} />
+          <SocialIntegration
+            eventId={Number(id)}
+            userId={Number(authUser.user?.sub)}
+          />
         </div>
       )}
 

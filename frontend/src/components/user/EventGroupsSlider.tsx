@@ -1,21 +1,40 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
-import { EventGroupType } from "../../api/eventGroupApi";
+import {
+  EventGroupType,
+  isUserInAnyGroupByEventId,
+} from "../../api/eventGroupApi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Button from "../../UI/Button";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface EventGroupsSliderProps {
   eventGroups: EventGroupType[];
   onReachEnd: () => void;
   onJoinNow: (id: number | string) => Promise<void>;
+  eventId: string | number;
+  userId: number;
 }
 
 const EventGroupsSlider: React.FC<EventGroupsSliderProps> = ({
   eventGroups,
   onReachEnd,
   onJoinNow,
+  eventId,
 }) => {
+  const [isUserInAnyGroup, setIsUserInAnyGroup] = useState<{
+    result: boolean;
+    groupId: string | number | null;
+  }>({ result: false, groupId: null });
+
+  const navigate = useNavigate();
+
+  const handleChatClick = (groupId: number | string) => {
+    navigate(`/user/user/chat/${groupId}`);
+  };
+
   const getRequirementsText = (group: EventGroupType): string => {
     const { genderRequirement, minAge, maxAge } = group;
     const requirements: string[] = [];
@@ -36,6 +55,12 @@ const EventGroupsSlider: React.FC<EventGroupsSliderProps> = ({
       ? requirements.join(", ")
       : "No requirements";
   };
+
+  useEffect(() => {
+    isUserInAnyGroupByEventId(eventId).then((data) => {
+      setIsUserInAnyGroup(data);
+    });
+  }, []);
 
   return (
     <div className="relative max-w-7xl mx-auto px-16 mt-4">
@@ -85,12 +110,24 @@ const EventGroupsSlider: React.FC<EventGroupsSliderProps> = ({
                   </span>
                 </p>
                 <div className="flex justify-end">
-                  <Button
-                    text="Join Now"
-                    variant="solid"
-                    className="text-xs px-3 py-1"
-                    onClick={() => onJoinNow(group.id)}
-                  />
+                  {!isUserInAnyGroup.result && (
+                    <Button
+                      text="Join Now"
+                      variant="solid"
+                      className="text-xs px-3 py-1"
+                      onClick={() => onJoinNow(group.id)}
+                    />
+                  )}
+
+                  {isUserInAnyGroup.result &&
+                    isUserInAnyGroup.groupId === group.id && (
+                      <Button
+                        text="Chat now"
+                        variant="solid"
+                        className="text-xs px-3 py-1"
+                        onClick={() => handleChatClick(group.id)}
+                      />
+                    )}
                 </div>
               </div>
             </div>

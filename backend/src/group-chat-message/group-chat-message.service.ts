@@ -1,26 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreateGroupChatMessageDto } from './dto/create-group-chat-message.dto';
-import { UpdateGroupChatMessageDto } from './dto/update-group-chat-message.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateGroupChatMessageDto } from "./dto/create-group-chat-message.dto";
+import { UpdateGroupChatMessageDto } from "./dto/update-group-chat-message.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { EventGroup } from "src/event-group/entities/event-group.entity";
+import { User } from "src/user/entities/user.entity";
+import { Repository } from "typeorm";
+import { GroupChatMessage } from "./entities/group-chat-message.entity";
 
 @Injectable()
 export class GroupChatMessageService {
-  create(createGroupChatMessageDto: CreateGroupChatMessageDto) {
-    return 'This action adds a new groupChatMessage';
+  constructor(
+    @InjectRepository(GroupChatMessage)
+    private readonly chatRepo: Repository<GroupChatMessage>,
+
+    @InjectRepository(EventGroup)
+    private readonly groupRepo: Repository<EventGroup>,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+  ) {}
+
+  async createMessage(
+    dto: CreateGroupChatMessageDto,
+  ): Promise<GroupChatMessage> {
+    const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
+
+    if (!group) throw new NotFoundException("Group not found");
+    if (!user) throw new NotFoundException("User not found");
+
+    const message = this.chatRepo.create({ group, user, message: dto.message });
+    return this.chatRepo.save(message);
   }
 
-  findAll() {
-    return `This action returns all groupChatMessage`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} groupChatMessage`;
-  }
-
-  update(id: number, updateGroupChatMessageDto: UpdateGroupChatMessageDto) {
-    return `This action updates a #${id} groupChatMessage`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} groupChatMessage`;
+  async getMessages(groupId: number): Promise<GroupChatMessage[]> {
+    return this.chatRepo.find({
+      where: { group: { id: groupId } },
+      relations: ["user"],
+      order: { createdAt: "ASC" },
+    });
   }
 }
