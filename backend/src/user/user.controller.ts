@@ -29,6 +29,18 @@ export class UserController {
     return this.userService.getCurrentUser(req);
   }
 
+  @Patch('update-me')
+  updateCurrentUser(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user.id;
+    return this.userService.update(userId, updateUserDto);
+  }
+  @Delete('delete-avatar')
+  async deleteAvatar(@Req() req: any) {
+    const userId = req.user.id;
+    await this.userService.deleteAvatar(userId);
+    return { message: 'Avatar deleted successfully' };
+  }
+
   @Roles("admin")
   @Get("filter")
   filterUsersPaginated(

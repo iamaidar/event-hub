@@ -81,3 +81,13 @@ export const getCurrentUser = async () => {
 
   return response.data.data;
 };
+export const updateUserProfile = async (
+    user: Partial<Omit<User, "id" | "role" | "createdAt" | "updatedAt" | "is_active" | "is_social">>
+): Promise<User> => {
+  const response = await api.patch("/users/update-me", user);
+  return response.data.data;
+};
+export const deleteAvatar = async (): Promise<void> => {
+  const response = await api.delete("/users/delete-avatar");
+  console.log(response.data.message);
+};

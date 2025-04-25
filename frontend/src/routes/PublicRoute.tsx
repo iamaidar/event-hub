@@ -14,9 +14,9 @@ const getRedirectPath = (role: string): string => {
         case "organizer":
             return "/organizer";
         case "user":
-            return "/user/dashboard";
+            return "/user/Home";
         default:
-            return "/dashboard";
+            return "/Home";
     }
 };
 

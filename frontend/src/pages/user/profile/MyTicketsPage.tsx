@@ -24,7 +24,7 @@ const MyTicketsPage: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h1 className="text-2xl font-semibold mb-6">My Tickets</h1>
+            <h1 className="text-2xl font-semibold mb-4">My Tickets</h1>
 
             {error && <div className="mb-4 text-red-600 font-medium">{error}</div>}
 
