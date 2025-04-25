@@ -12,7 +12,7 @@ export default function ProfilePage() {
                 const res = await getCurrentUser();
                 setUser(res);
             } catch (err) {
-                console.error('Ошибка при получении пользователя', err);
+                console.error('Error fetching user', err);
             }
         };
         fetchUser();
@@ -32,7 +32,7 @@ export default function ProfilePage() {
                         });
                         setUser(updated);
                     } catch (err) {
-                        console.error('Ошибка при обновлении аватара', err);
+                        console.error('Error updating avatar', err);
                     }
                 }
             };
@@ -48,10 +48,10 @@ export default function ProfilePage() {
                 avatar_base64: null,
                 avatar_mime_type: null,
             }));
-            alert('Аватар успешно удалён');
+            alert('Avatar deleted successfully');
         } catch (err) {
-            console.error('Ошибка при удалении аватара', err);
-            alert('Произошла ошибка при удалении аватара');
+            console.error('Error deleting avatar', err);
+            alert('Failed to delete avatar');
         }
     };
 

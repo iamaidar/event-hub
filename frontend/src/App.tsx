@@ -43,7 +43,6 @@ import ReviewList from "./pages/admin/review/ReviewList.tsx";
 import Home from "./pages/Home";
 import SearchResults from "./pages/SearchResults";
 import OrganizerRoutes from "./routes/OrganizerRoutes";
-import Dashboard from "./pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout.tsx";
 import QRVerification from "./pages/organizer/ QRVerification.tsx";
 import MyGroupsPage from "./pages/user/profile/MuGroupPage.tsx";
@@ -51,6 +50,7 @@ import MyProfilePage from "./pages/user/profile/MyProfilePage.tsx";
 import MyTicketsPage from "./pages/user/profile/MyTicketsPage.tsx";
 import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 import GroupChat from "./components/user/GroupChat.tsx";
+import AboutUsPage from "./pages/AboutUsPage.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -104,7 +104,6 @@ const AppContent = () => {
             element={
               <PrivateRoute requiredRoles={["user"]}>
                 <Routes>
-                  <Route path="dashboard" element={<Dashboard />} />
                   <Route path="orders/my" element={<OrderPage />} />
                   <Route path="payment-success" element={<PaymentSuccess />} />
                   <Route path="profile" element={<ProfilePage />}>
@@ -139,13 +138,14 @@ const AppContent = () => {
                   <Route path="/home" element={<Home />} />
                   <Route path="/events" element={<SearchResults />} />
                   <Route path="/details/:id" element={<ViewDetails />} />
+                  <Route path="/about" element={<AboutUsPage />} />
+
                   {/* User Routes */}
                   <Route
                     path="/user/*"
                     element={
                       <PrivateRoute requiredRoles={["user"]}>
                         <Routes>
-                          <Route path="dashboard" element={<Dashboard />} />
                           <Route path="orders/my" element={<OrderPage />} />
                           <Route
                             path="payment-success"
