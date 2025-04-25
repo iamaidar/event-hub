@@ -50,7 +50,7 @@ import MyGroupsPage from "./pages/user/profile/MuGroupPage.tsx";
 import MyProfilePage from "./pages/user/profile/MyProfilePage.tsx";
 import MyTicketsPage from "./pages/user/profile/MyTicketsPage.tsx";
 import ProfilePage from "./components/homepage/ ProfilePage.tsx";
-
+import GroupChat from "./components/user/GroupChat.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -107,12 +107,13 @@ const AppContent = () => {
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="orders/my" element={<OrderPage />} />
                   <Route path="payment-success" element={<PaymentSuccess />} />
-                    <Route path="profile" element={<ProfilePage />}>
-                        <Route index element={<Navigate to="my-info" replace />} />
-                        <Route path="my-info" element={<MyProfilePage />} />
-                        <Route path="my-tickets" element={<MyTicketsPage />} />
-                        <Route path="my-groups" element={<MyGroupsPage />} />
-                    </Route>                  <Route
+                  <Route path="profile" element={<ProfilePage />}>
+                    <Route index element={<Navigate to="my-info" replace />} />
+                    <Route path="my-info" element={<MyProfilePage />} />
+                    <Route path="my-tickets" element={<MyTicketsPage />} />
+                    <Route path="my-groups" element={<MyGroupsPage />} />
+                  </Route>{" "}
+                  <Route
                     path="payment-cancel"
                     element={<p>❌ Payment is not completed</p>}
                   />
@@ -156,11 +157,14 @@ const AppContent = () => {
                             path="payment-cancel"
                             element={<p>❌ Payment is not completed</p>}
                           />
+                          <Route
+                            path="chat/:id"
+                            element={<GroupChat />}
+                          ></Route>
                         </Routes>
                       </PrivateRoute>
                     }
                   />
-
                   {/* Admin Layout Routes */}
                   <Route
                     path="/admin/*"
@@ -194,7 +198,6 @@ const AppContent = () => {
                     <Route path="users/edit/:id" element={<UserEdit />} />
                     <Route path="users/:id" element={<UserDetail />} />
                   </Route>
-
                   {/* Organizer Layout Routes */}
                   <Route
                     path="/organizer/*"
@@ -207,10 +210,8 @@ const AppContent = () => {
                     {OrganizerRoutes()}{" "}
                     {/* ⬅ вызываем как функцию, не компонент */}
                   </Route>
-
                   {/* Fallback */}
                   <Route path="*" element={<Navigate to="/login" replace />} />
-
                   <Route
                     path="/t/:id"
                     element={
