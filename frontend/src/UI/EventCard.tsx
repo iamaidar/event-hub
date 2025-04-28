@@ -10,7 +10,7 @@ export interface EventCardProps {
   date_time: string;
   title: string;
   location: string;
-  image_base64: string;
+  image_base64?: string | null;
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -82,7 +82,7 @@ const EventCard: React.FC<EventCardProps> = ({
       <div className="flex flex-col bg-white shadow-md rounded-lg p-4 mb-4">
         <div className="flex items-center">
           <img
-              src={image_base64}
+              src={image_base64 || "https://via.placeholder.com/50"}
               alt={title}
               className="w-20 h-20 rounded-md mr-4"
           />

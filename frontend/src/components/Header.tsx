@@ -15,10 +15,12 @@ const Header = () => {
 
   // Загрузка полного профиля (с аватаром) при монтировании
   useEffect(() => {
-    getCurrentUser()
-        .then((u) => setProfile(u))
-        .catch((err) => console.error("Ошибка при getCurrentUser:", err));
-  }, []);
+    if (authContext?.user) {
+      getCurrentUser()
+          .then((u) => setProfile(u))
+          .catch((err) => console.error("Ошибка при getCurrentUser:", err));
+    }
+  }, [authContext?.user]);
 
   // Закрыть дропдаун при клике вне его
   useEffect(() => {

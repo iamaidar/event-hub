@@ -51,6 +51,7 @@ export class CategoryController {
 
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Получить категорию по ID' })
   @ApiResponse({ status: 200, description: 'Детали категории.' })
   findOne(@Param('id') id: string) {
