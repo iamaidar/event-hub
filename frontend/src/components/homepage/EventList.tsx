@@ -14,7 +14,7 @@ const EventList: React.FC<EventListProps> = ({ initialEvents = [], title }) => {
             <h3 className="text-2xl font-bold text-center">{title}</h3>
             <div className="mt-4">
                 {events.map((event, index) => (
-                    <EventCard key={index} {...event} />
+                <EventCard key={index} {...event} />
                 ))}
             </div>
         </section>

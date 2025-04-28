@@ -65,6 +65,8 @@ const CategoryEventsPage: React.FC = () => {
                         location={event.location}
                         date_time={event.date_time}
                         image_base64={event.image_base64}
+                        category={event.category}
+                        price={String(event.price)}
                     />
                 ))}
             </div>
