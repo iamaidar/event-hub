@@ -51,6 +51,7 @@ import MyTicketsPage from "./pages/user/profile/MyTicketsPage.tsx";
 import ProfilePage from "./components/homepage/ ProfilePage.tsx";
 import GroupChat from "./components/user/GroupChat.tsx";
 import AboutUsPage from "./pages/AboutUsPage.tsx";
+import CategoryPage from "./pages/CategoryPage.tsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -85,6 +86,7 @@ const AppContent = () => {
               </PublicRoute>
             }
           />
+          <Route path="/categories" element={<CategoryPage />} />
           <Route
             path="/register"
             element={

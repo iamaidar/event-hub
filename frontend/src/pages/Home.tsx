@@ -38,7 +38,7 @@ const Home = () => {
       <Poster />
       <CategoryCard />
       {loading ? (
-        <p className="text-center mt-5">Загрузка...</p>
+        <p className="text-center mt-5">Downloading...</p>
       ) : (
         <EventList
           title="Best Deals Near You"
