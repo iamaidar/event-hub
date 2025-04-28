@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import {ShoppingCart, Menu, X, User, Users, LogOut, Tickets } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Users, LogOut, Tickets } from "lucide-react";
 import { getCurrentUser } from "../api/userApi";
 import "./Header.css";
 import Filter from "./homepage/Filter";
@@ -13,7 +13,7 @@ const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // Загрузка полного профиля (с аватаром) при монтировании
+  // Загрузка полного профиля при монтировании
   useEffect(() => {
     if (authContext?.user) {
       getCurrentUser()
@@ -22,14 +22,10 @@ const Header = () => {
     }
   }, [authContext?.user]);
 
-  // Закрыть дропдаун при клике вне его
+  // Закрыть дропдаун при клике вне
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-          profileRef.current &&
-          e.target instanceof Node &&
-          !profileRef.current.contains(e.target)
-      ) {
+      if (profileRef.current && e.target instanceof Node && !profileRef.current.contains(e.target)) {
         setIsProfileDropdownOpen(false);
       }
     };
@@ -45,8 +41,7 @@ const Header = () => {
       ? `data:${profile.avatar_mime_type};base64,${profile.avatar_base64}`
       : null;
 
-  const toggleProfileDropdown = () =>
-      setIsProfileDropdownOpen((o) => !o);
+  const toggleProfileDropdown = () => setIsProfileDropdownOpen((o) => !o);
 
   const handleLogout = () => {
     authContext.logout?.();
@@ -57,14 +52,15 @@ const Header = () => {
   return (
       <header className="bg-[#04092C] text-white py-4 shadow-md">
         <div className="md:flex items-center w-full px-4 md:px-8 lg:px-16">
-          {/* Logo + Burger */}
-          <div className="flex justify-between items-center w-full md:w-auto">
-            <Link to="/Home" className="text-3xl font-bold text-purple-400 flex-grow">
+          {/* Logo + Filter + Burger */}
+          <div className="flex items-center justify-between w-full md:w-auto">
+            {/* Logo */}
+            <Link to="/Home" className="text-3xl font-bold text-purple-400 mr-4">
               EVENT<span className="text-white">HUB</span>
             </Link>
             <button
                 onClick={() => setIsMenuOpen((o) => !o)}
-                className="md:hidden"
+                className="md:hidden ml-auto"
             >
               {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -72,10 +68,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex mx-auto space-x-6 uppercase text-sm font-bold">
-            <Link to="/concerts" className="hover:text-gray-300">CONCERTS</Link>
-            <Link to="/sports" className="hover:text-gray-300">SPORTS</Link>
-            <Link to="/theater" className="hover:text-gray-300">THEATER</Link>
-            <Link to="/kids" className="hover:text-gray-300">FOR KIDS</Link>
+            <Filter />
           </nav>
 
           {/* Desktop Profile & Cart */}
@@ -126,7 +119,7 @@ const Header = () => {
                               className="flex items-center px-4 py-3 hover:bg-gray-50"
                               onClick={() => setIsProfileDropdownOpen(false)}
                           >
-                            <Tickets  className="w-5 h-5 mr-3 text-purple-600" />
+                            <Tickets className="w-5 h-5 mr-3 text-purple-600" />
                             My tickets
                           </Link>
                           <Link
@@ -172,19 +165,6 @@ const Header = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
             <div className="md:hidden bg-[#04092C] text-white flex flex-col items-center py-4 space-y-5">
-              <Link to="/concerts" className="hover:text-gray-300 font-bold" onClick={() => setIsMenuOpen(false)}>
-                CONCERTS
-              </Link>
-              <Link to="/sports" className="hover:text-gray-300 font-bold" onClick={() => setIsMenuOpen(false)}>
-                SPORTS
-              </Link>
-              <Link to="/theater" className="hover:text-gray-300 font-bold" onClick={() => setIsMenuOpen(false)}>
-                THEATER
-              </Link>
-              <Link to="/kids" className="hover:text-gray-300 font-bold" onClick={() => setIsMenuOpen(false)}>
-                FOR KIDS
-              </Link>
-
               {authContext.user?.role === "user" && (
                   <Link to="/user/orders/my" className="hover:text-gray-300" onClick={() => setIsMenuOpen(false)}>
                     <ShoppingCart size={24} />
@@ -239,11 +219,6 @@ const Header = () => {
               )}
             </div>
         )}
-
-        {/* Filter */}
-        <div className="flex justify-center mt-4">
-          <Filter />
-        </div>
       </header>
   );
 };
