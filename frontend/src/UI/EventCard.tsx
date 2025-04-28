@@ -7,18 +7,25 @@ import Modal from "../components/Modal";
 
 export interface EventCardProps {
   id: number;
-  date_time: string;
   title: string;
+  date_time: string;
   location: string;
-  image_base64: string;
+  price: string;
+  image_base64?: string | null;
+  category: {
+    id: number;
+    name: string;
+  };
 }
 
 const EventCard: React.FC<EventCardProps> = ({
                                                id,
-                                               date_time,
                                                title,
+                                               date_time,
                                                location,
+                                               price,
                                                image_base64,
+                                               category,
                                              }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [ticketCount, setTicketCount] = useState(1);
@@ -53,7 +60,6 @@ const EventCard: React.FC<EventCardProps> = ({
   }, [id]);
 
   const handleBookClick = () => {
-    console.log(user);
     if (!user) {
       navigate("/login");
     } else {
@@ -80,52 +86,61 @@ const EventCard: React.FC<EventCardProps> = ({
 
   return (
       <div className="flex flex-col bg-white shadow-md rounded-lg p-4 mb-4">
-        <div className="flex items-center">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start">
+          {/* Image */}
           <img
-              src={image_base64}
+              src={image_base64 || "https://via.placeholder.com/50"}
               alt={title}
-              className="w-20 h-20 rounded-md mr-4"
+              className="w-32 h-32 rounded-md object-cover mb-4 sm:mb-0 sm:mr-4"
           />
-          <div className="flex-1">
+
+          {/* Text Info */}
+          <div className="flex-1 w-full">
             <p className="text-sm text-gray-500">
               {formattedDate} • {formattedTime}
             </p>
             <h4 className="font-bold text-lg">{title}</h4>
             <p className="text-gray-600">{location}</p>
-            {ticketPrice !== null && (
-                <p className="text-sm text-gray-700 mt-1">
-                  Ticket Price:{" "}
-                  {ticketPrice.toLocaleString("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  })}$
-                </p>
-            )}
+
+            {/* Категория */}
+            <span className="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full mt-2">
+            {category?.name ?? "No Category"}
+          </span>
+
+            {/* Цена */}
+            <p className="text-sm text-gray-700 mt-1">
+              Ticket Price:{" "}
+              {parseFloat(price).toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })}
+            </p>
+
+            {/* Доступные билеты */}
             {availableTickets !== null && (
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 mt-1">
                   Tickets Available: {availableTickets}
                 </p>
             )}
           </div>
-          <div className="flex flex-col items-end">
+
+          {/* Кнопки */}
+          <div className="flex flex-col md:flex-row md:items-center md:space-x-2 w-full md:w-auto mt-4 md:mt-0">
             <Button text="View Details" to={`/details/${id}`} variant="outline" />
-            <Button variant="solid" text="Book Now" onClick={handleBookClick} />
+            <Button variant="solid" text="Book Now" onClick={handleBookClick} className="mt-2 md:mt-0" />
           </div>
         </div>
 
+        {/* Modal */}
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
           <div className="max-w-md w-full mx-auto p-6">
             <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Book Tickets</h2>
-
             {availableTickets !== null ? (
                 <div className="space-y-4">
-                  {/* Available tickets */}
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm font-medium text-gray-600">Tickets Available:</span>
                     <span className="font-medium">{availableTickets}</span>
                   </div>
-
-                  {/* Ticket counter */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
                       Number of Tickets:
@@ -162,21 +177,19 @@ const EventCard: React.FC<EventCardProps> = ({
                     </div>
                   </div>
 
-                  {/* Total price */}
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">Total Price:</span>
                       <span className="font-medium">
-              {totalPrice.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-              })}
-            </span>
+                    {totalPrice.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    })}
+                  </span>
                     </div>
                   </div>
 
                   <Button text="Submit Order" onClick={handleOrderSubmit} variant="solid" />
-
                 </div>
             ) : (
                 <div className="flex justify-center items-center p-8">

@@ -216,6 +216,13 @@ const ViewDetails = () => {
               {eventState.event.location}
             </p>
           </div>
+          {eventState.event.category && (
+              <div className="flex items-center gap-2 mt-2">
+    <span className="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full">
+      {eventState.event.category.name}
+    </span>
+              </div>
+          )}
           {eventState.ticketPrice !== null && (
             <div className="flex items-center gap-2 mt-2">
               <DollarSign className="h-5 w-5 text-gray-500" />
