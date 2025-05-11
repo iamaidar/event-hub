@@ -13,5 +13,5 @@ COPY . .
 EXPOSE 3000
 
 # Запускаем NestJS в режиме разработки (hot-reload)
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
 
