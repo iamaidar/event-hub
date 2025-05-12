@@ -12,7 +12,7 @@ const Home = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/events", {
+      .get(`${import.meta.env.VITE_BACKEND_URL}/events`, {
         params: {
           page: 1,
           limit: 5,
@@ -40,10 +40,7 @@ const Home = () => {
       {loading ? (
         <p className="text-center mt-5">Downloading...</p>
       ) : (
-        <EventList
-          title="Best Deals Near You"
-          initialEvents={events}
-        />
+        <EventList title="Best Deals Near You" initialEvents={events} />
       )}
     </div>
   );

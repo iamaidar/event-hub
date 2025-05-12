@@ -9,7 +9,7 @@ const CategoryCard = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/categories", {
+      .get(`${import.meta.env.VITE_BACKEND_URL}/categories`, {
         params: {
           page: 1,
           limit: 4,
