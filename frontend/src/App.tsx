@@ -215,14 +215,6 @@ const AppContent = () => {
                   </Route>
                   {/* Fallback */}
                   <Route path="*" element={<Navigate to="/login" replace />} />
-                  {/* <Route
-                    path="/t/:id"
-                    element={
-                      <PrivateRoute requiredRoles={["organizer"]}>
-                        <QRVerification />
-                      </PrivateRoute>
-                    }
-                  /> */}
                 </Routes>
               </PrivateRoute>
             }
