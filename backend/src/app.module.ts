@@ -36,14 +36,14 @@ import { StatModule } from "./stat/stat.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { EmailModule } from "./email/email.module";
-import { CalendarService } from './calendar/calendar.service';
+import { CalendarService } from "./calendar/calendar.service";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: "postgres",
-      host: process.env.DATABASE_HOST || "db",
+      host: process.env.DATABASE_HOST || "eventhub_db",
       port: parseInt(process.env.DATABASE_PORT || "5432", 10),
       username: process.env.DATABASE_USER || "eventhub_user",
       password: process.env.DATABASE_PASSWORD || "eventhub_password",

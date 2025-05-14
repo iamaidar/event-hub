@@ -1,5 +1,6 @@
 import {
-  BadRequestException, ForbiddenException,
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -135,7 +136,7 @@ export class OrderService {
     const QRCode = await import("qrcode");
     const { nanoid } = await import("nanoid");
 
-    const baseVerifyUrl = "http://localhost:5173/t";
+    const baseVerifyUrl = "https://clinquant-salamander-a64c88.netlify.app/t";
 
     for (let i = 0; i < order.ticket_count; i++) {
       const ticketCode = nanoid(8);
@@ -230,8 +231,5 @@ export class OrderService {
     }
 
     await this.orderRepo.remove(order);
-
   }
-
-
 }

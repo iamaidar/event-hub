@@ -4,9 +4,10 @@ import {
   IsNumber,
   IsDateString,
   IsOptional,
-  IsBoolean, IsEnum,
+  IsBoolean,
+  IsEnum,
 } from "class-validator";
-import {EventStatus} from "../event-status.enum";
+import { EventStatus } from "../event-status.enum";
 
 export class CreateEventDto {
   @IsString()
@@ -37,6 +38,7 @@ export class CreateEventDto {
   total_tickets: number;
 
   @IsString()
+  @IsOptional()
   status: string;
 
   @IsOptional()

@@ -31,6 +31,11 @@ export class ReviewController {
     return this.reviewService.create(dto, req.user);
   }
 
+  @Get("all")
+  findAllPaginatedOnly(@Query() paginationDto: PaginationDto) {
+    return this.reviewService.findAllPaginated(paginationDto);
+  }
+
   @Get()
   findAll(
     @Req() request: any,

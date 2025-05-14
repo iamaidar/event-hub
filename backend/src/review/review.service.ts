@@ -46,7 +46,7 @@ export class ReviewService {
 
   async findAllPaginated(
     paginationDto: PaginationDto,
-    user: User,
+    user?: User,
     eventId?: number,
   ): Promise<{
     data: Review[];
@@ -65,13 +65,12 @@ export class ReviewService {
       query.andWhere("review.event_id = :eventId", { eventId });
     }
 
-    if (user !== undefined && user !== null && user.role.name === "user") {
+    if (user?.role?.name === "user") {
       query.andWhere("review.is_moderated = :isVerified", { isVerified: true });
     }
 
     try {
-      const result = await PaginationService.paginate(query, paginationDto);
-      return result;
+      return await PaginationService.paginate(query, paginationDto);
     } catch (error) {
       console.error(`Failed to fetch reviews: ${error.message}`, error.stack);
       throw error;
