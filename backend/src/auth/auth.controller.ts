@@ -56,7 +56,7 @@ export class AuthController {
     console.log(req);
     const tokens = await this.authService.googleLogin(req.user);
 
-    const redirectUrl = `http://localhost:5173/auth/callback?access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`;
+    const redirectUrl = `https://clinquant-salamander-a64c88.netlify.app/auth/callback?access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`;
     res.redirect(redirectUrl);
   }
 }

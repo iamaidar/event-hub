@@ -58,6 +58,24 @@ export const fetchPaginatedReviews = async (
   };
 };
 
+export const fetchAllPaginatedReviews = async (
+  page: number = 1,
+  limit: number = 10,
+): Promise<PaginatedReview> => {
+  const response = await api.get("/reviews/all", {
+    params: { page, limit },
+  });
+  const paginatedData = response.data.data; // Получаем объект с массивом и параметрами пагинации
+  return {
+    data: paginatedData.data,
+    total: paginatedData.total,
+    page: paginatedData.page,
+    limit: paginatedData.limit,
+    totalPages: paginatedData.totalPages,
+    nextPage: paginatedData.nextPage,
+  };
+};
+
 export const updateReview = async (
   id: number | string,
   review: Partial<ReviewType>,

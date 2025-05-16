@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   deleteReview,
-  fetchPaginatedReviews,
+  fetchAllPaginatedReviews,
   ReviewType,
   updateReview,
 } from "../../../api/reviewApi";
@@ -16,7 +16,7 @@ const ReviewList: React.FC = () => {
 
   const loadReviews = (page: number) => {
     setLoading(true);
-    fetchPaginatedReviews(page, 10)
+    fetchAllPaginatedReviews(page, 10)
       .then((result) => {
         setReviews(result.data);
         setCurrentPage(result.page);

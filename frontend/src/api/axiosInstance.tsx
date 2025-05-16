@@ -9,7 +9,7 @@ import {
 import { refreshTokenRequest } from "./authApi";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

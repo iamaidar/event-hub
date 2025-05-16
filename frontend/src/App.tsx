@@ -143,7 +143,6 @@ const AppContent = () => {
                   <Route path="/events" element={<SearchResults />} />
                   <Route path="/details/:id" element={<ViewDetails />} />
                   <Route path="/about" element={<AboutUsPage />} />
-
                   {/* User Routes */}
                   <Route
                     path="/user/*"
@@ -216,15 +215,15 @@ const AppContent = () => {
                   </Route>
                   {/* Fallback */}
                   <Route path="*" element={<Navigate to="/login" replace />} />
-                  <Route
-                    path="/t/:id"
-                    element={
-                      <PrivateRoute requiredRoles={["organizer"]}>
-                        <QRVerification />
-                      </PrivateRoute>
-                    }
-                  />
                 </Routes>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/t/:id"
+            element={
+              <PrivateRoute requiredRoles={["organizer"]}>
+                <QRVerification />
               </PrivateRoute>
             }
           />
